@@ -1,0 +1,102 @@
+{
+  "contract_version": "stage1-quality-gates-v1",
+  "terminology": "WP1/WP2/WP3 refer to the three work packages inside project Stage 1.",
+  "wp1": {
+    "notebook_candidates": [
+      "notebooks/stage1_wp1_open_models.ipynb",
+      "notebooks/*wp1*.ipynb"
+    ],
+    "artifact_groups": {
+      "cleaned_documents": [
+        "outputs/stage1_wp1*/cleaned_documents.parquet",
+        "outputs/stage1_wp1*/documents.parquet",
+        "outputs/stage1_wp1*/cleaned_documents.csv"
+      ],
+      "temporal_analysis": [
+        "outputs/stage1_wp1*/temporal*.csv",
+        "outputs/stage1_wp1*/monthly*.csv",
+        "outputs/stage1_wp1*/figures/*temporal*.png",
+        "outputs/stage1_wp1*/figures/*time*.png"
+      ],
+      "topic_model": [
+        "outputs/stage1_wp1*/topics*.csv",
+        "outputs/stage1_wp1*/topic*.parquet",
+        "outputs/stage1_wp1*/figures/*topic*.png"
+      ],
+      "analysis_summary": [
+        "outputs/stage1_wp1*/analysis_summary.json",
+        "outputs/stage1_wp1*/qa_report.json",
+        "outputs/stage1_wp1*/DATA_DICTIONARY.md"
+      ]
+    },
+    "minimum_documents": 100,
+    "minimum_topics": 3
+  },
+  "wp2": {
+    "output_dir": "outputs/stage1_wp2_open_models_pilot",
+    "notebook": "notebooks/stage1_wp2_open_models.ipynb",
+    "required_files": [
+      "documents.parquet",
+      "text_units.parquet",
+      "entity_mentions.parquet",
+      "entities.parquet",
+      "relations.parquet",
+      "cooccurrence_edges.parquet",
+      "schema.json",
+      "qa_report.json",
+      "run_manifest.json",
+      "relation_review_sample.csv",
+      "DATA_DICTIONARY.md"
+    ],
+    "minimum_entities": 10,
+    "minimum_relations": 10,
+    "minimum_cooccurrence_edges": 10,
+    "minimum_mention_document_coverage_pct": 80,
+    "minimum_relation_document_coverage_pct": 20,
+    "minimum_reviewed_relations": 50,
+    "minimum_review_precision": 0.8
+  },
+  "wp3": {
+    "output_dir": "outputs/stage1_wp3_open_models_pilot",
+    "upstream_wp2_dir": "outputs/stage1_wp2_open_models_pilot",
+    "notebook": "notebooks/stage1_wp3_open_models_contract.ipynb",
+    "required_files": [
+      "nodes.parquet",
+      "typed_edges_assertions.parquet",
+      "typed_edges_collapsed.parquet",
+      "cooccurrence_edges.parquet",
+      "node_metrics.parquet",
+      "relation_type_summary.parquet",
+      "monthly_relation_assertions.parquet",
+      "monthly_new_entities.parquet",
+      "monthly_new_typed_edges.parquet",
+      "node_communities.parquet",
+      "community_summary.parquet",
+      "graph_finding_candidates.parquet",
+      "assertion_graph.graphml",
+      "typed_graph_collapsed.graphml",
+      "cooccurrence_graph.graphml",
+      "assertion_graph.json",
+      "typed_graph_collapsed.json",
+      "cooccurrence_graph.json",
+      "graph_summary.json",
+      "contract_report.json",
+      "validation_report.json",
+      "resolved_contract.json",
+      "graph_schema.json",
+      "run_manifest.json",
+      "DATA_DICTIONARY.md"
+    ],
+    "required_metric_views": ["typed", "cooccurrence"],
+    "minimum_typed_edges": 10,
+    "minimum_cooccurrence_edges": 10,
+    "minimum_figures": 8,
+    "require_frozen_contract_for_final": true
+  },
+  "manual_flags": {
+    "wp1_track_insights_approved": false,
+    "wp2_relation_review_approved": false,
+    "wp3_visualizations_approved": false,
+    "wp3_graph_insights_approved": false
+  }
+}
