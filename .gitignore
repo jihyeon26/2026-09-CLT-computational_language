@@ -1,0 +1,28 @@
+# Local Python environments and caches
+.venv/
+.cache/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Raw datasets and generated analysis artifacts
+dataset/
+data/
+outputs/
+tmp/
+*.parquet
+*.feather
+
+# Local runtime files
+*.log
+.env
+.env.*
+
+# OS/editor metadata
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
