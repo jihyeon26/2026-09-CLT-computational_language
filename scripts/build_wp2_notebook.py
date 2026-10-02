@@ -136,16 +136,16 @@ cooccurrence_view.sort_values(
         nbf.v4.new_markdown_cell(
             """## Manual review protocol
 
-Open `relation_review_sample.csv` and label `review_correct` as `TRUE` or `FALSE` using only
-the quoted evidence sentence and linked source. At least two team members should independently
-review disagreements for non-catalogue relations. Report precision by predicate; do not call
-coverage “recall” without a separately annotated gold set."""
+Open `relation_review_sample.csv` and label `review_correct` as `TRUE`, `FALSE`, or
+`AMBIGUOUS` using the quoted evidence sentence and linked source. Rejected rows also require
+`review_error_type`. At least two team members should independently review disagreements.
+Report precision by predicate; do not call coverage “recall” without an annotated gold set."""
         ),
         nbf.v4.new_code_cell(
             """review = pd.read_csv(OUTPUT_DIR / "relation_review_sample.csv")
 review[[
     "subject_label", "predicate", "object_label", "evidence_text", "title", "url",
-    "review_correct", "reviewer", "review_notes",
+    "review_correct", "reviewer", "review_error_type", "review_notes",
 ]].head(10)"""
         ),
         nbf.v4.new_markdown_cell(

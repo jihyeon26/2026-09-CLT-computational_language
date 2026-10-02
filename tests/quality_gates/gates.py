@@ -374,10 +374,47 @@ def check_wp2(root: Path, config: dict[str, Any], manual_flags: dict[str, bool])
     review_path = output_dir / "relation_review_sample.csv"
     if review_path.exists():
         reviews = pd.read_csv(review_path)
+        required_review_columns = {
+            "review_correct", "reviewer", "review_error_type", "review_notes"
+        }
+        missing_review_columns = sorted(required_review_columns - set(reviews.columns))
+        checks.append(
+            _result(
+                stage,
+                "relation_review_schema",
+                not missing_review_columns,
+                "Relation review sheet에 판정·검수자·오류 유형·메모 열이 있습니다.",
+                "Relation review sheet의 검수 열이 불완전합니다.",
+                evidence={"missing": missing_review_columns},
+            )
+        )
         judged = reviews["review_correct"].map(_truthy_review) if "review_correct" in reviews.columns else pd.Series(dtype=object)
         reviewed = int(judged.notna().sum())
         correct = int((judged == True).sum())  # noqa: E712
         precision = correct / reviewed if reviewed else None
+        raw_labels = reviews.get("review_correct", pd.Series("", index=reviews.index)).fillna("").astype(str).str.strip().str.upper()
+        labeled = raw_labels.ne("")
+        valid_labels = {"TRUE", "FALSE", "AMBIGUOUS", "YES", "NO", "Y", "N", "1", "0", "CORRECT", "INCORRECT", "ACCEPT", "ACCEPTED", "REJECT", "REJECTED", "UNSURE", "UNCLEAR"}
+        invalid_labels = int((labeled & ~raw_labels.isin(valid_labels)).sum())
+        reviewer = reviews.get("reviewer", pd.Series("", index=reviews.index)).fillna("").astype(str).str.strip()
+        missing_reviewers = int((labeled & reviewer.eq("")).sum())
+        error_type = reviews.get("review_error_type", pd.Series("", index=reviews.index)).fillna("").astype(str).str.strip()
+        rejected_without_error = int((raw_labels.isin({"FALSE", "NO", "N", "0", "INCORRECT", "REJECT", "REJECTED"}) & error_type.eq("")).sum())
+        checks.append(
+            _result(
+                stage,
+                "relation_review_metadata",
+                invalid_labels == 0 and missing_reviewers == 0 and rejected_without_error == 0,
+                "작성된 relation review의 label과 검수 metadata가 완전합니다.",
+                "작성된 relation review에 잘못된 label 또는 누락된 검수 metadata가 있습니다.",
+                evidence={
+                    "invalid_labels": invalid_labels,
+                    "missing_reviewers": missing_reviewers,
+                    "rejected_without_error_type": rejected_without_error,
+                },
+                action="가이드에 따라 reviewer와 FALSE 행의 review_error_type을 채우세요.",
+            )
+        )
         checks.append(
             _result(
                 stage,

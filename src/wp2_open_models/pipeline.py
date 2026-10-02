@@ -615,6 +615,7 @@ def build_review_sample(
     result = result.join(metadata, on="document_id")
     result["review_correct"] = ""
     result["reviewer"] = ""
+    result["review_error_type"] = ""
     result["review_notes"] = ""
     return result
 

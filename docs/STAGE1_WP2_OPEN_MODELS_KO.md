@@ -290,8 +290,9 @@ WP3 기본 그래프에는 다음 정책을 권장한다.
 
 `relation_review_sample.csv`에는 predicate별로 나눈 87개 검수 표본이 있다. 다음 열을 팀원이 채워야 한다.
 
-- `review_correct`: `TRUE` 또는 `FALSE`
+- `review_correct`: `TRUE`, `FALSE` 또는 `AMBIGUOUS`
 - `reviewer`: 검수자 이름 또는 이니셜
+- `review_error_type`: `FALSE`일 때 표준 오류 유형
 - `review_notes`: 오탐 이유 또는 catalogue 수정 제안
 
 검수할 때는 subject와 object 이름만 보지 말고 `evidence_text`와 기사 URL을 함께 확인한다. 특히 다음 오류 유형을 기록한다.
@@ -305,7 +306,10 @@ WP3 기본 그래프에는 다음 정책을 권장한다.
 
 predicate별 precision은 다음처럼 계산할 수 있다.
 
-> precision = 올바른 것으로 판정된 표본 수 / 해당 predicate의 전체 검수 표본 수
+> precision = TRUE 수 / (TRUE 수 + FALSE 수)
+
+`AMBIGUOUS`는 precision 분모에서 제외한다. 자세한 기준과 허용 오류 유형은
+`docs/WP2_RELATION_REVIEW_GUIDE_KO.md`를 따른다.
 
 별도의 gold annotation이 없으므로 현재 단계에서 recall을 보고해서는 안 된다.
 
