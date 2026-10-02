@@ -78,3 +78,13 @@ relation 수동 검수도 아직 완료되지 않았다.
 ```
 
 모든 자동 검사가 PASS이고 위 수동 항목이 승인되면 WP3를 최종 완료로 간주할 수 있다.
+
+## 추가 준비 도구
+
+- `scripts/summarize_relation_reviews.py`: relation 검수 수, precision, predicate별 결과와 오류 유형 집계
+- `docs/WP2_RELATION_REVIEW_GUIDE_KO.md`: TRUE/FALSE/AMBIGUOUS 판단 및 오류 분류 기준
+- `src/stage3_graph_rag/`: entity 기반 graph expansion과 source passage 회수 baseline
+- `scripts/query_graph_evidence.py`: Stage 3 graph retrieval을 명령행에서 점검하는 도구
+
+Retriever는 relation triple뿐 아니라 `text_unit_id`, passage, document URL, 날짜를 함께 반환한다.
+따라서 Stage 3에서는 이를 text-only retrieval 결과와 합쳐 동일한 QA set으로 비교할 수 있다.
