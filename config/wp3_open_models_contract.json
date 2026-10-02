@@ -1,0 +1,112 @@
+{
+  "contract_version": "wp2-to-wp3-draft-v1",
+  "description": "Adapter contract for Stage 1 WP3. Add upstream aliases or filenames here without changing graph analysis code.",
+  "tables": {
+    "entities": {
+      "required": true,
+      "files": ["entities.parquet", "entities.csv", "nodes.parquet", "nodes.csv"],
+      "required_fields": ["entity_id", "canonical_name", "entity_type"],
+      "columns": {
+        "entity_id": ["id", "node_id", "canonical_id"],
+        "canonical_name": ["name", "label", "entity_name"],
+        "entity_type": ["type", "node_type", "label_type"],
+        "mention_count": ["mentions", "frequency"],
+        "document_count": ["doc_count", "source_count"],
+        "first_seen": ["first_date"],
+        "last_seen": ["last_date"]
+      }
+    },
+    "relations": {
+      "required": true,
+      "files": ["relations.parquet", "relations.csv", "edges.parquet", "edges.csv"],
+      "required_fields": ["subject_id", "predicate", "object_id"],
+      "columns": {
+        "relation_id": ["edge_id", "assertion_id"],
+        "subject_id": ["source_id", "source", "head_id"],
+        "predicate": ["relation_type", "relation", "edge_type"],
+        "object_id": ["target_id", "target", "tail_id"],
+        "document_id": ["doc_id", "source_document_id"],
+        "text_unit_id": ["sentence_id", "passage_id", "chunk_id"],
+        "evidence_text": ["evidence", "sentence", "context"],
+        "published_at": ["date", "publication_date"],
+        "assertion_status": ["status", "polarity"],
+        "extraction_method": ["method", "extractor"],
+        "rule_score": ["confidence", "score"]
+      }
+    },
+    "cooccurrence": {
+      "required": false,
+      "files": ["cooccurrence_edges.parquet", "cooccurrence_edges.csv", "co_mentions.parquet", "co_mentions.csv"],
+      "required_fields": ["source_id", "target_id"],
+      "columns": {
+        "source_id": ["entity_a", "node_a", "source"],
+        "target_id": ["entity_b", "node_b", "target"],
+        "sentence_count": ["co_sentence_count", "weight"],
+        "document_count": ["co_document_count", "doc_count"],
+        "first_seen": ["first_date"],
+        "last_seen": ["last_date"]
+      }
+    },
+    "documents": {
+      "required": false,
+      "files": ["documents.parquet", "documents.csv"],
+      "required_fields": ["document_id"],
+      "columns": {
+        "document_id": ["doc_id", "id"],
+        "title": ["document_title"],
+        "domain": ["source_domain", "publisher"],
+        "url": ["source_url"],
+        "published_at": ["date", "publication_date"]
+      }
+    },
+    "text_units": {
+      "required": false,
+      "files": ["text_units.parquet", "text_units.csv", "sentences.parquet", "chunks.parquet"],
+      "required_fields": ["text_unit_id", "document_id"],
+      "columns": {
+        "text_unit_id": ["sentence_id", "passage_id", "chunk_id"],
+        "document_id": ["doc_id"],
+        "text": ["text_unit_text", "sentence", "content", "text_clean"]
+      }
+    },
+    "reviews": {
+      "required": false,
+      "files": ["relation_review_sample.csv", "relation_reviews.csv"],
+      "required_fields": ["relation_id"],
+      "columns": {
+        "relation_id": ["edge_id", "assertion_id"],
+        "review_correct": ["is_correct", "accepted"],
+        "reviewer": ["reviewed_by"],
+        "review_notes": ["notes"]
+      }
+    }
+  },
+  "schema_files": ["schema.json", "graph_schema.json"],
+  "policies": {
+    "allowed_assertion_statuses": ["asserted"],
+    "exclude_reviewed_false": true,
+    "require_reviewed_true": false,
+    "drop_self_relations": true,
+    "strict_schema": true,
+    "include_isolated_nodes": false,
+    "minimum_rule_score": null,
+    "minimum_cooccurrence_documents": 1,
+    "required_relation_provenance": ["document_id", "text_unit_id", "evidence_text"],
+    "strict_provenance": false,
+    "core_entity_types": [
+      "MODEL",
+      "MODEL_FAMILY",
+      "ORGANIZATION",
+      "LICENSE",
+      "ARCHITECTURE",
+      "CAPABILITY"
+    ]
+  },
+  "analysis": {
+    "random_seed": 42,
+    "betweenness_sample_size": 200,
+    "maximum_visual_nodes": 30,
+    "maximum_labels": 12,
+    "maximum_relation_visual_edges": 35
+  }
+}
