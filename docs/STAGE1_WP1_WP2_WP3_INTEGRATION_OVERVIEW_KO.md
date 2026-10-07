@@ -52,7 +52,7 @@
 - [ ] 최종 node type을 기준으로 relation의 schema validity를 다시 계산한다.
 - [ ] 중복 triple과 self-loop를 제거하거나 명시적으로 제외한다.
 - [ ] generic entity와 1회성 noise를 분석용 graph에서 필터링한다.
-- [ ] relation 50개 이상을 사람이 검수하고 precision과 오류 유형을 기록한다.
+- [ ] relation 90개를 사람이 검수하고 precision과 오류 유형을 기록한다.
 - [ ] `evaluation/` 산출물을 실제 인계 폴더에 포함한다.
 - [ ] mention offset과 `sentences.csv` 문자열의 불일치를 수정하거나 한계로 명시한다.
 - [ ] WP2 notebook의 미실행 셀, 실행 순서, 고정 Drive 경로와 임시 clone 셀을 정리한다.

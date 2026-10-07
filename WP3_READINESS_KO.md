@@ -23,7 +23,7 @@ WP3 그래프 생성의 직접 입력은 WP2이다. WP1 결과는 그래프 생�
 
 - `documents`와 `text_units`: relation에서 원문 passage와 URL로 돌아가기 위한 provenance
 - `cooccurrence_edges`: community와 담론 연결 구조 분석
-- `relation_review_sample.csv`: 최소 50개 검수 및 내부 기준 precision 0.80 이상
+- `relation_review_sample.csv`: 최소 90개 검수 및 내부 기준 precision 0.80 이상
 
 파일명이나 열 이름이 달라도 계약 JSON alias로 흡수할 수 있다. 공식 형식이 정해지면 계약의
 `contract_version`에서 `draft`를 제거하고 `strict_provenance=true`로 변경한다.

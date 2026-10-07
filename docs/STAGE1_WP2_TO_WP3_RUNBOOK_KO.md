@@ -175,7 +175,7 @@ WP2에 FAIL이 하나라도 있으면 다음 단계로 가지 않고 upstream �
 .\.venv\Scripts\python.exe scripts\summarize_relation_reviews.py `
   --reviews outputs\stage1_wp2_open_models_official_YYYYMMDD\relation_review_sample.csv `
   --output-dir outputs\relation_review_official `
-  --minimum-reviewed 50 `
+  --minimum-reviewed 90 `
   --minimum-precision 0.80 `
   --fail-on pending
 ```
@@ -311,7 +311,7 @@ Coverage와 최소 개수는 프로젝트 rubric의 공식 절대 기준이 아�
 
 | 기준 | 합격 조건 |
 |---|---|
-| 검수량 | TRUE/FALSE 판정 50개 이상 |
+| 검수량 | TRUE/FALSE 판정 90개 이상 |
 | Precision | `TRUE / (TRUE + FALSE) ≥ 0.80` |
 | Ambiguous | precision 분모에서 제외하고 사유 기록 |
 | Reviewer | 작성된 모든 판정에 검수자 존재 |

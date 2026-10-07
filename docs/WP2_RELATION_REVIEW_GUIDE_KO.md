@@ -55,7 +55,7 @@
 .\.venv\Scripts\python.exe scripts\summarize_relation_reviews.py --fail-on pending
 ```
 
-기본 내부 기준은 precision 계산 가능 표본 50개 이상, precision 0.80 이상이다. 보고서는
+기본 내부 기준은 precision 계산 가능 표본 90개 이상, precision 0.80 이상이다. 보고서는
 `outputs/relation_review/`에 JSON과 Markdown으로 생성된다.
 
 ## 팀 검수 권장 방식
