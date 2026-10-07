@@ -45,7 +45,7 @@ def normalize_review_label(value: Any) -> str | None:
 
 def summarize_relation_reviews(
     reviews: pd.DataFrame,
-    minimum_reviewed: int = 50,
+    minimum_reviewed: int = 90,
     minimum_precision: float = 0.80,
 ) -> dict[str, Any]:
     required = {"relation_id", "predicate", "review_correct"}

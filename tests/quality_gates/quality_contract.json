@@ -53,7 +53,7 @@
     "minimum_cooccurrence_edges": 10,
     "minimum_mention_document_coverage_pct": 80,
     "minimum_relation_document_coverage_pct": 20,
-    "minimum_reviewed_relations": 50,
+    "minimum_reviewed_relations": 90,
     "minimum_review_precision": 0.8
   },
   "wp3": {

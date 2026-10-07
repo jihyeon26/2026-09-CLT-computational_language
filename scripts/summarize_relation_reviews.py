@@ -26,7 +26,7 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default=ROOT / "outputs" / "relation_review",
     )
-    parser.add_argument("--minimum-reviewed", type=int, default=50)
+    parser.add_argument("--minimum-reviewed", type=int, default=90)
     parser.add_argument("--minimum-precision", type=float, default=0.80)
     parser.add_argument(
         "--fail-on",
