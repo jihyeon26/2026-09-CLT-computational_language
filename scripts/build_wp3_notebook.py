@@ -9,6 +9,14 @@ ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "notebooks" / "stage1_wp3_open_models_contract.ipynb"
 
 
+def markdown(text: str):
+    return nbf.v4.new_markdown_cell(text.strip())
+
+
+def code(text: str):
+    return nbf.v4.new_code_cell(text.strip())
+
+
 def main() -> None:
     nb = nbf.v4.new_notebook()
     nb["metadata"]["kernelspec"] = {
@@ -18,309 +26,391 @@ def main() -> None:
     }
     nb["metadata"]["language_info"] = {"name": "python", "version": "3.11"}
     nb["cells"] = [
-        nbf.v4.new_markdown_cell(
-            """# Stage 1 WP3 — Contract-driven Knowledge Graph
+        markdown(
+            """
+# Stage 1 WP3 — 공식 WP2 인계 연결 및 검증
 
-이 노트북은 Stage 1 WP2의 공식 산출물이 아직 확정되지 않은 상태에서 WP3 작업을 진행하기
-위한 **계약 기반 분석 노트북**이다. 파일명과 열 이름을 분석 코드에 직접 고정하지 않고,
-`config/wp3_open_models_contract.json`의 alias와 정책을 통해 WP2 결과를 canonical schema로
-변환한다.
+이 노트북은 팀원의 공식 WP1·WP2 산출물을 사용해 Stage 1 WP3 지식그래프 작업을 시작하는
+**한국어 검토용 작업본**이다. 기존 300문서 파일럿 결과는 사용하지 않는다.
 
-현재 실행 결과는 300문서 파일럿을 사용한 개발용 baseline이다. 공식 WP2 결과가 도착하면
-입력 경로와 계약만 갱신한 뒤 동일한 셀을 다시 실행해야 한다."""
+현재 범위는 WP3 1단계인 다음 작업까지다.
+
+1. 공식 WP2 원본을 수정하지 않고 별도 입력 폴더에서 읽는다.
+2. 실제 파일명과 열 이름을 WP3 canonical contract에 연결한다.
+3. 문서별 `sentence_id`를 전역 고유 `text_unit_id`로 변환한다.
+4. WP1 문서 ID, relation endpoint와 evidence 문장 연결을 검증한다.
+5. 다음 단계에서 처리할 schema·relation 품질 문제를 분리해 기록한다.
+
+분석과 팀 검토가 끝난 뒤 최종 제출본에서는 설명, 셀 제목과 주석을 영어로 바꾼다.
+"""
         ),
-        nbf.v4.new_markdown_cell(
-            """## 1. 실행 경로와 교체 지점
+        markdown(
+            """
+## 1. 공식 입력과 출력 경로
 
-공식 WP2 결과가 도착했을 때 우선 변경할 부분은 아래 셀의 `WP2_INPUT_DIR`이다. 파일명이나
-열 이름이 달라졌다면 원본 파일을 수동으로 바꾸지 말고 `CONTRACT_PATH`의 JSON에 후보 파일명과
-alias를 추가한다."""
+WP1 processed 데이터와 WP2 handover는 다운로드·팀 저장소의 원본을 변경하지 않고 현재 프로젝트의
+Git-ignored 경로에 복사해 두었다. WP3 산출물도 파일럿 폴더와 분리된 official 경로를 사용한다.
+"""
         ),
-        nbf.v4.new_code_cell(
-            """from pathlib import Path
+        code(
+            """
+from pathlib import Path
 import json
 import sys
 
-import matplotlib.pyplot as plt
 import pandas as pd
-from IPython.display import Image, display
+from IPython.display import display
 
 ROOT = Path.cwd()
 if not (ROOT / "config").exists():
     ROOT = ROOT.parent
 sys.path.insert(0, str(ROOT / "src"))
 
-WP2_INPUT_DIR = ROOT / "outputs" / "stage1_wp2_open_models_pilot"
-WP3_OUTPUT_DIR = ROOT / "outputs" / "stage1_wp3_open_models_pilot"
+WP1_PROCESSED_DIR = ROOT / "dataset" / "processed"
+WP2_INPUT_DIR = ROOT / "outputs" / "stage1_wp2_open_models_official_20261007"
+WP3_OUTPUT_DIR = ROOT / "outputs" / "stage1_wp3_open_models_official_20261007"
 CONTRACT_PATH = ROOT / "config" / "wp3_open_models_contract.json"
-
-# 공식 WP2 입력으로 graph artifacts를 다시 만들 때만 True로 변경한다.
-RUN_PIPELINE = False
-
-ROOT, WP2_INPUT_DIR, WP3_OUTPUT_DIR, CONTRACT_PATH"""
-        ),
-        nbf.v4.new_markdown_cell("## 2. WP2→WP3 입력 계약 확인"),
-        nbf.v4.new_code_cell(
-            """contract = json.loads(CONTRACT_PATH.read_text(encoding="utf-8"))
-
-contract_overview = []
-for table_name, spec in contract["tables"].items():
-    contract_overview.append({
-        "table": table_name,
-        "required": spec.get("required", False),
-        "candidate_files": ", ".join(spec.get("files", [])),
-        "required_fields": ", ".join(spec.get("required_fields", [])),
-    })
-
-print("contract_version:", contract["contract_version"])
-pd.DataFrame(contract_overview)"""
-        ),
-        nbf.v4.new_code_cell(
-            """pd.DataFrame([
-    {"policy": key, "value": json.dumps(value, ensure_ascii=False)}
-    for key, value in contract["policies"].items()
-])"""
-        ),
-        nbf.v4.new_markdown_cell(
-            """계약은 다음 변경을 흡수한다.
-
-- Parquet과 CSV 파일명 변경
-- `entity_id` 대신 `id`/`node_id` 사용
-- `subject_id/predicate/object_id` 대신 `source/relation/target` 사용
-- review, documents, text units, co-occurrence 같은 선택 입력의 추가·누락
-- assertion status, confidence threshold, provenance 엄격성 변경
-
-공식 계약이 확정되면 `strict_provenance`를 `true`로 바꾸어 evidence 연결이 없는 관계를
-graph 생성 전에 차단하는 것이 권장된다."""
-        ),
-        nbf.v4.new_markdown_cell("## 3. 필요할 때 파이프라인 재실행"),
-        nbf.v4.new_code_cell(
-            """if RUN_PIPELINE:
-    from wp3_knowledge_graph import WP3PipelineConfig, run_pipeline
-
-    pipeline_summary = run_pipeline(
-        WP3PipelineConfig(
-            input_dir=WP2_INPUT_DIR,
-            output_dir=WP3_OUTPUT_DIR,
-            contract_path=CONTRACT_PATH,
-        )
-    )
-    display(pd.json_normalize(pipeline_summary))
-else:
-    print("기존 WP3 산출물을 사용합니다. 공식 WP2 입력으로 교체할 때 RUN_PIPELINE=True로 설정하세요.")"""
-        ),
-        nbf.v4.new_markdown_cell("## 4. 실제로 해석된 계약과 validation 결과"),
-        nbf.v4.new_code_cell(
-            """contract_report = json.loads(
-    (WP3_OUTPUT_DIR / "contract_report.json").read_text(encoding="utf-8")
-)
-validation = json.loads(
-    (WP3_OUTPUT_DIR / "validation_report.json").read_text(encoding="utf-8")
+REVIEW_SAMPLE_PATH = (
+    ROOT / "artifacts" / "stage1_wp2" / "evaluation" / "relation_review_sample_seed42.csv"
 )
 
-resolved_tables = pd.DataFrame([
-    {
-        "table": name,
-        "rows": details["rows"],
-        "resolved_file": Path(details["path"]).name,
-        "resolved_columns": json.dumps(details["resolved_columns"], ensure_ascii=False),
-    }
-    for name, details in contract_report["tables"].items()
-])
+for required_path in [WP1_PROCESSED_DIR, WP2_INPUT_DIR, CONTRACT_PATH]:
+    assert required_path.exists(), f"필수 입력이 없습니다: {required_path}"
 
-display(resolved_tables)
-display(pd.DataFrame({
-    "check": [key for key in validation if key not in {"errors", "warnings"}],
-    "result": [validation[key] for key in validation if key not in {"errors", "warnings"}],
-}))
-print("warnings:", validation["warnings"])
-print("errors:", validation["errors"])
-assert validation["passed"], '입력 계약 또는 graph integrity validation이 실패했습니다.'"""
+ROOT, WP1_PROCESSED_DIR, WP2_INPUT_DIR, WP3_OUTPUT_DIR, CONTRACT_PATH
+"""
         ),
-        nbf.v4.new_markdown_cell(
-            """Validation 통과는 ID, endpoint, schema signature, provenance 같은 구조적 조건이
-충족됐다는 뜻이다. 자동으로 추출된 relation의 의미가 모두 정확하다는 뜻은 아니며, 이는
-`relation_review_sample.csv`의 수동 검수로 별도 평가해야 한다."""
-        ),
-        nbf.v4.new_markdown_cell("## 5. Graph view와 policy 적용 결과"),
-        nbf.v4.new_code_cell(
-            """summary = json.loads(
-    (WP3_OUTPUT_DIR / "graph_summary.json").read_text(encoding="utf-8")
-)
-
-display(pd.DataFrame([
-    {"graph_view": name, **statistics}
-    for name, statistics in summary["graphs"].items()
-]))
-display(pd.DataFrame([
-    {"policy_step": key, "relation_count": value}
-    for key, value in summary["policy_audit"].items()
-]))"""
-        ),
-        nbf.v4.new_markdown_cell(
-            """세 graph view의 목적은 다르다.
-
-- **Assertion graph**: evidence별 edge를 유지하여 provenance와 Stage 3 retrieval에 사용한다.
-- **Collapsed typed graph**: 같은 `(subject, predicate, object)`를 합쳐 metric과 발표용 분석에 사용한다.
-- **Co-occurrence graph**: 같은 문장에 나타난 엔티티를 연결하며 community와 담론 구조 분석에 사용한다.
-
-Assertion 수를 unique fact 수로 해석하거나, 공동출현을 의미 관계로 해석하면 안 된다."""
-        ),
-        nbf.v4.new_markdown_cell("## 6. Collapsed typed relations"),
-        nbf.v4.new_code_cell(
-            """nodes = pd.read_parquet(WP3_OUTPUT_DIR / "nodes.parquet")
-assertions = pd.read_parquet(WP3_OUTPUT_DIR / "typed_edges_assertions.parquet")
-typed_edges = pd.read_parquet(WP3_OUTPUT_DIR / "typed_edges_collapsed.parquet")
-cooccurrence = pd.read_parquet(WP3_OUTPUT_DIR / "cooccurrence_edges.parquet")
-metrics = pd.read_parquet(WP3_OUTPUT_DIR / "node_metrics.parquet")
-
-labels = nodes.set_index("entity_id")["canonical_name"]
-typed_view = typed_edges.assign(
-    subject_label=typed_edges["subject_id"].map(labels),
-    object_label=typed_edges["object_id"].map(labels),
-)
-
-display(typed_view["predicate"].value_counts().rename_axis("predicate").reset_index(name="unique_edges"))
-typed_view.sort_values(
-    ["document_count", "evidence_count"], ascending=False
-)[[
-    "subject_label", "predicate", "object_label", "evidence_count",
-    "document_count", "domain_count", "first_seen", "last_seen",
-]].head(25)"""
-        ),
-        nbf.v4.new_markdown_cell(
-            """`document_count`는 서로 다른 source document 수이고 `evidence_count`는 문장별
-assertion 수다. 반복 모델 카드나 유사 기사에 덜 민감하도록 기본 시각화와 weighted metric에는
-`document_count`를 사용한다."""
-        ),
-        nbf.v4.new_markdown_cell("## 7. Network metrics"),
-        nbf.v4.new_code_cell(
-            """metric_columns = [
-    "canonical_name", "entity_type", "degree", "weighted_degree",
-    "pagerank", "betweenness", "clustering",
+        markdown("## 2. 팀 handover 파일 확인"),
+        code(
+            """
+expected_wp1 = [
+    "corpus_clean.parquet",
+    "lemma_cache.parquet",
+    "open_models_core.parquet",
+    "open_models_target_sentences.parquet",
+    "track_scan_cache.parquet",
+]
+expected_wp2 = [
+    "nodes.csv",
+    "nodes_quarterly.csv",
+    "entity_mentions.csv",
+    "sentences.csv",
+    "edges_relations.csv",
+    "relations_evidence.csv",
+    "edges_cooccurrence.csv",
+    "cooccurrence_quarterly.csv",
+    "schema.json",
+    "data_dictionary.md",
 ]
 
-print("Collapsed typed graph")
-display(
-    metrics[metrics["graph_view"] == "typed"]
-    .sort_values("pagerank", ascending=False)
-    .head(15)[metric_columns]
-)
-
-print("Co-occurrence graph")
-display(
-    metrics[metrics["graph_view"] == "cooccurrence"]
-    .sort_values("pagerank", ascending=False)
-    .head(15)[metric_columns]
-)"""
-        ),
-        nbf.v4.new_markdown_cell(
-            """현재 metric은 300문서 파일럿과 현재 graph policy 안에서의 연결성을 나타낸다.
-실제 산업 영향력이나 모델 성능 순위로 해석할 수 없다. 또한 typed graph의 방향은 relation에
-따라 의미가 다르므로, 최종 분석에서는 predicate별 subgraph를 함께 제시해야 한다."""
-        ),
-        nbf.v4.new_markdown_cell("## 8. 관계 유형별 지표와 시간 변화"),
-        nbf.v4.new_code_cell(
-            """relation_summary = pd.read_parquet(WP3_OUTPUT_DIR / "relation_type_summary.parquet")
-monthly_assertions = pd.read_parquet(WP3_OUTPUT_DIR / "monthly_relation_assertions.parquet")
-monthly_entities = pd.read_parquet(WP3_OUTPUT_DIR / "monthly_new_entities.parquet")
-monthly_edges = pd.read_parquet(WP3_OUTPUT_DIR / "monthly_new_typed_edges.parquet")
-
-display(relation_summary)
-display(monthly_assertions.tail(20))
-
-predicate_metrics = metrics[metrics["graph_view"].str.startswith("predicate:", na=False)]
-display(
-    predicate_metrics.sort_values(["graph_view", "pagerank"], ascending=[True, False])
-    .groupby("graph_view", as_index=False)
-    .head(5)[["graph_view", *metric_columns]]
-)"""
-        ),
-        nbf.v4.new_markdown_cell(
-            """관계 유형별 graph를 분리하면 방향과 의미가 다른 edge를 한꺼번에 합산하는 오류를
-줄일 수 있다. 월별 표는 데이터 수집량 변화에도 영향을 받으므로, 상승·하락을 실제 시장 변화로
-확정하기 전에 월별 document 수와 원문 evidence를 함께 확인해야 한다."""
-        ),
-        nbf.v4.new_markdown_cell("## 9. Co-occurrence community와 검토 후보"),
-        nbf.v4.new_code_cell(
-            """communities = pd.read_parquet(WP3_OUTPUT_DIR / "node_communities.parquet")
-community_summary = pd.read_parquet(WP3_OUTPUT_DIR / "community_summary.parquet")
-finding_candidates = pd.read_parquet(WP3_OUTPUT_DIR / "graph_finding_candidates.parquet")
-
-display(community_summary.head(15))
-display(
-    communities.sort_values(["community_id", "rank_in_community"])
-    .groupby("community_id", as_index=False)
-    .head(5)
-    .head(50)
-)
-display(finding_candidates.head(30))
-assert set(finding_candidates["review_status"]) <= {"unreviewed", "accepted", "rejected"}"""
-        ),
-        nbf.v4.new_markdown_cell(
-            """`graph_finding_candidates`는 결론이 아니라 사람의 검토 대기열이다. 최종 보고서에
-사용할 항목은 연결된 entity/relation/text unit을 원문과 대조한 뒤 `accepted` 또는 `rejected`로
-표시해야 한다. 공동출현 community도 의미 관계나 인과관계를 직접 뜻하지 않는다."""
-        ),
-        nbf.v4.new_markdown_cell("## 10. 자동 생성된 시각화 점검"),
-        nbf.v4.new_code_cell(
-            """for filename in [
-    "typed_graph_top.png",
-    "cooccurrence_graph_top.png",
-    "typed_pagerank_top15.png",
-    "developer_release_subgraph.png",
-    "model_attributes_subgraph.png",
-    "relation_type_counts.png",
-    "monthly_relation_assertions.png",
-    "cooccurrence_community_sizes.png",
+handover_files = []
+for work_package, directory, names in [
+    ("WP1", WP1_PROCESSED_DIR, expected_wp1),
+    ("WP2", WP2_INPUT_DIR, expected_wp2),
 ]:
-    path = WP3_OUTPUT_DIR / "figures" / filename
-    print(filename)
-    display(Image(filename=str(path)))"""
+    for name in names:
+        path = directory / name
+        handover_files.append(
+            {
+                "work_package": work_package,
+                "file": name,
+                "exists": path.exists(),
+                "size_mb": round(path.stat().st_size / 1_000_000, 2) if path.exists() else None,
+            }
+        )
+
+handover_table = pd.DataFrame(handover_files)
+display(handover_table)
+assert handover_table["exists"].all(), "공식 handover 파일이 일부 누락됐습니다."
+"""
         ),
-        nbf.v4.new_markdown_cell(
-            """전체 graph와 관계별 subgraph, 시간 변화, community 크기를 각각 분리했다.
-최종 제출 전에는 label 겹침과 threshold를 확인하고, 발표에 사용할 그림은 해당 finding의
-원문 evidence와 함께 선택한다."""
+        markdown(
+            """
+WP1 대용량 Parquet과 WP2 CSV는 Git에 커밋하지 않는다. 팀 공유 저장소에는 schema, data dictionary,
+최종 notebook처럼 협업과 제출에 필요한 작은 파일만 올리고, 데이터는 공유 Drive에서 관리한다.
+"""
         ),
-        nbf.v4.new_markdown_cell("## 11. 공식 WP2가 도착했을 때 교체 절차"),
-        nbf.v4.new_code_cell(
-            """handoff_checklist = pd.DataFrame([
-    (1, "새 WP2 폴더를 별도 위치에 보존한다."),
-    (2, "entities/relations 및 선택 테이블의 실제 파일명을 확인한다."),
-    (3, "계약 JSON의 files와 column aliases를 갱신한다."),
-    (4, "공식 evidence 필드가 확정되면 strict_provenance=true로 바꾼다."),
-    (5, "새 output directory를 지정하고 RUN_PIPELINE=True로 실행한다."),
-    (6, "contract_report와 validation_report를 먼저 확인한다."),
-    (7, "assertion 수, collapsed edge 수, relation type 분포를 파일럿과 비교한다."),
-    (8, "수동 review 결과를 반영한 뒤 metric과 시각화를 확정한다."),
-], columns=["step", "action"])
-handoff_checklist"""
+        markdown("## 3. WP2→WP3 contract 적용"),
+        code(
+            """
+from wp3_knowledge_graph.contract import load_contract_tables, read_contract
+from wp3_knowledge_graph.pipeline import (
+    prepare_cooccurrence,
+    prepare_entities,
+    prepare_relations,
+    validate_inputs,
+)
+
+contract = read_contract(CONTRACT_PATH)
+tables, contract_report = load_contract_tables(WP2_INPUT_DIR, contract)
+
+entities = prepare_entities(tables["entities"])
+relations = prepare_relations(tables["relations"])
+cooccurrence = prepare_cooccurrence(tables.get("cooccurrence"))
+text_units = tables["text_units"]
+
+resolved_tables = pd.DataFrame(
+    [
+        {
+            "table": name,
+            "rows": details["rows"],
+            "resolved_file": Path(details["path"]).name,
+            "resolved_columns": json.dumps(details["resolved_columns"], ensure_ascii=False),
+        }
+        for name, details in contract_report["tables"].items()
+    ]
+)
+
+print("contract_version:", contract["contract_version"])
+display(resolved_tables)
+assert contract_report["passed"]
+"""
         ),
-        nbf.v4.new_markdown_cell(
-            """## 12. 평가기준과 Stage 3 handoff
+        markdown(
+            """
+공식 WP2 파일은 다음과 같이 선택된다.
 
-이 파이프라인은 Stage 1 평가기준의 schema 정의, node/edge 구성, centrality와 clustering,
-NetworkX 시각화, graph/schema 저장을 지원한다. 하지만 최종 Stage 1 제출을 위해서는 다음이
-추가되어야 한다. Predicate별 분석·시간 변화·community·evidence 후보는 자동 생성된다.
-공식 입력 후 남는 일은 수동 검수 precision 확정, evidence 기반 insight 승인, 팀원 contribution과
-AI tool disclosure 기록이다.
+- `nodes.csv` → canonical entities
+- `relations_evidence.csv` → 문장 근거를 가진 relation assertions
+- `edges_cooccurrence.csv` → co-occurrence edges
+- `sentences.csv` → text units
 
-공식 Stage 3 Graph-RAG를 위해서는 다음 chain을 보존한다.
-
-`entity_id → relation_id → text_unit_id → document_id → URL / published_at`
-
-그래프가 찾은 relation만 답변 근거로 사용하지 않고, 연결된 원문 passage를 함께 retrieval해야
-faithfulness와 temporal grounding을 평가할 수 있다."""
+집계본인 `edges_relations.csv`보다 `relations_evidence.csv`를 우선하는 이유는 assertion마다
+`document_id`, `text_unit_id`, evidence와 발행일을 보존하기 위해서다.
+"""
         ),
-        nbf.v4.new_markdown_cell(
-            """## 13. 현재 상태
+        markdown("## 4. WP1에서 WP2로 이어진 문서 범위 확인"),
+        code(
+            """
+wp1_core = pd.read_parquet(
+    WP1_PROCESSED_DIR / "open_models_core.parquet",
+    columns=["doc_id", "date", "title", "url"],
+)
+wp1_doc_ids = set(wp1_core["doc_id"].astype(str))
+wp2_doc_ids = set(text_units["document_id"].astype(str))
 
-이 노트북과 출력은 **WP3 pipeline integration baseline**이다. 공식 WP2 계약이 도착하기 전에는
-파일럿의 graph 수치로 최종 결론을 내리지 않는다. 계약이 확정되면 adapter validation을 먼저
-통과시키고, 동일 notebook을 재실행해 최종 analysis artifact를 만든다."""
+lineage_check = pd.DataFrame(
+    [
+        ("WP1 핵심 문서 수", len(wp1_doc_ids)),
+        ("WP2 문장 데이터에 포함된 문서 수", len(wp2_doc_ids)),
+        ("WP2에서 누락된 WP1 문서 수", len(wp1_doc_ids - wp2_doc_ids)),
+        ("WP1에 없지만 WP2에 추가된 문서 수", len(wp2_doc_ids - wp1_doc_ids)),
+    ],
+    columns=["검사항목", "개수"],
+)
+display(lineage_check)
+
+assert wp1_doc_ids == wp2_doc_ids
+"""
+        ),
+        markdown("## 5. 전역 text-unit ID와 provenance 연결 확인"),
+        code(
+            """
+known_text_units = set(text_units["text_unit_id"].dropna().astype(str))
+relation_text_units = set(relations["text_unit_id"].dropna().astype(str))
+glirel_relations = relations[relations["extraction_method"] == "glirel"]
+curated_relations = relations[relations["extraction_method"] == "wp1_lexicon"]
+
+provenance_checks = pd.DataFrame(
+    [
+        ("text-unit ID가 모두 고유함", bool(text_units["text_unit_id"].is_unique)),
+        ("relation ID가 모두 고유함", bool(relations["relation_id"].is_unique)),
+        ("문장 데이터에서 찾을 수 없는 relation text unit 수", len(relation_text_units - known_text_units)),
+        ("문서 ID가 없는 GLiREL relation 수", int(glirel_relations["document_id"].isna().sum())),
+        ("근거 문장이 없는 GLiREL relation 수", int(glirel_relations["evidence_text"].isna().sum())),
+        ("기사 근거가 없는 curated relation 수", int(curated_relations["evidence_text"].isna().sum())),
+    ],
+    columns=["검사항목", "결과"],
+)
+display(provenance_checks)
+
+assert text_units["text_unit_id"].is_unique
+assert relations["relation_id"].is_unique
+assert not (relation_text_units - known_text_units)
+assert glirel_relations["document_id"].notna().all()
+assert glirel_relations["evidence_text"].notna().all()
+"""
+        ),
+        markdown(
+            """
+WP2의 `sentence_id`는 각 문서 안에서 다시 0부터 시작한다. Contract adapter는 이를
+`doc_id:sentence_id` 형식으로 변환해 전체 corpus에서 고유한 `text_unit_id`를 만든다.
+
+`wp1_lexicon`에서 추가된 35개 `developed by` 관계는 기사 문장 근거가 없는 curated relation이다.
+오류로 숨기지 않고 별도 source로 유지하며, Stage 3에서 기사 evidence가 필요한 답변에는 직접
+사용하지 않는다.
+"""
+        ),
+        markdown("## 6. 구조 무결성 검사"),
+        code(
+            """
+# 공식 WP2 schema는 WP3 canonical schema로 변환하기 전이므로,
+# 이 셀에서는 ID, endpoint와 provenance 구조만 검사한다.
+validation = validate_inputs(
+    entities,
+    relations,
+    cooccurrence,
+    schema=None,
+    policies=contract["policies"],
+)
+
+validation_labels = {
+    "entity_count": "엔티티 수",
+    "relation_count": "관계 assertion 수",
+    "cooccurrence_count": "공동출현 edge 수",
+    "missing_relation_endpoints": "존재하지 않는 endpoint를 참조하는 relation 수",
+    "missing_cooccurrence_endpoints": "존재하지 않는 endpoint를 참조하는 공동출현 edge 수",
+    "self_loop_count": "self-loop 수",
+    "duplicate_relation_count": "중복 relation 수",
+    "schema_violation_count": "schema 위반 수",
+}
+validation_table = pd.DataFrame(
+    [
+        {"검사항목": validation_labels.get(key, key), "결과": value}
+        for key, value in validation.items()
+        if key not in {"errors", "warnings", "passed", "missing_relation_provenance"}
+    ]
+)
+display(validation_table)
+print("근거 정보가 없는 relation 수:", validation["missing_relation_provenance"])
+print("경고:", validation["warnings"])
+print("오류:", validation["errors"])
+
+assert validation["passed"], validation["errors"]
+"""
+        ),
+        markdown(
+            """
+현재 hard validation은 통과한다. 경고는 예상된 세 항목이다.
+
+1. 공식 WP2 `schema.json`을 WP3의 canonical relation signature 형식으로 아직 변환하지 않았다.
+2. `Baichuan developed by Baichuan` self-loop 1개가 있으며 graph policy에서 제거해야 한다.
+3. curated `wp1_lexicon` relation 35개에는 article-level provenance가 없다.
+
+이는 WP2 원본을 다시 생성해야 한다는 뜻이 아니다. WP3 2단계에서 schema adapter와 graph policy로
+처리한다.
+"""
+        ),
+        markdown("## 7. 공식 schema의 현재 범위"),
+        code(
+            """
+wp2_schema = json.loads((WP2_INPUT_DIR / "schema.json").read_text(encoding="utf-8"))
+entity_types = wp2_schema["node"]["entity_types"]
+relation_types = wp2_schema["edges"]["relation"]["types"]
+
+schema_summary = pd.DataFrame(
+    [
+        ("엔티티 유형", len(entity_types)),
+        ("관계 유형", len(relation_types)),
+        ("노드", len(entities)),
+        ("관계 assertion", len(relations)),
+        ("공동출현 edge", len(cooccurrence)),
+        ("text unit", len(text_units)),
+    ],
+    columns=["항목", "개수"],
+)
+display(schema_summary)
+
+display(pd.DataFrame(
+    [
+        {
+            "relation": name,
+            "head_types": ", ".join(spec["head_types"]),
+            "tail_types": ", ".join(spec["tail_types"]),
+        }
+        for name, spec in relation_types.items()
+    ]
+))
+"""
+        ),
+        markdown(
+            """
+20개 entity type과 36개 relation type은 extraction recall을 위한 넓은 schema다. 과제에서 요구하는
+compact topic-specific schema를 만들기 위해 다음 단계에서 원본 label을 보존하면서 분석용
+canonical type과 predicate를 별도로 정의한다.
+"""
+        ),
+        markdown("## 8. 실제 데이터 미리보기"),
+        code(
+            """
+display(entities.sort_values("mention_count", ascending=False).head(15))
+display(
+    relations[
+        [
+            "subject_id", "predicate", "object_id", "document_id",
+            "text_unit_id", "evidence_text", "published_at",
+            "extraction_method", "rule_score",
+        ]
+    ].head(15)
+)
+display(cooccurrence.sort_values("sentence_count", ascending=False).head(15))
+"""
+        ),
+        markdown("## 9. 수동 relation 검수 준비 상태"),
+        code(
+            """
+assert REVIEW_SAMPLE_PATH.exists(), f"검수 표본이 없습니다: {REVIEW_SAMPLE_PATH}"
+review_sample = pd.read_csv(REVIEW_SAMPLE_PATH)
+
+review_status = pd.DataFrame(
+    [
+        ("표본 행 수", len(review_sample)),
+        ("표본에 포함된 관계 유형 수", review_sample["predicate"].nunique()),
+        ("검수자 배정 수", review_sample["reviewer_assignment"].nunique()),
+        ("검수가 완료된 행 수", review_sample["review_correct"].notna().sum()),
+    ],
+    columns=["항목", "개수"],
+)
+display(review_status)
+display(review_sample["reviewer_assignment"].value_counts().rename("rows"))
+"""
+        ),
+        markdown(
+            """
+검수 표본은 90개 unique GLiREL triple이며 세 명에게 30개씩 배정되어 있다. 현재는 검수 전 상태다.
+팀원은 추출된 열을 수정하지 않고 `review_correct`, `reviewer`, `review_error_type`, `review_notes`만
+작성한다.
+"""
+        ),
+        markdown("## 10. WP3 1단계 완료 판정"),
+        code(
+            """
+step1_checks = pd.DataFrame(
+    [
+        ("공식 WP1 파일이 모두 있음", handover_table.query("work_package == 'WP1'")["exists"].all()),
+        ("공식 WP2 파일이 모두 있음", handover_table.query("work_package == 'WP2'")["exists"].all()),
+        ("계약이 공식 WP2 파일을 올바르게 선택함", contract_report["passed"]),
+        ("WP1과 WP2의 문서 ID 집합이 일치함", wp1_doc_ids == wp2_doc_ids),
+        ("text-unit ID가 전체 데이터에서 고유함", text_units["text_unit_id"].is_unique),
+        ("GLiREL 근거가 text unit에 연결됨", not (relation_text_units - known_text_units)),
+        ("엔티티와 edge endpoint가 구조적으로 유효함", validation["passed"]),
+        ("수동 검수 표본 90개가 준비됨", len(review_sample) == 90),
+    ],
+    columns=["완료 기준", "통과"],
+)
+display(step1_checks)
+assert step1_checks["통과"].all()
+print("WP3 1단계 완료: WP1·WP2 원본을 수정하지 않고 공식 인계 산출물을 연결했습니다.")
+"""
+        ),
+        markdown(
+            """
+## 11. 다음 단계
+
+WP3 2단계에서는 다음 작업을 수행한다.
+
+1. 공식 WP2 schema를 WP3 canonical relation signature로 변환한다.
+2. 최종 node type을 기준으로 모든 relation을 다시 검증한다.
+3. self-loop, duplicate triple, generic entity와 저빈도 noise 정책을 확정한다.
+4. raw assertion graph와 분석용 filtered graph를 분리한다.
+5. relation 수동 검수 결과를 반영할 수 있는 policy를 연결한다.
+
+그 이후에만 centrality, community, temporal analysis와 시각화를 계산한다. 이 순서를 지키면
+파일럿 graph 결과와 팀원의 공식 산출물이 섞이는 것을 방지할 수 있다.
+"""
         ),
     ]
+
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     nbf.write(nb, OUTPUT)
     print(OUTPUT)
