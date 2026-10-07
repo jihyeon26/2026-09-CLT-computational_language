@@ -39,7 +39,7 @@ def main() -> None:
 2. 실제 파일명과 열 이름을 WP3 canonical contract에 연결한다.
 3. 문서별 `sentence_id`를 전역 고유 `text_unit_id`로 변환한다.
 4. WP1 문서 ID, relation endpoint와 evidence 문장 연결을 검증한다.
-5. 다음 단계에서 처리할 schema·relation 품질 문제를 분리해 기록한다.
+5. 최종 node type, 중복, self-loop와 sentence-local offset을 그래프 계산 전에 교정한다.
 
 분석과 팀 검토가 끝난 뒤 최종 제출본에서는 설명, 셀 제목과 주석을 영어로 바꾼다.
 """
@@ -135,6 +135,11 @@ WP1 대용량 Parquet과 WP2 CSV는 Git에 커밋하지 않는다. 팀 공유 �
             """
 from wp3_knowledge_graph.contract import load_contract_tables, read_contract
 from wp3_knowledge_graph.pipeline import (
+    annotate_final_relation_types,
+    apply_relation_policy,
+    collapse_relations,
+    correct_sentence_local_offsets,
+    normalize_relation_schema,
     prepare_cooccurrence,
     prepare_entities,
     prepare_relations,
@@ -241,28 +246,162 @@ WP2의 `sentence_id`는 각 문서 안에서 다시 0부터 시작한다. Contra
 사용하지 않는다.
 """
         ),
-        markdown("## 6. 구조 무결성 검사"),
+        markdown("## 6. 공식 산출물의 구조적 한계 재현"),
         code(
             """
-# 공식 WP2 schema는 WP3 canonical schema로 변환하기 전이므로,
-# 이 셀에서는 ID, endpoint와 provenance 구조만 검사한다.
+# 원본 집계 파일은 감사 목적으로만 읽으며 분석 입력으로 사용하지 않는다.
+aggregated_upstream = pd.read_csv(WP2_INPUT_DIR / "edges_relations.csv")
+aggregate_duplicate_rows = int(
+    aggregated_upstream.duplicated(["head_id", "relation", "tail_id"]).sum()
+)
+
+wp2_schema = json.loads((WP2_INPUT_DIR / "schema.json").read_text(encoding="utf-8"))
+canonical_schema = normalize_relation_schema(wp2_schema)
+typed_relations = annotate_final_relation_types(entities, relations, canonical_schema)
+
+aggregate_for_check = aggregated_upstream.rename(
+    columns={"head_id": "subject_id", "relation": "predicate", "tail_id": "object_id"}
+)
+typed_aggregate = annotate_final_relation_types(
+    entities, aggregate_for_check, canonical_schema
+)
+stored_valid = typed_aggregate["type_valid"].fillna(False).astype(bool)
+recommended_filter = (
+    (pd.to_numeric(typed_aggregate["n_sentences"], errors="coerce").fillna(0) >= 2)
+    | (typed_aggregate["source"] == "wp1_lexicon")
+)
+
+limitation_audit = pd.DataFrame(
+    [
+        ("원본 집계 triple의 추가 중복 행", aggregate_duplicate_rows),
+        (
+            "저장 당시 valid였지만 최종 node type에서는 invalid인 집계 행",
+            int((stored_valid & ~typed_aggregate["final_type_valid"]).sum()),
+        ),
+        (
+            "권장 필터 후에도 최종 node type에서 invalid인 집계 행",
+            int((recommended_filter & stored_valid & ~typed_aggregate["final_type_valid"]).sum()),
+        ),
+        ("원본 relation assertion의 self-loop", int((relations["subject_id"] == relations["object_id"]).sum())),
+        ("최종 node type에서 invalid인 relation assertion", int((~typed_relations["final_type_valid"]).sum())),
+    ],
+    columns=["확인 항목", "개수"],
+)
+display(limitation_audit)
+
+assert aggregate_duplicate_rows == 266
+assert int((stored_valid & ~typed_aggregate["final_type_valid"]).sum()) == 417
+assert int((recommended_filter & stored_valid & ~typed_aggregate["final_type_valid"]).sum()) == 84
+assert int((relations["subject_id"] == relations["object_id"]).sum()) == 1
+"""
+        ),
+        markdown(
+            """
+위 수치는 노트북 미실행 때문에 생긴 것이 아니라 WP2의 집계 기준과 mention 단계 type을 사용한
+검증 방식에서 생긴다. 따라서 WP2 원본 파일을 고쳐 쓰지 않고, 아래에서 최종 node type을 적용한
+WP3 분석용 relation view를 새로 만든다.
+"""
+        ),
+        markdown("## 7. 그래프 계산 전 relation 교정"),
+        code(
+            """
+analysis_relations, relation_policy_audit = apply_relation_policy(
+    typed_relations,
+    reviews=None,
+    policies=contract["policies"],
+)
+collapsed_relations = collapse_relations(analysis_relations, documents=None)
+
+relation_correction_summary = pd.DataFrame(
+    [
+        ("원본 relation assertion", len(relations)),
+        ("self-loop 제외", relation_policy_audit.get("excluded_self_relations", 0)),
+        ("최종 node type signature 불일치 제외", relation_policy_audit.get("excluded_by_final_signature", 0)),
+        ("분석용 relation assertion", len(analysis_relations)),
+        ("triple 기준으로 collapse한 분석용 edge", len(collapsed_relations)),
+        (
+            "collapsed edge의 추가 중복",
+            int(collapsed_relations.duplicated(["subject_id", "predicate", "object_id"]).sum()),
+        ),
+    ],
+    columns=["교정 단계", "개수"],
+)
+display(relation_correction_summary)
+
+assert analysis_relations["final_type_valid"].all()
+assert not (analysis_relations["subject_id"] == analysis_relations["object_id"]).any()
+assert not collapsed_relations.duplicated(["subject_id", "predicate", "object_id"]).any()
+"""
+        ),
+        markdown(
+            """
+여기서 제거되는 것은 원본 evidence가 아니라 **분석용 그래프에 포함할지 여부**다.
+`relations_evidence.csv`는 그대로 보존하며, 분석용 assertion에는 최종 node type 기준으로 유효한
+관계만 포함한다. 동일 triple의 여러 문장 근거는 `collapsed_relations`의 evidence 집계에 보존된다.
+"""
+        ),
+        markdown("## 8. Sentence-local mention offset 교정"),
+        code(
+            """
+corrected_mentions = correct_sentence_local_offsets(tables["mentions"], text_units)
+offset_summary = (
+    corrected_mentions["offset_status"]
+    .value_counts(dropna=False)
+    .rename_axis("교정 상태")
+    .reset_index(name="mention 수")
+)
+display(offset_summary)
+display(
+    corrected_mentions.loc[
+        ~corrected_mentions["offset_resolved"],
+        ["entity_id", "mention_text", "text_unit_id", "sentence_text"],
+    ]
+)
+
+resolved_mentions = corrected_mentions[corrected_mentions["offset_resolved"]]
+resolved_span_text = resolved_mentions.apply(
+    lambda row: row["sentence_text"][
+        int(row["sentence_local_start"]):int(row["sentence_local_end"])
+    ],
+    axis=1,
+)
+resolved_span_matches = (
+    resolved_span_text.str.casefold().to_numpy()
+    == resolved_mentions["mention_text"].str.casefold().to_numpy()
+).all()
+assert resolved_span_matches
+assert int((~corrected_mentions["offset_resolved"]).sum()) == 2
+"""
+        ),
+        markdown(
+            """
+기사 전체 기준 `article_start_char`와 `article_end_char`는 수정하지 않는다. 별도
+`sentence_local_start`·`sentence_local_end`를 추가했으며, 12,975개 mismatch를 자동 교정했다.
+문장 하나의 범위를 넘어선 잘못된 mention 2개는 자동 교정하지 않고 `unresolved`로 격리한다.
+Stage 3에서 정확한 span 강조가 필요할 때는 `offset_resolved=True`인 행만 사용한다.
+"""
+        ),
+        markdown("## 9. 교정 후 구조 무결성 검사"),
+        code(
+            """
 validation = validate_inputs(
     entities,
-    relations,
+    analysis_relations,
     cooccurrence,
-    schema=None,
+    schema=canonical_schema,
     policies=contract["policies"],
 )
 
 validation_labels = {
-    "entity_count": "엔티티 수",
-    "relation_count": "관계 assertion 수",
-    "cooccurrence_count": "공동출현 edge 수",
-    "missing_relation_endpoints": "존재하지 않는 endpoint를 참조하는 relation 수",
-    "missing_cooccurrence_endpoints": "존재하지 않는 endpoint를 참조하는 공동출현 edge 수",
-    "self_loop_count": "self-loop 수",
-    "duplicate_relation_count": "중복 relation 수",
-    "schema_violation_count": "schema 위반 수",
+    "duplicate_entity_ids": "중복 entity ID 수",
+    "duplicate_relation_ids": "중복 relation ID 수",
+    "null_entity_keys": "필수 key가 비어 있는 entity 수",
+    "null_relation_keys": "필수 key가 비어 있는 relation 수",
+    "dangling_relation_subjects": "존재하지 않는 subject를 참조하는 relation 수",
+    "dangling_relation_objects": "존재하지 않는 object를 참조하는 relation 수",
+    "self_relations": "self-loop 수",
+    "invalid_relation_signatures": "최종 schema signature 위반 수",
+    "dangling_cooccurrence_endpoints": "존재하지 않는 endpoint를 참조하는 공동출현 edge 수",
 }
 validation_table = pd.DataFrame(
     [
@@ -281,17 +420,13 @@ assert validation["passed"], validation["errors"]
         ),
         markdown(
             """
-현재 hard validation은 통과한다. 경고는 예상된 세 항목이다.
-
-1. 공식 WP2 `schema.json`을 WP3의 canonical relation signature 형식으로 아직 변환하지 않았다.
-2. `Baichuan developed by Baichuan` self-loop 1개가 있으며 graph policy에서 제거해야 한다.
-3. curated `wp1_lexicon` relation 35개에는 article-level provenance가 없다.
-
-이는 WP2 원본을 다시 생성해야 한다는 뜻이 아니다. WP3 2단계에서 schema adapter와 graph policy로
-처리한다.
+교정 후에는 schema 불일치, self-loop와 triple 중복이 분석용 relation에 남지 않는다. 원본의
+curated `wp1_lexicon` relation 35개 중 최종 type·self-loop 정책을 통과한 28개는 기사 근거가 없어
+경고로 남는다. 이들은 source를 구분해 보존하되 기사 evidence가 필요한 Stage 3 답변에는 직접
+사용하지 않는다.
 """
         ),
-        markdown("## 7. 공식 schema의 현재 범위"),
+        markdown("## 10. 공식 schema의 현재 범위"),
         code(
             """
 wp2_schema = json.loads((WP2_INPUT_DIR / "schema.json").read_text(encoding="utf-8"))
@@ -303,7 +438,9 @@ schema_summary = pd.DataFrame(
         ("엔티티 유형", len(entity_types)),
         ("관계 유형", len(relation_types)),
         ("노드", len(entities)),
-        ("관계 assertion", len(relations)),
+        ("원본 관계 assertion", len(relations)),
+        ("교정 후 분석용 관계 assertion", len(analysis_relations)),
+        ("교정 후 collapsed relation", len(collapsed_relations)),
         ("공동출현 edge", len(cooccurrence)),
         ("text unit", len(text_units)),
     ],
@@ -330,12 +467,12 @@ compact topic-specific schema를 만들기 위해 다음 단계에서 원본 lab
 canonical type과 predicate를 별도로 정의한다.
 """
         ),
-        markdown("## 8. 실제 데이터 미리보기"),
+        markdown("## 11. 교정된 실제 데이터 미리보기"),
         code(
             """
 display(entities.sort_values("mention_count", ascending=False).head(15))
 display(
-    relations[
+    analysis_relations[
         [
             "subject_id", "predicate", "object_id", "document_id",
             "text_unit_id", "evidence_text", "published_at",
@@ -344,9 +481,10 @@ display(
     ].head(15)
 )
 display(cooccurrence.sort_values("sentence_count", ascending=False).head(15))
+display(collapsed_relations.head(15))
 """
         ),
-        markdown("## 9. 수동 relation 검수 준비 상태"),
+        markdown("## 12. 수동 relation 검수 준비 상태"),
         code(
             """
 assert REVIEW_SAMPLE_PATH.exists(), f"검수 표본이 없습니다: {REVIEW_SAMPLE_PATH}"
@@ -372,7 +510,7 @@ display(review_sample["reviewer_assignment"].value_counts().rename("rows"))
 작성한다.
 """
         ),
-        markdown("## 10. WP3 1단계 완료 판정"),
+        markdown("## 13. WP3 1단계 완료 판정"),
         code(
             """
 step1_checks = pd.DataFrame(
@@ -383,7 +521,12 @@ step1_checks = pd.DataFrame(
         ("WP1과 WP2의 문서 ID 집합이 일치함", wp1_doc_ids == wp2_doc_ids),
         ("text-unit ID가 전체 데이터에서 고유함", text_units["text_unit_id"].is_unique),
         ("GLiREL 근거가 text unit에 연결됨", not (relation_text_units - known_text_units)),
-        ("엔티티와 edge endpoint가 구조적으로 유효함", validation["passed"]),
+        ("최종 node type 기준으로 모든 분석용 relation이 유효함", analysis_relations["final_type_valid"].all()),
+        ("분석용 relation에 self-loop가 없음", not (analysis_relations["subject_id"] == analysis_relations["object_id"]).any()),
+        ("collapsed relation에 중복 triple이 없음", not collapsed_relations.duplicated(["subject_id", "predicate", "object_id"]).any()),
+        ("교정 가능한 sentence-local offset이 모두 일치함", resolved_span_matches),
+        ("자동 교정 불가능한 mention 2개가 격리됨", int((~corrected_mentions["offset_resolved"]).sum()) == 2),
+        ("교정 후 엔티티와 edge 구조가 유효함", validation["passed"]),
         ("수동 검수 표본 90개가 준비됨", len(review_sample) == 90),
     ],
     columns=["완료 기준", "통과"],
@@ -395,15 +538,15 @@ print("WP3 1단계 완료: WP1·WP2 원본을 수정하지 않고 공식 인계 
         ),
         markdown(
             """
-## 11. 다음 단계
+## 14. 다음 단계
 
 WP3 2단계에서는 다음 작업을 수행한다.
 
-1. 공식 WP2 schema를 WP3 canonical relation signature로 변환한다.
-2. 최종 node type을 기준으로 모든 relation을 다시 검증한다.
-3. self-loop, duplicate triple, generic entity와 저빈도 noise 정책을 확정한다.
-4. raw assertion graph와 분석용 filtered graph를 분리한다.
-5. relation 수동 검수 결과를 반영할 수 있는 policy를 연결한다.
+1. 20개 entity type과 36개 relation type을 과제에 맞는 compact schema로 매핑한다.
+2. generic entity와 저빈도 noise 처리 기준을 확정한다.
+3. raw assertion graph와 분석용 filtered graph의 출력 형식을 확정한다.
+4. relation 수동 검수 결과를 반영할 수 있는 policy를 연결한다.
+5. unresolved mention 2개는 정확한 span 강조 대상에서 제외한다.
 
 그 이후에만 centrality, community, temporal analysis와 시각화를 계산한다. 이 순서를 지키면
 파일럿 graph 결과와 팀원의 공식 산출물이 섞이는 것을 방지할 수 있다.
