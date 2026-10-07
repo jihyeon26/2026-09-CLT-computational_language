@@ -1,0 +1,52 @@
+{
+  "raw_structural_validation": {
+    "duplicate_entity_ids": 0,
+    "duplicate_relation_ids": 0,
+    "null_entity_keys": 0,
+    "null_relation_keys": 0,
+    "dangling_relation_subjects": 0,
+    "dangling_relation_objects": 0,
+    "self_relations": 1,
+    "invalid_relation_signatures": 0,
+    "dangling_cooccurrence_endpoints": 0,
+    "missing_relation_provenance": {
+      "document_id": 35,
+      "text_unit_id": 35,
+      "evidence_text": 35
+    },
+    "errors": [],
+    "warnings": [
+      "No upstream relation schema found; signature validation was skipped.",
+      "self_relations=1; policy may remove them.",
+      "missing_relation_provenance={'document_id': 35, 'text_unit_id': 35, 'evidence_text': 35}"
+    ],
+    "passed": true
+  },
+  "prepared_candidate_validation": {
+    "duplicate_entity_ids": 0,
+    "duplicate_relation_ids": 0,
+    "null_entity_keys": 0,
+    "null_relation_keys": 0,
+    "dangling_relation_subjects": 0,
+    "dangling_relation_objects": 0,
+    "self_relations": 0,
+    "invalid_relation_signatures": 0,
+    "dangling_cooccurrence_endpoints": 0,
+    "missing_relation_provenance": {
+      "document_id": 28,
+      "text_unit_id": 28,
+      "evidence_text": 28
+    },
+    "errors": [],
+    "warnings": [
+      "missing_relation_provenance={'document_id': 28, 'text_unit_id': 28, 'evidence_text': 28}"
+    ],
+    "passed": true
+  },
+  "offset_status": {
+    "already_valid": 196171,
+    "corrected_nearest": 2351,
+    "corrected_unique": 10624,
+    "unresolved": 2
+  }
+}

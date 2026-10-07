@@ -16,6 +16,7 @@ from wp3_knowledge_graph.contract import ContractError, load_contract_tables
 from wp3_knowledge_graph.pipeline import (
     WP3PipelineConfig,
     annotate_final_relation_types,
+    apply_compact_schema,
     apply_relation_policy,
     build_graph_schema,
     build_temporal_tables,
@@ -286,6 +287,47 @@ def test_sentence_local_offsets_are_corrected_without_changing_article_offsets()
     assert corrected.loc[0, "sentence_local_end"] == 7
     assert corrected.loc[0, "offset_status"] == "corrected_unique"
     assert bool(corrected.loc[0, "offset_resolved"])
+
+
+def test_compact_schema_preserves_raw_labels_and_marks_candidates() -> None:
+    entities = pd.DataFrame(
+        [
+            {"entity_id": "model:a", "canonical_name": "A", "entity_type": "AI_MODEL"},
+            {"entity_id": "org:x", "canonical_name": "X", "entity_type": "COMPANY"},
+        ]
+    )
+    relations = pd.DataFrame(
+        [
+            {
+                "relation_id": "r1",
+                "subject_id": "model:a",
+                "predicate": "developed by",
+                "object_id": "org:x",
+                "subject_type_final": "AI_MODEL",
+                "object_type_final": "COMPANY",
+                "extraction_method": "glirel",
+                "rule_score": 0.81,
+            }
+        ]
+    )
+    schema = {
+        "entity_type_mapping": {
+            "AI_MODEL": "MODEL",
+            "COMPANY": "ORGANIZATION",
+        },
+        "predicate_group_mapping": {"developed by": "PROVENANCE"},
+    }
+
+    compact_entities, compact_relations = apply_compact_schema(
+        entities, relations, schema
+    )
+
+    assert compact_entities["raw_entity_type"].tolist() == ["AI_MODEL", "COMPANY"]
+    assert compact_entities["entity_type_compact"].tolist() == ["MODEL", "ORGANIZATION"]
+    assert compact_relations.loc[0, "raw_predicate"] == "developed by"
+    assert compact_relations.loc[0, "predicate_group"] == "PROVENANCE"
+    assert compact_relations.loc[0, "quality_tier"] == "high_score_candidate"
+    assert compact_relations.loc[0, "human_validation_status"] == "unreviewed"
 
 
 def test_end_to_end_pipeline_accepts_alias_contract(tmp_path: Path) -> None:

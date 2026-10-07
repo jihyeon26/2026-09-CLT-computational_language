@@ -1,0 +1,79 @@
+{
+  "snapshot_version": "stage1-wp3-preparation-v0.1",
+  "pipeline_version": "stage1-wp3-contract-driven-v0.3",
+  "created_at_utc": "2026-10-07T21:07:01+00:00",
+  "status": "candidate_graph_only_pending_human_relation_review",
+  "contract_version": "wp2-to-wp3-draft-v1",
+  "compact_schema_version": "stage1-wp3-compact-schema-v0.1",
+  "input_files": {
+    "entities": {
+      "path": "outputs/stage1_wp2_open_models_official_20261007/nodes.csv",
+      "rows": 54597,
+      "sha256": "1cb5b1e146e892b90693950d52008698eb30fab2b4a3af626aeb0f9478cee10e"
+    },
+    "relations": {
+      "path": "outputs/stage1_wp2_open_models_official_20261007/relations_evidence.csv",
+      "rows": 30595,
+      "sha256": "ffcf1dfd5661ca47f81e126062e708a7ca2aeef2da836b6d3172b49298bf1583"
+    },
+    "cooccurrence": {
+      "path": "outputs/stage1_wp2_open_models_official_20261007/edges_cooccurrence.csv",
+      "rows": 186710,
+      "sha256": "3b020d23a89d907802d0fd3743b8987de9ec279fa9f335483793617df5088b8f"
+    },
+    "text_units": {
+      "path": "outputs/stage1_wp2_open_models_official_20261007/sentences.csv",
+      "rows": 99438,
+      "sha256": "f0eb4a24c03c9387750e6cfc389cae38366ee95e8ac8ade8f9b3ae18a0ef95a4"
+    },
+    "mentions": {
+      "path": "outputs/stage1_wp2_open_models_official_20261007/entity_mentions.csv",
+      "rows": 209148,
+      "sha256": "e4eb928d232f5b7d07c744bbf7275fe25d360c5616ec1a428a7aca5e29897b06"
+    }
+  },
+  "schema_input": {
+    "path": "outputs/stage1_wp2_open_models_official_20261007/schema.json",
+    "sha256": "29f5b2c58dee4b9006d06a7140f151c1185b8d5e1a4d49c7fe4ea0974f51133e"
+  },
+  "output_files": {
+    "nodes_prepared": {
+      "path": "outputs/stage1_wp3_open_models_official_20261007/prepared/nodes_prepared.parquet",
+      "rows": 54597,
+      "sha256": "61193454302367fbdeb78ebef98fb2751acac6861e9409bcbd2a9fd8242c5a18"
+    },
+    "relation_policy_decisions": {
+      "path": "outputs/stage1_wp3_open_models_official_20261007/prepared/relation_policy_decisions.parquet",
+      "rows": 30595,
+      "sha256": "d13321598b891300aff343780c6dd0f07663189fb02993820dc76998cac91c7c"
+    },
+    "typed_edges_assertions": {
+      "path": "outputs/stage1_wp3_open_models_official_20261007/prepared/typed_edges_assertions.parquet",
+      "rows": 19160,
+      "sha256": "98e779a524c7f5aa07e4874f343591b55a68a1a91d37d0a70e42a8dad29a3d50"
+    },
+    "typed_edges_collapsed": {
+      "path": "outputs/stage1_wp3_open_models_official_20261007/prepared/typed_edges_collapsed.parquet",
+      "rows": 13322,
+      "sha256": "19e681467d0d2a9eab5746f8a0923a04dbc30348fccf4c5f41328e81da84cdc9"
+    },
+    "entity_mentions_corrected": {
+      "path": "outputs/stage1_wp3_open_models_official_20261007/prepared/entity_mentions_corrected.parquet",
+      "rows": 209148,
+      "sha256": "93347541cee6ac774c14fa209b58c15a68074a6ead224863100514c66fb5f77c"
+    }
+  },
+  "counts": {
+    "nodes": 54597,
+    "raw_relation_assertions": 30595,
+    "candidate_relation_assertions": 19160,
+    "collapsed_candidate_edges": 13322,
+    "unresolved_mentions": 2
+  },
+  "manual_review": {
+    "required": true,
+    "completed": false,
+    "minimum_review_rows": 90,
+    "minimum_precision": 0.8
+  }
+}

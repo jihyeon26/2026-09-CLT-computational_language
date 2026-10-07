@@ -1,0 +1,21 @@
+{
+  "input_relations": 30595,
+  "excluded_by_assertion_status": 0,
+  "excluded_by_negative_review": 0,
+  "excluded_self_relations": 1,
+  "excluded_by_final_signature": 11434,
+  "included_relations": 19160,
+  "excluded_relation_assertions": 11435,
+  "exclusion_reasons": {
+    "invalid_final_signature": 11434,
+    "self_loop|invalid_final_signature": 1
+  },
+  "quality_tiers_in_candidate_graph": {
+    "curated_without_article_evidence": 28,
+    "high_score_candidate": 1766,
+    "low_score_candidate": 9557,
+    "medium_score_candidate": 7809
+  },
+  "human_validated_relations": 0,
+  "ai_prescreen_used_as_exclusion_policy": false
+}

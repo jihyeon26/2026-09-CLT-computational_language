@@ -255,6 +255,78 @@ def correct_sentence_local_offsets(
     return result
 
 
+def apply_compact_schema(
+    entities: pd.DataFrame,
+    relations: pd.DataFrame,
+    compact_schema: dict[str, Any],
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Add compact analysis groups without replacing the raw WP2 labels."""
+    entity_mapping = compact_schema.get("entity_type_mapping", {})
+    predicate_mapping = compact_schema.get("predicate_group_mapping", {})
+
+    compact_entities = entities.copy()
+    compact_entities["raw_entity_type"] = compact_entities["entity_type"]
+    compact_entities["entity_type_compact"] = compact_entities["raw_entity_type"].map(
+        entity_mapping
+    )
+    missing_entity_types = sorted(
+        compact_entities.loc[
+            compact_entities["entity_type_compact"].isna(), "raw_entity_type"
+        ].dropna().unique()
+    )
+    if missing_entity_types:
+        raise ContractError(
+            f"Compact schema does not map entity types: {missing_entity_types}"
+        )
+
+    compact_relations = relations.copy()
+    compact_relations["raw_predicate"] = compact_relations["predicate"]
+    compact_relations["predicate_group"] = compact_relations["raw_predicate"].map(
+        predicate_mapping
+    )
+    missing_predicates = sorted(
+        compact_relations.loc[
+            compact_relations["predicate_group"].isna(), "raw_predicate"
+        ].dropna().unique()
+    )
+    if missing_predicates:
+        raise ContractError(
+            f"Compact schema does not map predicates: {missing_predicates}"
+        )
+
+    if "subject_type_final" in compact_relations.columns:
+        compact_relations["subject_type_compact"] = compact_relations[
+            "subject_type_final"
+        ].map(entity_mapping)
+    if "object_type_final" in compact_relations.columns:
+        compact_relations["object_type_compact"] = compact_relations[
+            "object_type_final"
+        ].map(entity_mapping)
+
+    score = pd.to_numeric(compact_relations.get("rule_score"), errors="coerce")
+    method = compact_relations.get(
+        "extraction_method",
+        pd.Series("upstream_unspecified", index=compact_relations.index),
+    )
+    compact_relations["quality_tier"] = np.select(
+        [
+            method.eq("wp1_lexicon"),
+            score.ge(0.75),
+            score.ge(0.60),
+            score.notna(),
+        ],
+        [
+            "curated_without_article_evidence",
+            "high_score_candidate",
+            "medium_score_candidate",
+            "low_score_candidate",
+        ],
+        default="score_unavailable",
+    )
+    compact_relations["human_validation_status"] = "unreviewed"
+    return compact_entities, compact_relations
+
+
 def prepare_cooccurrence(frame: pd.DataFrame | None) -> pd.DataFrame:
     if frame is None:
         return pd.DataFrame(

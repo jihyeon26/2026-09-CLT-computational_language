@@ -1,0 +1,5 @@
+entity_id,entity,entity_type,mention_text,canonical_id,developer,model_version,sources_found,document_id,sentence_id,article_start_char,article_end_char,date,month,quarter,text_unit_id,sentence_text,sentence_start,sentence_local_start_original,sentence_local_end_original,sentence_local_start,sentence_local_end,offset_status,offset_resolved
+concept:open_source_model,open_source_model,OPENNESS_CONCEPT,open source AI. A popular model,open_source_model,,,domain_dict+spacy,doc_56678eac5d,22,2797,2828,2025-09-03,2025-09,2025Q3,doc_56678eac5d:22,"”
+
+When working with the open source community at large, Maffulli said a lot of the work has been about clarifying the definition of open source AI.",2664,133,164,,,unresolved,False
+concept:open_source_model,open_source_model,OPENNESS_CONCEPT,open-source licenses. Models,open_source_model,,,domain_dict+gliner,doc_76edd77dd8,78,10435,10463,2026-06-04,2026-06,2026Q2,doc_76edd77dd8:78,Several LLMs are free under open-source licenses.,10407,28,56,,,unresolved,False
