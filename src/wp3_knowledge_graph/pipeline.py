@@ -19,7 +19,7 @@ import pandas as pd
 from .contract import ContractError, find_optional_json, load_contract_tables, read_contract
 
 
-PIPELINE_VERSION = "stage1-wp3-contract-driven-v0.2"
+PIPELINE_VERSION = "stage1-wp3-contract-driven-v0.3"
 
 
 @dataclass(frozen=True)
@@ -123,6 +123,136 @@ def prepare_relations(frame: pd.DataFrame) -> pd.DataFrame:
     relations["relation_id"] = relations["relation_id"].astype("string")
     relations["rule_score"] = pd.to_numeric(relations["rule_score"], errors="coerce")
     return relations
+
+
+def normalize_relation_schema(schema: dict[str, Any] | None) -> dict[str, Any] | None:
+    """Convert the WP2 schema layout into the canonical WP3 signature layout."""
+    if schema is None:
+        return None
+    if schema.get("relation_signatures"):
+        return schema
+
+    relation_types = (
+        schema.get("edges", {}).get("relation", {}).get("types", {})
+    )
+    if not relation_types:
+        return schema
+
+    normalized = dict(schema)
+    normalized["relation_signatures"] = {
+        predicate: [
+            [head_type, tail_type]
+            for head_type in specification.get("head_types", [])
+            for tail_type in specification.get("tail_types", [])
+        ]
+        for predicate, specification in relation_types.items()
+    }
+    return normalized
+
+
+def annotate_final_relation_types(
+    entities: pd.DataFrame,
+    relations: pd.DataFrame,
+    schema: dict[str, Any] | None,
+) -> pd.DataFrame:
+    """Re-evaluate relation signatures using canonical node types, not mention types."""
+    result = relations.copy()
+    type_by_id = entities.set_index("entity_id")["entity_type"].to_dict()
+    result["subject_type_final"] = result["subject_id"].map(type_by_id).astype("string")
+    result["object_type_final"] = result["object_id"].map(type_by_id).astype("string")
+
+    signatures = {
+        predicate: {tuple(pair) for pair in pairs}
+        for predicate, pairs in (schema or {}).get("relation_signatures", {}).items()
+    }
+    if not signatures:
+        result["final_type_valid"] = pd.NA
+        return result
+
+    result["final_type_valid"] = [
+        (subject_type, object_type) in signatures.get(predicate, set())
+        for subject_type, predicate, object_type in result[
+            ["subject_type_final", "predicate", "object_type_final"]
+        ].itertuples(index=False, name=None)
+    ]
+    return result
+
+
+def correct_sentence_local_offsets(
+    mentions: pd.DataFrame,
+    text_units: pd.DataFrame,
+) -> pd.DataFrame:
+    """Add corrected sentence-local spans while preserving upstream article offsets."""
+    required_mentions = {
+        "entity_id", "mention_text", "text_unit_id", "article_start_char", "article_end_char"
+    }
+    required_text_units = {"text_unit_id", "text", "sentence_start"}
+    missing_mentions = required_mentions - set(mentions.columns)
+    missing_text_units = required_text_units - set(text_units.columns)
+    if missing_mentions or missing_text_units:
+        raise ValueError(
+            "Offset correction requires canonical mention and text-unit columns; "
+            f"missing mentions={sorted(missing_mentions)}, "
+            f"missing text_units={sorted(missing_text_units)}"
+        )
+    if not text_units["text_unit_id"].is_unique:
+        raise ValueError("text_unit_id must be unique before correcting mention offsets.")
+
+    sentence_lookup = text_units[
+        ["text_unit_id", "text", "sentence_start"]
+    ].rename(columns={"text": "sentence_text"})
+    result = mentions.merge(
+        sentence_lookup,
+        on="text_unit_id",
+        how="left",
+        validate="many_to_one",
+    )
+    result["sentence_local_start_original"] = (
+        pd.to_numeric(result["article_start_char"], errors="coerce")
+        - pd.to_numeric(result["sentence_start"], errors="coerce")
+    ).astype("Int64")
+    result["sentence_local_end_original"] = (
+        pd.to_numeric(result["article_end_char"], errors="coerce")
+        - pd.to_numeric(result["sentence_start"], errors="coerce")
+    ).astype("Int64")
+
+    def reconcile(row: pd.Series) -> tuple[Any, Any, str]:
+        sentence = row["sentence_text"]
+        mention = row["mention_text"]
+        start = row["sentence_local_start_original"]
+        end = row["sentence_local_end_original"]
+        if not isinstance(sentence, str) or not isinstance(mention, str) or not mention:
+            return pd.NA, pd.NA, "unresolved"
+        if pd.notna(start) and pd.notna(end):
+            start_int, end_int = int(start), int(end)
+            if (
+                0 <= start_int <= end_int <= len(sentence)
+                and sentence[start_int:end_int].casefold() == mention.casefold()
+            ):
+                return start_int, end_int, "already_valid"
+
+        sentence_folded = sentence.casefold()
+        mention_folded = mention.casefold()
+        positions: list[int] = []
+        position = sentence_folded.find(mention_folded)
+        while position >= 0:
+            positions.append(position)
+            position = sentence_folded.find(mention_folded, position + 1)
+        if not positions:
+            return pd.NA, pd.NA, "unresolved"
+
+        anchor = int(start) if pd.notna(start) else 0
+        corrected_start = min(positions, key=lambda candidate: abs(candidate - anchor))
+        status = "corrected_unique" if len(positions) == 1 else "corrected_nearest"
+        return corrected_start, corrected_start + len(mention), status
+
+    corrected = result.apply(reconcile, axis=1, result_type="expand")
+    corrected.columns = [
+        "sentence_local_start", "sentence_local_end", "offset_status"
+    ]
+    result = pd.concat([result, corrected], axis=1)
+    result["offset_resolved"] = result["offset_status"] != "unresolved"
+    return result
 
 
 def prepare_cooccurrence(frame: pd.DataFrame | None) -> pd.DataFrame:
@@ -284,6 +414,19 @@ def apply_relation_policy(
         before = len(result)
         result = result[result["subject_id"] != result["object_id"]].copy()
         audit["excluded_self_relations"] = int(before - len(result))
+
+    if policies.get("require_valid_final_signature", False):
+        if "final_type_valid" not in result.columns:
+            raise ContractError(
+                "Final relation types must be annotated before applying the relation policy."
+            )
+        if result["final_type_valid"].isna().all():
+            raise ContractError(
+                "Final relation signature filtering was requested, but no canonical signatures were loaded."
+            )
+        before = len(result)
+        result = result[result["final_type_valid"].fillna(False)].copy()
+        audit["excluded_by_final_signature"] = int(before - len(result))
 
     minimum_score = policies.get("minimum_rule_score")
     if minimum_score is not None:
@@ -1092,6 +1235,7 @@ def export_outputs(
     relations: pd.DataFrame,
     collapsed: pd.DataFrame,
     cooccurrence: pd.DataFrame,
+    corrected_mentions: pd.DataFrame | None,
     graphs: dict[str, nx.Graph],
     metrics: pd.DataFrame,
     relation_summary: pd.DataFrame,
@@ -1118,6 +1262,8 @@ def export_outputs(
         "graph_finding_candidates": finding_candidates,
         **temporal_tables,
     }
+    if corrected_mentions is not None:
+        tables["entity_mentions_corrected"] = corrected_mentions
     for name, table in tables.items():
         table.to_parquet(output_dir / f"{name}.parquet", index=False)
         table.to_csv(output_dir / f"{name}.csv", index=False, encoding="utf-8-sig")
@@ -1188,6 +1334,7 @@ This directory is generated by the contract-driven WP3 pipeline.
 - `typed_edges_assertions.*`: included evidence-bearing relation assertions after policy filters.
 - `typed_edges_collapsed.*`: one row per unique subject-predicate-object triple with evidence aggregates.
 - `cooccurrence_edges.*`: undirected co-mention edge input.
+- `entity_mentions_corrected.*`: article offsets plus reconciled sentence-local offsets and status.
 - `node_metrics.*`: centrality and clustering metrics, separated by `graph_view`.
 - `relation_type_summary.*`: relation-specific edge, endpoint, evidence, and date counts.
 - `monthly_relation_assertions.*`: monthly assertion counts by predicate.
@@ -1218,7 +1365,10 @@ Graph metrics describe the selected dataset and graph policy, not real-world inf
 def run_pipeline(config: WP3PipelineConfig) -> dict[str, Any]:
     contract = read_contract(config.contract_path)
     tables, contract_report = load_contract_tables(config.input_dir, contract)
-    schema_path, schema = find_optional_json(config.input_dir, contract.get("schema_files", []))
+    schema_path, upstream_schema = find_optional_json(
+        config.input_dir, contract.get("schema_files", [])
+    )
+    schema = normalize_relation_schema(upstream_schema)
 
     entities = prepare_entities(tables["entities"])
     relations = prepare_relations(tables["relations"])
@@ -1228,11 +1378,26 @@ def run_pipeline(config: WP3PipelineConfig) -> dict[str, Any]:
     policies = contract.get("policies", {})
     analysis = contract.get("analysis", {})
 
-    validation = validate_inputs(entities, relations, cooccurrence, schema, policies)
-    if not validation["passed"]:
-        raise ContractError("WP3 input validation failed: " + "; ".join(validation["errors"]))
+    raw_validation = validate_inputs(entities, relations, cooccurrence, None, policies)
+    if not raw_validation["passed"]:
+        raise ContractError(
+            "WP3 structural input validation failed: " + "; ".join(raw_validation["errors"])
+        )
 
+    relations = annotate_final_relation_types(entities, relations, schema)
     included_relations, policy_audit = apply_relation_policy(relations, reviews, policies)
+    validation = validate_inputs(entities, included_relations, cooccurrence, schema, policies)
+    validation["raw_input"] = raw_validation
+    if not validation["passed"]:
+        raise ContractError(
+            "WP3 post-policy validation failed: " + "; ".join(validation["errors"])
+        )
+
+    corrected_mentions = None
+    if tables.get("mentions") is not None and tables.get("text_units") is not None:
+        corrected_mentions = correct_sentence_local_offsets(
+            tables["mentions"], tables["text_units"]
+        )
     collapsed = collapse_relations(included_relations, documents)
     minimum_documents = int(policies.get("minimum_cooccurrence_documents", 1))
     filtered_cooccurrence = cooccurrence[
@@ -1283,6 +1448,7 @@ def run_pipeline(config: WP3PipelineConfig) -> dict[str, Any]:
         included_relations,
         collapsed,
         filtered_cooccurrence,
+        corrected_mentions,
         graphs,
         metrics,
         relation_summary,

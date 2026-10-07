@@ -15,10 +15,14 @@ sys.path.insert(0, str(ROOT / "src"))
 from wp3_knowledge_graph.contract import ContractError, load_contract_tables
 from wp3_knowledge_graph.pipeline import (
     WP3PipelineConfig,
+    annotate_final_relation_types,
+    apply_relation_policy,
     build_graph_schema,
     build_temporal_tables,
     collapse_relations,
+    correct_sentence_local_offsets,
     detect_cooccurrence_communities,
+    normalize_relation_schema,
     prepare_relations,
     run_pipeline,
     validate_inputs,
@@ -198,6 +202,90 @@ def test_collapse_preserves_counts_and_provenance() -> None:
     assert collapsed.iloc[0]["document_count"] == 2
     assert collapsed.iloc[0]["domain_count"] == 2
     assert json.loads(collapsed.iloc[0]["text_unit_ids"]) == ["s1", "s2"]
+
+
+def test_final_node_types_are_revalidated_before_relation_policy() -> None:
+    entities = pd.DataFrame(
+        [
+            {"entity_id": "model:a", "canonical_name": "Model A", "entity_type": "MODEL"},
+            {"entity_id": "org:x", "canonical_name": "Org X", "entity_type": "ORGANIZATION"},
+        ]
+    )
+    relations = prepare_relations(
+        pd.DataFrame(
+            [
+                {
+                    "subject_id": "model:a",
+                    "predicate": "DEVELOPED_BY",
+                    "object_id": "org:x",
+                    "document_id": "d1",
+                    "text_unit_id": "d1:0",
+                },
+                {
+                    "subject_id": "org:x",
+                    "predicate": "DEVELOPED_BY",
+                    "object_id": "model:a",
+                    "document_id": "d1",
+                    "text_unit_id": "d1:1",
+                },
+            ]
+        )
+    )
+    upstream_schema = {
+        "edges": {
+            "relation": {
+                "types": {
+                    "DEVELOPED_BY": {
+                        "head_types": ["MODEL"],
+                        "tail_types": ["ORGANIZATION"],
+                    }
+                }
+            }
+        }
+    }
+    schema = normalize_relation_schema(upstream_schema)
+    annotated = annotate_final_relation_types(entities, relations, schema)
+    included, audit = apply_relation_policy(
+        annotated,
+        reviews=None,
+        policies={"require_valid_final_signature": True, "drop_self_relations": True},
+    )
+
+    assert annotated["final_type_valid"].tolist() == [True, False]
+    assert len(included) == 1
+    assert audit["excluded_by_final_signature"] == 1
+
+
+def test_sentence_local_offsets_are_corrected_without_changing_article_offsets() -> None:
+    mentions = pd.DataFrame(
+        [
+            {
+                "entity_id": "model:a",
+                "mention_text": "Model A",
+                "text_unit_id": "d1:0",
+                "article_start_char": 103,
+                "article_end_char": 110,
+            }
+        ]
+    )
+    text_units = pd.DataFrame(
+        [
+            {
+                "text_unit_id": "d1:0",
+                "text": "Model A arrived.",
+                "sentence_start": 100,
+            }
+        ]
+    )
+
+    corrected = correct_sentence_local_offsets(mentions, text_units)
+
+    assert corrected.loc[0, "article_start_char"] == 103
+    assert corrected.loc[0, "sentence_local_start_original"] == 3
+    assert corrected.loc[0, "sentence_local_start"] == 0
+    assert corrected.loc[0, "sentence_local_end"] == 7
+    assert corrected.loc[0, "offset_status"] == "corrected_unique"
+    assert bool(corrected.loc[0, "offset_resolved"])
 
 
 def test_end_to_end_pipeline_accepts_alias_contract(tmp_path: Path) -> None:

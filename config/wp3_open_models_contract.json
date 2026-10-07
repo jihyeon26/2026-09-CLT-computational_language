@@ -73,7 +73,35 @@
       "columns": {
         "text_unit_id": ["passage_id", "chunk_id"],
         "document_id": ["doc_id"],
-        "text": ["text_unit_text", "sentence", "content", "text_clean", "sentence_text"]
+        "text": ["text_unit_text", "sentence", "content", "text_clean", "sentence_text"],
+        "sentence_start": ["start_char", "text_start"],
+        "sentence_end": ["end_char", "text_end"]
+      },
+      "derived_fields": {
+        "text_unit_id": {
+          "operation": "concat",
+          "fields": ["document_id", "sentence_id"],
+          "separator": ":"
+        }
+      }
+    },
+    "mentions": {
+      "required": false,
+      "files": ["entity_mentions.parquet", "entity_mentions.csv", "mentions.parquet", "mentions.csv"],
+      "required_fields": [
+        "entity_id",
+        "mention_text",
+        "document_id",
+        "text_unit_id",
+        "article_start_char",
+        "article_end_char"
+      ],
+      "columns": {
+        "entity_id": ["canonical_entity_id"],
+        "mention_text": ["surface_form", "entity_text", "mention"],
+        "document_id": ["doc_id"],
+        "article_start_char": ["start_char"],
+        "article_end_char": ["end_char"]
       },
       "derived_fields": {
         "text_unit_id": {
@@ -101,6 +129,7 @@
     "exclude_reviewed_false": true,
     "require_reviewed_true": false,
     "drop_self_relations": true,
+    "require_valid_final_signature": true,
     "strict_schema": true,
     "include_isolated_nodes": false,
     "minimum_rule_score": null,
