@@ -1,0 +1,123 @@
+{
+  "analysis_version": "stage1-wp3-candidate-sensitivity-v0.1",
+  "created_at_utc": "2026-10-07T21:34:00+00:00",
+  "analysis_status": "candidate_pending_human_validation",
+  "random_seed": 42,
+  "top_k": 20,
+  "relation_variants": {
+    "all_candidates": {
+      "quality_tiers": [
+        "low_score_candidate",
+        "medium_score_candidate",
+        "high_score_candidate",
+        "curated_without_article_evidence"
+      ],
+      "description": "All structurally valid relation candidates."
+    },
+    "medium_plus": {
+      "quality_tiers": [
+        "medium_score_candidate",
+        "high_score_candidate"
+      ],
+      "description": "GLiREL relation candidates with score >= 0.60."
+    },
+    "high_score": {
+      "quality_tiers": [
+        "high_score_candidate"
+      ],
+      "description": "GLiREL relation candidates with score >= 0.75."
+    }
+  },
+  "cooccurrence_thresholds": [
+    1,
+    2,
+    5
+  ],
+  "inputs": {
+    "nodes_prepared": {
+      "path": "outputs/stage1_wp3_open_models_official_20261007/prepared/nodes_prepared.parquet",
+      "sha256": "61193454302367fbdeb78ebef98fb2751acac6861e9409bcbd2a9fd8242c5a18"
+    },
+    "typed_edges_assertions": {
+      "path": "outputs/stage1_wp3_open_models_official_20261007/prepared/typed_edges_assertions.parquet",
+      "sha256": "98e779a524c7f5aa07e4874f343591b55a68a1a91d37d0a70e42a8dad29a3d50"
+    },
+    "cooccurrence": {
+      "path": "outputs/stage1_wp2_open_models_official_20261007/edges_cooccurrence.csv",
+      "sha256": "3b020d23a89d907802d0fd3743b8987de9ec279fa9f335483793617df5088b8f"
+    }
+  },
+  "tracked_outputs": {
+    "relation_variant_summary.csv": {
+      "path": "artifacts/stage1_wp3/sensitivity/relation_variant_summary.csv",
+      "sha256": "f94a5e1d9b4688f81646c282d8049f86de52e0844f28875d016174f8dfb81137"
+    },
+    "relation_top_nodes.csv": {
+      "path": "artifacts/stage1_wp3/sensitivity/relation_top_nodes.csv",
+      "sha256": "23f023219cddbf4a2f841e7089ed1ca300f7afcbd3d7c06a23b0233758a5af91"
+    },
+    "relation_variant_stability.csv": {
+      "path": "artifacts/stage1_wp3/sensitivity/relation_variant_stability.csv",
+      "sha256": "f7763a285a9d24bb57fc5725ed609a85580d28c1ff9fec5aece9f76023e08db7"
+    },
+    "relation_group_counts.csv": {
+      "path": "artifacts/stage1_wp3/sensitivity/relation_group_counts.csv",
+      "sha256": "b08b5c8bcc3df524ec78d6af3b28b17375a2faba434291dcb1128d080b0fbbb2"
+    },
+    "cooccurrence_threshold_summary.csv": {
+      "path": "artifacts/stage1_wp3/sensitivity/cooccurrence_threshold_summary.csv",
+      "sha256": "187231cd1fc77de985c1c2e72bc6df12de51e6a5bd1f420450457a73de149a55"
+    },
+    "cooccurrence_top_nodes.csv": {
+      "path": "artifacts/stage1_wp3/sensitivity/cooccurrence_top_nodes.csv",
+      "sha256": "95247df8f5d18a65d78c6e5adc19099bd4c89d117b8d822c4fd40b528f9945bc"
+    },
+    "cooccurrence_community_sizes.csv": {
+      "path": "artifacts/stage1_wp3/sensitivity/cooccurrence_community_sizes.csv",
+      "sha256": "9fcfb790b2fec2a40bb6104a9181c9785c6e5a50ec513b1cd869f14c5b5b1fd2"
+    },
+    "relation_variant_sizes.png": {
+      "path": "artifacts/stage1_wp3/sensitivity/relation_variant_sizes.png",
+      "sha256": "f3c814a100611598a324b9a33c3cb75609225208c220bd17659652c4395afdc0"
+    },
+    "pagerank_top20_stability.png": {
+      "path": "artifacts/stage1_wp3/sensitivity/pagerank_top20_stability.png",
+      "sha256": "c1c9f26bf9235a1e48a6676359587b6833ff072044ea501789105b13b9a328db"
+    },
+    "cooccurrence_threshold_sensitivity.png": {
+      "path": "artifacts/stage1_wp3/sensitivity/cooccurrence_threshold_sensitivity.png",
+      "sha256": "82b1793d2a0f7c6e148c6b05ba7a974ca038e550134aeb915ca317b0bf028fe9"
+    },
+    "relation_group_sensitivity.png": {
+      "path": "artifacts/stage1_wp3/sensitivity/relation_group_sensitivity.png",
+      "sha256": "ab8e47845eb1692917b7c14c0c39350b865d1728bce7ba97d7ea17d28f7e7525"
+    }
+  },
+  "generated_graphs": {
+    "all_candidates": {
+      "path": "outputs/stage1_wp3_open_models_official_20261007/sensitivity/graphs/all_candidates.graphml",
+      "sha256": "f15fc65f1482d85b0f7b86d89bbf111eac9e47386f5075fea6c425263336ca64"
+    },
+    "medium_plus": {
+      "path": "outputs/stage1_wp3_open_models_official_20261007/sensitivity/graphs/medium_plus.graphml",
+      "sha256": "4c343d590cf94ce6407bd8f3e7b42a2b4d607848df3e28946be95b7c89bb4dae"
+    },
+    "high_score": {
+      "path": "outputs/stage1_wp3_open_models_official_20261007/sensitivity/graphs/high_score.graphml",
+      "sha256": "85376780da58a18b44d908613d8b7525c63403ede3f639bf75cfdde62fb5e5c0"
+    },
+    "cooccurrence_min_docs_2": {
+      "path": "outputs/stage1_wp3_open_models_official_20261007/sensitivity/graphs/cooccurrence_min_docs_2.graphml",
+      "sha256": "b6705616ff5c70af402209693291e71c82f4f0f9c20dec56d196dee5120af95f"
+    },
+    "cooccurrence_min_docs_5": {
+      "path": "outputs/stage1_wp3_open_models_official_20261007/sensitivity/graphs/cooccurrence_min_docs_5.graphml",
+      "sha256": "098e360b4aec7933d158bbd102101d5aa9d4cf9d9ce66028ec799848060d48e5"
+    }
+  },
+  "interpretation_policy": {
+    "human_validated": false,
+    "allowed_use": "exploratory sensitivity and review prioritization",
+    "prohibited_use": "final factual claims or relation-grounded RAG answers"
+  }
+}

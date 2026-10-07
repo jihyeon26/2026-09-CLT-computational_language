@@ -1,0 +1,4 @@
+assertion_count,node_count,component_count,largest_component_nodes,largest_component_share,density,minimum_document_count,edge_count,validation_status,community_count,largest_community_nodes
+186710,48304,1930,43073,0.8917066909572706,0.00016004436003469515,1,186710,descriptive_cooccurrence_not_semantic_relation,2543,7878
+51522,8922,81,8690,0.9739968616902039,0.0012946338279662768,2,51522,descriptive_cooccurrence_not_semantic_relation,114,2413
+19521,2377,5,2368,0.9962137147665124,0.006912838949019008,5,19521,descriptive_cooccurrence_not_semantic_relation,13,748

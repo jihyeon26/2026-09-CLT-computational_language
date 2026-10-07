@@ -1,0 +1,61 @@
+variant,rank,entity_id,pagerank,weighted_degree,canonical_name,entity_type_compact,validation_status
+all_candidates,1,org:google,0.04503190502389972,1407,Google,ORGANIZATION,candidate_pending_human_validation
+all_candidates,2,org:nvidia,0.04443116153197954,1962,NVIDIA,ORGANIZATION,candidate_pending_human_validation
+all_candidates,3,org:openai,0.03695855543352156,1601,OpenAI,ORGANIZATION,candidate_pending_human_validation
+all_candidates,4,org:anthropic,0.024896622208436865,695,Anthropic,ORGANIZATION,candidate_pending_human_validation
+all_candidates,5,org:microsoft,0.023989260713583923,585,Microsoft,ORGANIZATION,candidate_pending_human_validation
+all_candidates,6,org:amazon,0.017991884863437082,242,Amazon,ORGANIZATION,candidate_pending_human_validation
+all_candidates,7,org:meta,0.01576223642926411,785,Meta,ORGANIZATION,candidate_pending_human_validation
+all_candidates,8,org:deepseek,0.015724363577298034,1106,DeepSeek,ORGANIZATION,candidate_pending_human_validation
+all_candidates,9,place:united_states,0.01126511847083719,96,united_states,LOCATION_OR_GROUP,candidate_pending_human_validation
+all_candidates,10,org:apple,0.00941938017395238,162,Apple,ORGANIZATION,candidate_pending_human_validation
+all_candidates,11,place:china,0.008767219859023373,146,China,LOCATION_OR_GROUP,candidate_pending_human_validation
+all_candidates,12,person:jensen_huang,0.0067457023673254315,94,Jensen Huang,PERSON,candidate_pending_human_validation
+all_candidates,13,org:company,0.006226805424961476,370,company,ORGANIZATION,candidate_pending_human_validation
+all_candidates,14,org:amd,0.0060619840197589205,106,AMD,ORGANIZATION,candidate_pending_human_validation
+all_candidates,15,org:intel,0.0050507429199749924,102,Intel,ORGANIZATION,candidate_pending_human_validation
+all_candidates,16,org:ibm,0.004810413065412309,168,IBM,ORGANIZATION,candidate_pending_human_validation
+all_candidates,17,org:alphabet,0.004480573600948719,72,Alphabet,ORGANIZATION,candidate_pending_human_validation
+all_candidates,18,org:hsbc,0.004201881354548154,7,HSBC,ORGANIZATION,candidate_pending_human_validation
+all_candidates,19,org:andreessen_horowitz,0.00411003302223341,24,Andreessen Horowitz,ORGANIZATION,candidate_pending_human_validation
+all_candidates,20,org:general_catalyst,0.003389543215678293,31,General Catalyst,ORGANIZATION,candidate_pending_human_validation
+medium_plus,1,org:nvidia,0.05480982565357902,1008,NVIDIA,ORGANIZATION,candidate_pending_human_validation
+medium_plus,2,org:google,0.05146535718653628,818,Google,ORGANIZATION,candidate_pending_human_validation
+medium_plus,3,org:openai,0.04717648692318823,948,OpenAI,ORGANIZATION,candidate_pending_human_validation
+medium_plus,4,org:anthropic,0.034063444564245385,409,Anthropic,ORGANIZATION,candidate_pending_human_validation
+medium_plus,5,org:microsoft,0.02284779053474594,290,Microsoft,ORGANIZATION,candidate_pending_human_validation
+medium_plus,6,org:amazon,0.019396049686722427,117,Amazon,ORGANIZATION,candidate_pending_human_validation
+medium_plus,7,org:deepseek,0.018339766362811736,584,DeepSeek,ORGANIZATION,candidate_pending_human_validation
+medium_plus,8,org:meta,0.014151308102091881,444,Meta,ORGANIZATION,candidate_pending_human_validation
+medium_plus,9,person:jensen_huang,0.012745013905656157,51,Jensen Huang,PERSON,candidate_pending_human_validation
+medium_plus,10,org:andreessen_horowitz,0.008921720734420864,12,Andreessen Horowitz,ORGANIZATION,candidate_pending_human_validation
+medium_plus,11,org:amd,0.007954491618387925,48,AMD,ORGANIZATION,candidate_pending_human_validation
+medium_plus,12,org:general_catalyst,0.007211628130635885,10,General Catalyst,ORGANIZATION,candidate_pending_human_validation
+medium_plus,13,org:intel,0.006850470404639455,54,Intel,ORGANIZATION,candidate_pending_human_validation
+medium_plus,14,org:apple,0.006455365838379367,69,Apple,ORGANIZATION,candidate_pending_human_validation
+medium_plus,15,org:ibm,0.005314681811589917,107,IBM,ORGANIZATION,candidate_pending_human_validation
+medium_plus,16,org:company,0.005176463665557045,175,company,ORGANIZATION,candidate_pending_human_validation
+medium_plus,17,org:cognition,0.004121199636116666,21,Cognition,ORGANIZATION,candidate_pending_human_validation
+medium_plus,18,person:marc_andreesen,0.0038694152150997472,1,Marc Andreesen,PERSON,candidate_pending_human_validation
+medium_plus,19,place:china,0.0038473181970680045,33,China,LOCATION_OR_GROUP,candidate_pending_human_validation
+medium_plus,20,org:windsurf,0.0030552963011250245,13,Windsurf,ORGANIZATION,candidate_pending_human_validation
+high_score,1,org:google,0.03469025314445094,139,Google,ORGANIZATION,candidate_pending_human_validation
+high_score,2,org:openai,0.033993570388915706,186,OpenAI,ORGANIZATION,candidate_pending_human_validation
+high_score,3,org:anthropic,0.026165729768344,88,Anthropic,ORGANIZATION,candidate_pending_human_validation
+high_score,4,org:nvidia,0.02340997743010527,120,NVIDIA,ORGANIZATION,candidate_pending_human_validation
+high_score,5,org:cognition,0.01788622459263964,8,Cognition,ORGANIZATION,candidate_pending_human_validation
+high_score,6,org:microsoft,0.01643911513432759,46,Microsoft,ORGANIZATION,candidate_pending_human_validation
+high_score,7,org:windsurf,0.016370830023660233,4,Windsurf,ORGANIZATION,candidate_pending_human_validation
+high_score,8,org:amazon,0.01571833858326581,36,Amazon,ORGANIZATION,candidate_pending_human_validation
+high_score,9,org:deepseek,0.014102214470684939,73,DeepSeek,ORGANIZATION,candidate_pending_human_validation
+high_score,10,org:general_catalyst,0.01157113878953002,5,General Catalyst,ORGANIZATION,candidate_pending_human_validation
+high_score,11,org:meta,0.010838223701703115,87,Meta,ORGANIZATION,candidate_pending_human_validation
+high_score,12,org:coreweave,0.009055696935685713,25,CoreWeave,ORGANIZATION,candidate_pending_human_validation
+high_score,13,person:liang_wenfeng,0.007957639272352898,24,Liang Wenfeng,PERSON,candidate_pending_human_validation
+high_score,14,org:andreessen_horowitz,0.006252398971341936,5,Andreessen Horowitz,ORGANIZATION,candidate_pending_human_validation
+high_score,15,org:ibm,0.006208358644370553,23,IBM,ORGANIZATION,candidate_pending_human_validation
+high_score,16,technology:hugging_face,0.00609967607646202,40,hugging_face,TECHNICAL_COMPONENT,candidate_pending_human_validation
+high_score,17,person:demis_hassabis,0.005304990914125597,2,Demis Hassabis,PERSON,candidate_pending_human_validation
+high_score,18,org:red_hat,0.005247579841882608,20,Red Hat,ORGANIZATION,candidate_pending_human_validation
+high_score,19,model:encharge,0.0049698331105224374,3,Encharge,MODEL,candidate_pending_human_validation
+high_score,20,org:google_deepmind,0.004858291537557668,26,Google DeepMind,ORGANIZATION,candidate_pending_human_validation

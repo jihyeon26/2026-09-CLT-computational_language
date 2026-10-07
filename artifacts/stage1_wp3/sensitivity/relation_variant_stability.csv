@@ -1,0 +1,10 @@
+variant_a,variant_b,top20_jaccard,pagerank_spearman
+all_candidates,all_candidates,1.0,0.9999999999999998
+all_candidates,medium_plus,0.7391304347826086,0.39547277380857104
+all_candidates,high_score,0.3793103448275862,0.18892463088268008
+medium_plus,all_candidates,0.7391304347826086,0.395472773808571
+medium_plus,medium_plus,1.0,1.0
+medium_plus,high_score,0.48148148148148145,0.24309638798140062
+high_score,all_candidates,0.3793103448275862,0.18892463088268008
+high_score,medium_plus,0.48148148148148145,0.24309638798140065
+high_score,high_score,1.0,1.0
