@@ -43,6 +43,7 @@ def main() -> None:
 6. 교정 결과를 preparation snapshot으로 고정한다.
 7. compact schema와 candidate graph 품질 등급을 적용한다.
 8. Claude 1차 스크리닝을 진단하되 사람 검수로 간주하지 않는다.
+9. score·co-occurrence threshold에 따른 graph metric 민감도를 비교한다.
 
 분석과 팀 검토가 끝난 뒤 최종 제출본에서는 설명, 셀 제목과 주석을 영어로 바꾼다.
 """
@@ -62,7 +63,7 @@ import json
 import sys
 
 import pandas as pd
-from IPython.display import display
+from IPython.display import Image, display
 
 ROOT = Path.cwd()
 if not (ROOT / "config").exists():
@@ -81,6 +82,7 @@ AI_PRESCREEN_PATH = (
     / "relation_review_claude_draft.csv"
 )
 PREPARATION_ARTIFACT_DIR = ROOT / "artifacts" / "stage1_wp3" / "preparation"
+SENSITIVITY_ARTIFACT_DIR = ROOT / "artifacts" / "stage1_wp3" / "sensitivity"
 COMPACT_SCHEMA_PATH = ROOT / "config" / "wp3_compact_schema.json"
 
 for required_path in [WP1_PROCESSED_DIR, WP2_INPUT_DIR, CONTRACT_PATH]:
@@ -682,7 +684,121 @@ Claude 결과는 원본 필드를 유지한 완전한 1차 스크리닝이지만
         ),
         markdown(
             """
-## 17. 2단계에서 이어서 할 일
+## 17. Candidate relation graph 민감도
+"""
+        ),
+        code(
+            """
+required_sensitivity_files = [
+    "relation_variant_summary.csv",
+    "relation_variant_stability.csv",
+    "relation_top_nodes.csv",
+    "cooccurrence_threshold_summary.csv",
+]
+for filename in required_sensitivity_files:
+    assert (SENSITIVITY_ARTIFACT_DIR / filename).exists(), filename
+
+relation_variant_summary = pd.read_csv(
+    SENSITIVITY_ARTIFACT_DIR / "relation_variant_summary.csv"
+)
+relation_stability = pd.read_csv(
+    SENSITIVITY_ARTIFACT_DIR / "relation_variant_stability.csv"
+)
+relation_top_nodes = pd.read_csv(
+    SENSITIVITY_ARTIFACT_DIR / "relation_top_nodes.csv"
+)
+
+display(relation_variant_summary)
+display(
+    relation_top_nodes[relation_top_nodes["rank"] <= 10][
+        ["variant", "rank", "canonical_name", "entity_type_compact", "pagerank"]
+    ]
+)
+
+assert set(relation_variant_summary["validation_status"]) == {
+    "candidate_pending_human_validation"
+}
+"""
+        ),
+        markdown(
+            """
+`all_candidates`, `medium_plus`, `high_score`는 각각 19,160개, 9,575개, 1,766개 assertion을
+사용한다. score threshold가 높아질수록 graph 크기와 연결 구조가 크게 줄어든다. 이 비교는
+confidence 선택에 따른 민감도를 보여 줄 뿐, 높은 score가 사람 검수 정확성을 보장하지 않는다.
+"""
+        ),
+        markdown("## 18. PageRank 순위 안정성"),
+        code(
+            """
+stability_view = relation_stability[
+    relation_stability["variant_a"] != relation_stability["variant_b"]
+].copy()
+display(stability_view)
+display(Image(filename=str(SENSITIVITY_ARTIFACT_DIR / "pagerank_top20_stability.png")))
+display(Image(filename=str(SENSITIVITY_ARTIFACT_DIR / "relation_variant_sizes.png")))
+
+all_vs_high = relation_stability[
+    (relation_stability["variant_a"] == "all_candidates")
+    & (relation_stability["variant_b"] == "high_score")
+].iloc[0]
+assert all_vs_high["top20_jaccard"] < 0.5
+assert all_vs_high["pagerank_spearman"] < 0.5
+"""
+        ),
+        markdown(
+            """
+전체 candidate와 high-score graph의 top-20 PageRank Jaccard는 약 0.379, 전체 순위 Spearman은
+약 0.189다. 중심성 결과가 threshold에 매우 민감하므로 현재 PageRank 순위를 산업 영향력이나
+최종 프로젝트 insight로 해석하지 않는다.
+"""
+        ),
+        markdown("## 19. Co-occurrence threshold와 community 민감도"),
+        code(
+            """
+cooccurrence_sensitivity = pd.read_csv(
+    SENSITIVITY_ARTIFACT_DIR / "cooccurrence_threshold_summary.csv"
+)
+display(cooccurrence_sensitivity)
+display(
+    Image(
+        filename=str(
+            SENSITIVITY_ARTIFACT_DIR / "cooccurrence_threshold_sensitivity.png"
+        )
+    )
+)
+display(Image(filename=str(SENSITIVITY_ARTIFACT_DIR / "relation_group_sensitivity.png")))
+
+assert set(cooccurrence_sensitivity["minimum_document_count"]) == {1, 2, 5}
+assert set(cooccurrence_sensitivity["validation_status"]) == {
+    "descriptive_cooccurrence_not_semantic_relation"
+}
+"""
+        ),
+        markdown(
+            """
+공동출현을 최소 1개 문서에서 2개 문서로 올리면 node는 48,304개에서 8,922개로 줄고,
+community는 2,543개에서 114개로 줄어든다. 5개 문서 기준에서는 2,377개 node와 13개 community만
+남는다. coverage와 noise의 균형을 위해 문서 2개를 탐색용 기본값으로 사용하고 1·5를 sensitivity
+view로 함께 보존한다. 공동출현은 의미 관계나 인과관계를 뜻하지 않는다.
+"""
+        ),
+        markdown(
+            """
+## 20. 검수 전 임시 분석 정책
+
+- typed graph의 임시 기본 view는 `medium_plus`로 둔다.
+- `all_candidates`와 `high_score`를 함께 계산해 metric 안정성을 확인한다.
+- 모든 figure와 table에 candidate 상태를 유지한다.
+- co-occurrence 기본 view는 최소 2개 문서 공동출현으로 둔다.
+- 최종 centrality, community 해석과 Stage 3 relation retrieval은 사람 검수 뒤 다시 계산한다.
+
+현재 결과에서 “중심성이 높은 조직” 같은 사실 결론을 선택하지 않는다. 지금 확정할 수 있는 결론은
+**graph metric이 relation score와 co-occurrence threshold에 민감하다**는 품질 평가뿐이다.
+"""
+        ),
+        markdown(
+            """
+## 21. 검수 결과가 오기 전 남은 작업
 
 1. 팀원이 FALSE·AMBIGUOUS 51개를 우선 재검수하고 TRUE도 교차 검수한다.
 2. `evidence_supports_relation`과 `triple_plausible`을 구분해 기록한다.
@@ -690,8 +806,8 @@ Claude 결과는 원본 필드를 유지한 완전한 1차 스크리닝이지만
 4. generic entity와 저빈도 noise 처리 기준을 확정한다.
 5. candidate graph와 human-validated graph를 별도 출력한다.
 
-centrality, community, temporal analysis는 candidate graph에서 탐색적으로 계산할 수 있지만,
-최종 insight와 Stage 3 evidence에는 human-validated graph 또는 원문 passage 검증을 사용한다.
+검수 파일을 pipeline에 연결하는 코드는 다음 단계에서 준비할 수 있다. 검수 결과가 오면 동일한
+variant 분석을 human-validated graph에 다시 실행해 최종 표와 그림을 교체한다.
 """
         ),
     ]
