@@ -1,0 +1,19 @@
+{
+  "version": "wp2-relation-ai-prescreen-v1",
+  "reviewer": "claude_draft",
+  "role": "ai_prescreen_only",
+  "rows": 90,
+  "source_sample": "../relation_review_sample_seed42.csv",
+  "sha256": "996235954177d747ad774fbf7fa389b74c22a44862885494622173458950eecf",
+  "labels": {
+    "TRUE": 39,
+    "FALSE": 44,
+    "AMBIGUOUS": 7
+  },
+  "precision_excluding_ambiguous": 0.46987951807228917,
+  "minimum_precision": 0.8,
+  "status": "FAIL",
+  "can_remove_edges_automatically": false,
+  "human_adjudication_required": true,
+  "source_field_difference_note": "Eleven evidence_text values differ only by CRLF-to-LF newline normalization."
+}

@@ -1,0 +1,273 @@
+{
+  "status": "FAIL",
+  "thresholds": {
+    "minimum_reviewed": 90,
+    "minimum_precision": 0.8
+  },
+  "counts": {
+    "sampled": 90,
+    "labeled": 90,
+    "reviewed_for_precision": 83,
+    "accepted": 39,
+    "rejected": 44,
+    "ambiguous": 7,
+    "unreviewed": 0,
+    "invalid_labels": 0,
+    "missing_reviewer": 0,
+    "rejected_missing_error_type": 0
+  },
+  "precision": 0.46987951807228917,
+  "coverage": 1.0,
+  "invalid_error_types": [],
+  "error_type_counts": {
+    "duplicate_or_noise": 4,
+    "entity_boundary": 16,
+    "entity_linking": 9,
+    "negation_or_uncertainty": 1,
+    "reversed_direction": 1,
+    "schema_or_catalogue": 3,
+    "wrong_predicate": 10
+  },
+  "by_predicate": [
+    {
+      "predicate": "acquired by",
+      "sampled": 2,
+      "accepted": 0,
+      "rejected": 2,
+      "ambiguous": 0,
+      "unreviewed": 0,
+      "precision": 0.0
+    },
+    {
+      "predicate": "announced by",
+      "sampled": 2,
+      "accepted": 0,
+      "rejected": 2,
+      "ambiguous": 0,
+      "unreviewed": 0,
+      "precision": 0.0
+    },
+    {
+      "predicate": "available on",
+      "sampled": 2,
+      "accepted": 1,
+      "rejected": 1,
+      "ambiguous": 0,
+      "unreviewed": 0,
+      "precision": 0.5
+    },
+    {
+      "predicate": "based on",
+      "sampled": 1,
+      "accepted": 0,
+      "rejected": 1,
+      "ambiguous": 0,
+      "unreviewed": 0,
+      "precision": 0.0
+    },
+    {
+      "predicate": "competes with",
+      "sampled": 9,
+      "accepted": 2,
+      "rejected": 5,
+      "ambiguous": 2,
+      "unreviewed": 0,
+      "precision": 0.2857142857142857
+    },
+    {
+      "predicate": "complies with",
+      "sampled": 1,
+      "accepted": 0,
+      "rejected": 1,
+      "ambiguous": 0,
+      "unreviewed": 0,
+      "precision": 0.0
+    },
+    {
+      "predicate": "developed by",
+      "sampled": 35,
+      "accepted": 17,
+      "rejected": 17,
+      "ambiguous": 1,
+      "unreviewed": 0,
+      "precision": 0.5
+    },
+    {
+      "predicate": "distilled from",
+      "sampled": 1,
+      "accepted": 1,
+      "rejected": 0,
+      "ambiguous": 0,
+      "unreviewed": 0,
+      "precision": 1.0
+    },
+    {
+      "predicate": "evaluated on",
+      "sampled": 2,
+      "accepted": 0,
+      "rejected": 2,
+      "ambiguous": 0,
+      "unreviewed": 0,
+      "precision": 0.0
+    },
+    {
+      "predicate": "founded by",
+      "sampled": 2,
+      "accepted": 0,
+      "rejected": 1,
+      "ambiguous": 1,
+      "unreviewed": 0,
+      "precision": 0.0
+    },
+    {
+      "predicate": "has capability",
+      "sampled": 2,
+      "accepted": 1,
+      "rejected": 1,
+      "ambiguous": 0,
+      "unreviewed": 0,
+      "precision": 0.5
+    },
+    {
+      "predicate": "has parameter count",
+      "sampled": 1,
+      "accepted": 0,
+      "rejected": 1,
+      "ambiguous": 0,
+      "unreviewed": 0,
+      "precision": 0.0
+    },
+    {
+      "predicate": "headquartered in",
+      "sampled": 3,
+      "accepted": 1,
+      "rejected": 1,
+      "ambiguous": 1,
+      "unreviewed": 0,
+      "precision": 0.5
+    },
+    {
+      "predicate": "integrated into",
+      "sampled": 2,
+      "accepted": 1,
+      "rejected": 1,
+      "ambiguous": 0,
+      "unreviewed": 0,
+      "precision": 0.5
+    },
+    {
+      "predicate": "invested in",
+      "sampled": 2,
+      "accepted": 0,
+      "rejected": 1,
+      "ambiguous": 1,
+      "unreviewed": 0,
+      "precision": 0.0
+    },
+    {
+      "predicate": "licensed under",
+      "sampled": 2,
+      "accepted": 1,
+      "rejected": 1,
+      "ambiguous": 0,
+      "unreviewed": 0,
+      "precision": 0.5
+    },
+    {
+      "predicate": "manufactured by",
+      "sampled": 2,
+      "accepted": 2,
+      "rejected": 0,
+      "ambiguous": 0,
+      "unreviewed": 0,
+      "precision": 1.0
+    },
+    {
+      "predicate": "outperforms",
+      "sampled": 3,
+      "accepted": 1,
+      "rejected": 1,
+      "ambiguous": 1,
+      "unreviewed": 0,
+      "precision": 0.5
+    },
+    {
+      "predicate": "regulated by",
+      "sampled": 1,
+      "accepted": 0,
+      "rejected": 1,
+      "ambiguous": 0,
+      "unreviewed": 0,
+      "precision": 0.0
+    },
+    {
+      "predicate": "released by",
+      "sampled": 2,
+      "accepted": 2,
+      "rejected": 0,
+      "ambiguous": 0,
+      "unreviewed": 0,
+      "precision": 1.0
+    },
+    {
+      "predicate": "runs on",
+      "sampled": 2,
+      "accepted": 2,
+      "rejected": 0,
+      "ambiguous": 0,
+      "unreviewed": 0,
+      "precision": 1.0
+    },
+    {
+      "predicate": "subsidiary of",
+      "sampled": 2,
+      "accepted": 1,
+      "rejected": 1,
+      "ambiguous": 0,
+      "unreviewed": 0,
+      "precision": 0.5
+    },
+    {
+      "predicate": "supported by",
+      "sampled": 2,
+      "accepted": 0,
+      "rejected": 2,
+      "ambiguous": 0,
+      "unreviewed": 0,
+      "precision": 0.0
+    },
+    {
+      "predicate": "trained on data",
+      "sampled": 1,
+      "accepted": 1,
+      "rejected": 0,
+      "ambiguous": 0,
+      "unreviewed": 0,
+      "precision": 1.0
+    },
+    {
+      "predicate": "used by",
+      "sampled": 2,
+      "accepted": 1,
+      "rejected": 1,
+      "ambiguous": 0,
+      "unreviewed": 0,
+      "precision": 0.5
+    },
+    {
+      "predicate": "works for",
+      "sampled": 4,
+      "accepted": 4,
+      "rejected": 0,
+      "ambiguous": 0,
+      "unreviewed": 0,
+      "precision": 1.0
+    }
+  ],
+  "problems": [
+    "precision_below_threshold"
+  ],
+  "pending": [
+    "insufficient_reviewed_relations"
+  ]
+}
