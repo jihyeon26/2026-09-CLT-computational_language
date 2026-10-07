@@ -1,0 +1,95 @@
+{
+  "version": "wp2-relation-review-sample-v1",
+  "generated_utc": "2026-10-07T14:28:30+00:00",
+  "sampling_unit": "unique (head_id, predicate, tail_id) GLiREL triple",
+  "selection_policy": {
+    "source": "glirel",
+    "original_type_valid_required": true,
+    "final_node_type_valid_required": true,
+    "minimum_sentence_support": 2,
+    "self_relations_excluded": true,
+    "curated_wp1_lexicon_relations_excluded": true,
+    "minimum_per_predicate": 2,
+    "remaining_rows": "proportional allocation across mean-score bands",
+    "evidence_selection": "one deterministic random evidence sentence per triple"
+  },
+  "random_seed": 42,
+  "requested_sample_size": 90,
+  "input_files": {
+    "nodes": {
+      "path": "C:\\Users\\wldhg\\Documents\\code\\computational_language\\outputs\\stage1_wp2_open_models_official_20261007\\nodes.csv",
+      "sha256": "1cb5b1e146e892b90693950d52008698eb30fab2b4a3af626aeb0f9478cee10e"
+    },
+    "edges": {
+      "path": "C:\\Users\\wldhg\\Documents\\code\\computational_language\\outputs\\stage1_wp2_open_models_official_20261007\\edges_relations.csv",
+      "sha256": "dffd7058e921de303a828141f04066a45a38113be4d9d567b101722190e03638"
+    },
+    "evidence": {
+      "path": "C:\\Users\\wldhg\\Documents\\code\\computational_language\\outputs\\stage1_wp2_open_models_official_20261007\\relations_evidence.csv",
+      "sha256": "ffcf1dfd5661ca47f81e126062e708a7ca2aeef2da836b6d3172b49298bf1583"
+    },
+    "schema": {
+      "path": "C:\\Users\\wldhg\\Documents\\code\\computational_language\\outputs\\stage1_wp2_open_models_official_20261007\\schema.json",
+      "sha256": "29f5b2c58dee4b9006d06a7140f151c1185b8d5e1a4d49c7fe4ea0974f51133e"
+    }
+  },
+  "raw_counts": {
+    "nodes": 54597,
+    "aggregated_relation_rows": 22992,
+    "relation_evidence_rows": 30595,
+    "glirel_evidence_rows": 30560,
+    "curated_wp1_lexicon_rows": 35
+  },
+  "population_counts": {
+    "filtered_edge_rows": 1552,
+    "unique_glirel_triples": 1522,
+    "candidate_evidence_rows": 7305,
+    "relation_types": 26
+  },
+  "sample_counts": {
+    "rows": 90,
+    "relation_types": 26,
+    "by_predicate": {
+      "acquired by": 2,
+      "announced by": 2,
+      "available on": 2,
+      "based on": 1,
+      "competes with": 9,
+      "complies with": 1,
+      "developed by": 35,
+      "distilled from": 1,
+      "evaluated on": 2,
+      "founded by": 2,
+      "has capability": 2,
+      "has parameter count": 1,
+      "headquartered in": 3,
+      "integrated into": 2,
+      "invested in": 2,
+      "licensed under": 2,
+      "manufactured by": 2,
+      "outperforms": 3,
+      "regulated by": 1,
+      "released by": 2,
+      "runs on": 2,
+      "subsidiary of": 2,
+      "supported by": 2,
+      "trained on data": 1,
+      "used by": 2,
+      "works for": 4
+    },
+    "by_score_band": {
+      "0.50-0.59": 40,
+      "0.60-0.74": 45,
+      "0.75-1.00": 5
+    },
+    "by_reviewer_assignment": {
+      "Reviewer_A": 30,
+      "Reviewer_B": 30,
+      "Reviewer_C": 30
+    }
+  },
+  "outputs": {
+    "sample_csv": "C:\\Users\\wldhg\\Documents\\code\\computational_language\\artifacts\\stage1_wp2\\evaluation\\relation_review_sample_seed42.csv",
+    "sample_csv_sha256": "f1569d35f77d41840e6e1ebe100cb2fead76ffeb4418fc7d879f9722c59938cb"
+  }
+}
