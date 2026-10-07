@@ -8,41 +8,48 @@
       "required_fields": ["entity_id", "canonical_name", "entity_type"],
       "columns": {
         "entity_id": ["id", "node_id", "canonical_id"],
-        "canonical_name": ["name", "label", "entity_name"],
+        "canonical_name": ["name", "label", "entity_name", "entity"],
         "entity_type": ["type", "node_type", "label_type"],
         "mention_count": ["mentions", "frequency"],
-        "document_count": ["doc_count", "source_count"],
+        "document_count": ["doc_count", "source_count", "n_docs"],
         "first_seen": ["first_date"],
         "last_seen": ["last_date"]
       }
     },
     "relations": {
       "required": true,
-      "files": ["relations.parquet", "relations.csv", "edges.parquet", "edges.csv"],
+      "files": ["relations.parquet", "relations.csv", "relations_evidence.csv", "edges.parquet", "edges.csv"],
       "required_fields": ["subject_id", "predicate", "object_id"],
       "columns": {
         "relation_id": ["edge_id", "assertion_id"],
-        "subject_id": ["source_id", "source", "head_id"],
+        "subject_id": ["source_id", "head_id", "source"],
         "predicate": ["relation_type", "relation", "edge_type"],
         "object_id": ["target_id", "target", "tail_id"],
         "document_id": ["doc_id", "source_document_id"],
-        "text_unit_id": ["sentence_id", "passage_id", "chunk_id"],
-        "evidence_text": ["evidence", "sentence", "context"],
+        "text_unit_id": ["passage_id", "chunk_id"],
+        "evidence_text": ["evidence", "sentence", "context", "sentence_text"],
         "published_at": ["date", "publication_date"],
         "assertion_status": ["status", "polarity"],
-        "extraction_method": ["method", "extractor"],
+        "extraction_method": ["method", "extractor", "source"],
         "rule_score": ["confidence", "score"]
+      },
+      "derived_fields": {
+        "text_unit_id": {
+          "operation": "concat",
+          "fields": ["document_id", "sentence_id"],
+          "separator": ":"
+        }
       }
     },
     "cooccurrence": {
       "required": false,
-      "files": ["cooccurrence_edges.parquet", "cooccurrence_edges.csv", "co_mentions.parquet", "co_mentions.csv"],
+      "files": ["cooccurrence_edges.parquet", "cooccurrence_edges.csv", "edges_cooccurrence.csv", "co_mentions.parquet", "co_mentions.csv"],
       "required_fields": ["source_id", "target_id"],
       "columns": {
-        "source_id": ["entity_a", "node_a", "source"],
-        "target_id": ["entity_b", "node_b", "target"],
-        "sentence_count": ["co_sentence_count", "weight"],
-        "document_count": ["co_document_count", "doc_count"],
+        "source_id": ["entity_a", "node_a", "source", "entity1_id"],
+        "target_id": ["entity_b", "node_b", "target", "entity2_id"],
+        "sentence_count": ["co_sentence_count", "weight", "sentence_cooccurrence"],
+        "document_count": ["co_document_count", "doc_count", "document_cooccurrence"],
         "first_seen": ["first_date"],
         "last_seen": ["last_date"]
       }
@@ -61,12 +68,19 @@
     },
     "text_units": {
       "required": false,
-      "files": ["text_units.parquet", "text_units.csv", "sentences.parquet", "chunks.parquet"],
+      "files": ["text_units.parquet", "text_units.csv", "sentences.parquet", "sentences.csv", "chunks.parquet"],
       "required_fields": ["text_unit_id", "document_id"],
       "columns": {
-        "text_unit_id": ["sentence_id", "passage_id", "chunk_id"],
+        "text_unit_id": ["passage_id", "chunk_id"],
         "document_id": ["doc_id"],
-        "text": ["text_unit_text", "sentence", "content", "text_clean"]
+        "text": ["text_unit_text", "sentence", "content", "text_clean", "sentence_text"]
+      },
+      "derived_fields": {
+        "text_unit_id": {
+          "operation": "concat",
+          "fields": ["document_id", "sentence_id"],
+          "separator": ":"
+        }
       }
     },
     "reviews": {

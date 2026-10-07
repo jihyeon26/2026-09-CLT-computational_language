@@ -48,6 +48,7 @@ def _canonicalize_columns(
     frame: pd.DataFrame,
     column_contract: dict[str, list[str]],
     required_fields: list[str],
+    derived_fields: dict[str, dict[str, Any]] | None = None,
 ) -> tuple[pd.DataFrame, dict[str, str], list[str]]:
     result = frame.copy()
     resolved: dict[str, str] = {}
@@ -66,6 +67,36 @@ def _canonicalize_columns(
             )
         if selected != canonical:
             result = result.rename(columns={selected: canonical})
+
+    for field, derivation in (derived_fields or {}).items():
+        if field in result.columns and not derivation.get("overwrite", False):
+            continue
+        operation = derivation.get("operation")
+        if operation != "concat":
+            raise ContractError(
+                f"Unsupported derived-field operation for '{field}': {operation!r}"
+            )
+        source_fields = derivation.get("fields", [])
+        missing_sources = [source for source in source_fields if source not in result.columns]
+        if missing_sources:
+            raise ContractError(
+                f"Cannot derive '{field}'; missing source fields: {missing_sources}"
+            )
+        separator = str(derivation.get("separator", ":"))
+
+        def combine(row: pd.Series) -> Any:
+            parts: list[str] = []
+            for source in source_fields:
+                value = row[source]
+                if pd.isna(value) or str(value).strip() == "":
+                    return pd.NA
+                if isinstance(value, float) and value.is_integer():
+                    value = int(value)
+                parts.append(str(value).strip())
+            return separator.join(parts)
+
+        result[field] = result.apply(combine, axis=1)
+        resolved[field] = f"derived:{operation}({', '.join(source_fields)})"
 
     missing = [field for field in required_fields if field not in result.columns]
     if missing:
@@ -104,6 +135,7 @@ def load_contract_tables(
                 raw,
                 specification.get("columns", {}),
                 specification.get("required_fields", []),
+                specification.get("derived_fields", {}),
             )
         except Exception as exc:
             report["errors"].append(f"Table '{name}' failed contract adaptation: {exc}")

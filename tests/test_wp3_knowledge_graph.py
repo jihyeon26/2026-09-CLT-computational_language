@@ -19,6 +19,7 @@ from wp3_knowledge_graph.pipeline import (
     build_temporal_tables,
     collapse_relations,
     detect_cooccurrence_communities,
+    prepare_relations,
     run_pipeline,
     validate_inputs,
 )
@@ -77,6 +78,69 @@ def test_contract_fails_when_required_field_is_missing(tmp_path: Path) -> None:
     )
     with pytest.raises(ContractError):
         load_contract_tables(tmp_path, minimal_contract())
+
+
+def test_contract_derives_document_scoped_text_unit_id(tmp_path: Path) -> None:
+    contract = minimal_contract()
+    contract["tables"]["relations"]["columns"].update(
+        {
+            "document_id": ["doc_id"],
+            "evidence_text": ["sentence_text"],
+        }
+    )
+    contract["tables"]["relations"]["derived_fields"] = {
+        "text_unit_id": {
+            "operation": "concat",
+            "fields": ["document_id", "sentence_id"],
+            "separator": ":",
+        }
+    }
+    pd.DataFrame(
+        [{"id": "model:a", "label": "Model A", "type": "MODEL"}]
+    ).to_csv(tmp_path / "nodes.csv", index=False)
+    pd.DataFrame(
+        [
+            {
+                "source": "model:a",
+                "relation": "RELATED_TO",
+                "target": "model:a",
+                "doc_id": "doc_abc",
+                "sentence_id": 7,
+                "sentence_text": "Model A is mentioned.",
+            },
+            {
+                "source": "model:a",
+                "relation": "RELATED_TO",
+                "target": "model:a",
+                "doc_id": None,
+                "sentence_id": None,
+                "sentence_text": None,
+            },
+        ]
+    ).to_csv(tmp_path / "edges.csv", index=False)
+
+    tables, report = load_contract_tables(tmp_path, contract)
+
+    assert report["passed"]
+    assert tables["relations"].loc[0, "text_unit_id"] == "doc_abc:7"
+    assert pd.isna(tables["relations"].loc[1, "text_unit_id"])
+    assert report["tables"]["relations"]["resolved_columns"]["text_unit_id"].startswith(
+        "derived:concat"
+    )
+
+
+def test_prepare_relations_generates_unique_ids_for_repeated_assertions() -> None:
+    repeated = {
+        "subject_id": "model:a",
+        "predicate": "DEVELOPED_BY",
+        "object_id": "org:x",
+        "document_id": "doc_abc",
+        "text_unit_id": "doc_abc:7",
+    }
+    relations = prepare_relations(pd.DataFrame([repeated, repeated]))
+
+    assert relations["relation_id"].notna().all()
+    assert relations["relation_id"].is_unique
 
 
 def test_validation_rejects_dangling_relation() -> None:

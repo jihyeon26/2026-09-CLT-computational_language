@@ -59,8 +59,8 @@
 
 ### WP3: Knowledge Graph and Outputs
 
-- [ ] 공식 WP2 파일명과 열 이름을 WP3 canonical contract에 연결한다.
-- [ ] `doc_id + sentence_id`로 전역 고유한 text-unit ID를 만든다.
+- [x] 공식 WP2 파일명과 열 이름을 WP3 canonical contract에 연결한다.
+- [x] `doc_id + sentence_id`로 전역 고유한 text-unit ID를 만든다.
 - [ ] compact Open Models graph schema를 확정하고 36개 relation을 필요한 수준으로 통합한다.
 - [ ] evidence assertion graph를 `MultiDiGraph`로 생성한다.
 - [ ] 동일 triple을 합친 collapsed typed graph를 생성한다.

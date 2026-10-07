@@ -114,10 +114,11 @@ def prepare_relations(frame: pd.DataFrame) -> pd.DataFrame:
     missing_id = relations["relation_id"].isna() | relations["relation_id"].astype("string").str.strip().eq("")
     for index in relations.index[missing_id]:
         row = relations.loc[index]
-        key = "|".join(
+        key_parts = [
             str(row.get(column, ""))
-            for column in ["subject_id", "predicate", "object_id", "document_id", "text_unit_id", index]
-        )
+            for column in ["subject_id", "predicate", "object_id", "document_id", "text_unit_id"]
+        ]
+        key = "|".join([*key_parts, str(index)])
         relations.at[index, "relation_id"] = _stable_id("relation", key)
     relations["relation_id"] = relations["relation_id"].astype("string")
     relations["rule_score"] = pd.to_numeric(relations["rule_score"], errors="coerce")
