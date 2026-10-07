@@ -6,6 +6,9 @@
 
 > 이 문서의 `WP1`, `WP2`, `WP3`는 모두 **Stage 1 내부 작업 구분**이다. 공식 프로젝트의 Stage 2는 embeddings/model training이고, 공식 Stage 3는 RAG/question answering이다.
 
+WP1·WP2 노트북의 핵심 셀을 코드, 실행 결과와 해석 순서로 검토하려면
+`docs/STAGE1_WP1_WP2_NOTEBOOK_REVIEW_KO.md`를 함께 본다.
+
 ## 제출 전 통합 체크리스트
 
 표시 방법:
