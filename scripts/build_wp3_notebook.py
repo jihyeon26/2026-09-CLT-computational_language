@@ -33,13 +33,16 @@ def main() -> None:
 이 노트북은 팀원의 공식 WP1·WP2 산출물을 사용해 Stage 1 WP3 지식그래프 작업을 시작하는
 **한국어 검토용 작업본**이다. 기존 300문서 파일럿 결과는 사용하지 않는다.
 
-현재 범위는 WP3 1단계인 다음 작업까지다.
+현재 범위는 WP3 1단계 교정 완료와 2단계 품질 정책 시작까지다.
 
 1. 공식 WP2 원본을 수정하지 않고 별도 입력 폴더에서 읽는다.
 2. 실제 파일명과 열 이름을 WP3 canonical contract에 연결한다.
 3. 문서별 `sentence_id`를 전역 고유 `text_unit_id`로 변환한다.
 4. WP1 문서 ID, relation endpoint와 evidence 문장 연결을 검증한다.
 5. 최종 node type, 중복, self-loop와 sentence-local offset을 그래프 계산 전에 교정한다.
+6. 교정 결과를 preparation snapshot으로 고정한다.
+7. compact schema와 candidate graph 품질 등급을 적용한다.
+8. Claude 1차 스크리닝을 진단하되 사람 검수로 간주하지 않는다.
 
 분석과 팀 검토가 끝난 뒤 최종 제출본에서는 설명, 셀 제목과 주석을 영어로 바꾼다.
 """
@@ -73,6 +76,12 @@ CONTRACT_PATH = ROOT / "config" / "wp3_open_models_contract.json"
 REVIEW_SAMPLE_PATH = (
     ROOT / "artifacts" / "stage1_wp2" / "evaluation" / "relation_review_sample_seed42.csv"
 )
+AI_PRESCREEN_PATH = (
+    ROOT / "artifacts" / "stage1_wp2" / "evaluation" / "ai_prescreen"
+    / "relation_review_claude_draft.csv"
+)
+PREPARATION_ARTIFACT_DIR = ROOT / "artifacts" / "stage1_wp3" / "preparation"
+COMPACT_SCHEMA_PATH = ROOT / "config" / "wp3_compact_schema.json"
 
 for required_path in [WP1_PROCESSED_DIR, WP2_INPUT_DIR, CONTRACT_PATH]:
     assert required_path.exists(), f"필수 입력이 없습니다: {required_path}"
@@ -136,6 +145,7 @@ WP1 대용량 Parquet과 WP2 CSV는 Git에 커밋하지 않는다. 팀 공유 �
 from wp3_knowledge_graph.contract import load_contract_tables, read_contract
 from wp3_knowledge_graph.pipeline import (
     annotate_final_relation_types,
+    apply_compact_schema,
     apply_relation_policy,
     collapse_relations,
     correct_sentence_local_offsets,
@@ -538,18 +548,150 @@ print("WP3 1단계 완료: WP1·WP2 원본을 수정하지 않고 공식 인계 
         ),
         markdown(
             """
-## 14. 다음 단계
+# WP3 2단계 — Compact schema와 relation 품질 정책
 
-WP3 2단계에서는 다음 작업을 수행한다.
+1단계의 교정 결과를 별도 preparation snapshot으로 저장한 뒤 compact 분석 schema를 적용한다.
+원본 type과 predicate는 삭제하지 않으며, 상위 그룹은 전체 구조를 요약할 때만 사용한다.
+"""
+        ),
+        markdown("## 14. Compact schema 적용"),
+        code(
+            """
+assert COMPACT_SCHEMA_PATH.exists()
+compact_schema = json.loads(COMPACT_SCHEMA_PATH.read_text(encoding="utf-8"))
+compact_entities, compact_analysis_relations = apply_compact_schema(
+    entities, analysis_relations, compact_schema
+)
 
-1. 20개 entity type과 36개 relation type을 과제에 맞는 compact schema로 매핑한다.
-2. generic entity와 저빈도 noise 처리 기준을 확정한다.
-3. raw assertion graph와 분석용 filtered graph의 출력 형식을 확정한다.
-4. relation 수동 검수 결과를 반영할 수 있는 policy를 연결한다.
-5. unresolved mention 2개는 정확한 span 강조 대상에서 제외한다.
+compact_schema_summary = pd.DataFrame(
+    [
+        ("원본 entity type", entities["entity_type"].nunique()),
+        ("compact entity type", compact_entities["entity_type_compact"].nunique()),
+        ("WP2 schema relation type", len(compact_schema["predicate_group_mapping"])),
+        ("분석용 assertion에 남은 원본 relation type", analysis_relations["predicate"].nunique()),
+        ("compact predicate group", compact_analysis_relations["predicate_group"].nunique()),
+    ],
+    columns=["항목", "개수"],
+)
+display(compact_schema_summary)
+display(
+    compact_analysis_relations["predicate_group"]
+    .value_counts()
+    .rename_axis("predicate group")
+    .reset_index(name="assertion 수")
+)
 
-그 이후에만 centrality, community, temporal analysis와 시각화를 계산한다. 이 순서를 지키면
-파일럿 graph 결과와 팀원의 공식 산출물이 섞이는 것을 방지할 수 있다.
+assert compact_entities["raw_entity_type"].equals(compact_entities["entity_type"])
+assert compact_analysis_relations["raw_predicate"].equals(
+    compact_analysis_relations["predicate"]
+)
+assert compact_entities["entity_type_compact"].notna().all()
+assert compact_analysis_relations["predicate_group"].notna().all()
+"""
+        ),
+        markdown(
+            """
+compact mapping은 20개 entity type을 9개 분석 그룹으로, 36개 relation type을 8개 상위 그룹으로
+정리한다. `raw_entity_type`과 `raw_predicate`가 보존되므로 Graph-RAG와 세부 relation 분석에서는
+원래 의미를 다시 사용할 수 있다. 상위 그룹만으로 사실 관계를 해석해서는 안 된다.
+"""
+        ),
+        markdown("## 15. Preparation snapshot 확인"),
+        code(
+            """
+manifest_path = PREPARATION_ARTIFACT_DIR / "preparation_manifest.json"
+policy_audit_path = PREPARATION_ARTIFACT_DIR / "policy_audit.json"
+assert manifest_path.exists() and policy_audit_path.exists()
+
+preparation_manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+policy_audit = json.loads(policy_audit_path.read_text(encoding="utf-8"))
+display(
+    pd.DataFrame(
+        preparation_manifest["counts"].items(),
+        columns=["snapshot 항목", "개수"],
+    )
+)
+display(
+    pd.DataFrame(
+        policy_audit["quality_tiers_in_candidate_graph"].items(),
+        columns=["candidate quality tier", "relation assertion 수"],
+    )
+)
+
+assert preparation_manifest["status"] == "candidate_graph_only_pending_human_relation_review"
+assert preparation_manifest["counts"]["candidate_relation_assertions"] == len(analysis_relations)
+assert policy_audit["human_validated_relations"] == 0
+assert not policy_audit["ai_prescreen_used_as_exclusion_policy"]
+"""
+        ),
+        markdown("## 16. Claude 1차 스크리닝 결과"),
+        code(
+            """
+assert AI_PRESCREEN_PATH.exists()
+ai_prescreen = pd.read_csv(AI_PRESCREEN_PATH)
+labels = ai_prescreen["review_correct"].str.upper()
+decided = labels.isin(["TRUE", "FALSE"])
+ai_precision = labels.eq("TRUE").sum() / decided.sum()
+
+score_review = (
+    ai_prescreen.assign(_label=labels)
+    .groupby("score_band")["_label"]
+    .value_counts()
+    .unstack(fill_value=0)
+)
+for required_label in ["TRUE", "FALSE", "AMBIGUOUS"]:
+    if required_label not in score_review.columns:
+        score_review[required_label] = 0
+score_review["precision"] = score_review["TRUE"] / (
+    score_review["TRUE"] + score_review["FALSE"]
+)
+display(score_review[["TRUE", "FALSE", "AMBIGUOUS", "precision"]])
+
+review_decision = pd.DataFrame(
+    [
+        ("AI가 판정한 표본", len(ai_prescreen)),
+        ("TRUE", int(labels.eq("TRUE").sum())),
+        ("FALSE", int(labels.eq("FALSE").sum())),
+        ("AMBIGUOUS", int(labels.eq("AMBIGUOUS").sum())),
+        ("모호 항목 제외 precision", round(ai_precision, 3)),
+        ("목표 precision", 0.8),
+    ],
+    columns=["항목", "값"],
+)
+display(review_decision)
+
+assert set(ai_prescreen["relation_id"]) == set(review_sample["relation_id"])
+assert ai_precision < 0.8
+"""
+        ),
+        markdown(
+            """
+Claude 결과는 원본 필드를 유지한 완전한 1차 스크리닝이지만 공식 수동 검수로 사용하지 않는다.
+현재 0.470 precision은 raw relation을 신뢰 가능한 사실 그래프로 제시할 수 없다는 강한 경고다.
+반면 이 값만으로 전체 triple을 삭제할 수도 없다. 표본은 triple마다 evidence 문장 하나만 보여 주기
+때문에, 다른 문장에 실제 근거가 있을 가능성이 있기 때문이다.
+
+따라서 현재 허용되는 작업과 금지되는 작업을 구분한다.
+
+- 가능: candidate graph의 compact schema, 분포와 탐색적 구조 분석
+- 가능: FALSE·AMBIGUOUS 사례를 우선순위로 한 사람의 재검수
+- 불가: AI label을 이용한 전체 edge 자동 삭제
+- 불가: candidate graph를 검증된 사실 지식그래프로 표현
+- 불가: 사람 검수 전 relation edge만으로 Stage 3 답변을 뒷받침
+"""
+        ),
+        markdown(
+            """
+## 17. 2단계에서 이어서 할 일
+
+1. 팀원이 FALSE·AMBIGUOUS 51개를 우선 재검수하고 TRUE도 교차 검수한다.
+2. `evidence_supports_relation`과 `triple_plausible`을 구분해 기록한다.
+3. 충분한 사람 검수 없이 predicate 전체를 허용하거나 제외하지 않는다.
+4. generic entity와 저빈도 noise 처리 기준을 확정한다.
+5. candidate graph와 human-validated graph를 별도 출력한다.
+
+centrality, community, temporal analysis는 candidate graph에서 탐색적으로 계산할 수 있지만,
+최종 insight와 Stage 3 evidence에는 human-validated graph 또는 원문 passage 검증을 사용한다.
 """
         ),
     ]
