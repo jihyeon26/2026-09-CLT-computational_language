@@ -1,0 +1,43 @@
+{
+  "schema_version": "stage1-wp3-open-models-kg-v1.0",
+  "status": "candidate_pending_human_review",
+  "created_at_utc": "2026-10-08T17:21:13+00:00",
+  "graphs": {
+    "assertion": {
+      "nodes": 775,
+      "edges": 5447,
+      "unique_node_pairs": 1018,
+      "simple_density": 0.0016970909394015171,
+      "weakly_connected_components": 90,
+      "isolated_nodes": 0
+    },
+    "typed": {
+      "nodes": 775,
+      "edges": 1067,
+      "unique_node_pairs": 1018,
+      "simple_density": 0.0016970909394015171,
+      "weakly_connected_components": 90,
+      "isolated_nodes": 0
+    },
+    "cooccurrence": {
+      "nodes": 4858,
+      "edges": 23226,
+      "unique_node_pairs": 23226,
+      "simple_density": 0.001968696655173703,
+      "connected_components": 83,
+      "isolated_nodes": 0
+    }
+  },
+  "relation_types": 21,
+  "tiers": {
+    "B": 1034,
+    "A": 33
+  },
+  "review": {
+    "reviewed_rows": 0,
+    "precision": null
+  },
+  "cooccurrence_minimum_documents": 2,
+  "communities": 192,
+  "modularity": 0.2364
+}

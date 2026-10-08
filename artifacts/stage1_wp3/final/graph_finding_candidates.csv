@@ -1,0 +1,30 @@
+﻿finding_type,entity_or_edge,metric,documents,detail,evidence,review_status
+developer_hub,NVIDIA,developed by in-degree 83,314.0,"Nemotron, DGX Spark, NemoClaw, Blackwell architecture",[2025-08-14] NVIDIA-Nemotron-Nano-12B-v2-Base is a large language model (LLM) developed by NVIDIA that is designed as a completion model for a given piece of text.,pending_team_review
+developer_hub,Google,developed by in-degree 61,239.0,"Gemma, Gemini, ML Pathways, TPUs","[2026-06-10] Developed by Google DeepMind, DiffusionGemma undergoes the same rigorous safety evaluations as our proprietary Gemini models.",pending_team_review
+developer_hub,OpenAI,developed by in-degree 51,333.0,"ChatGPT, GPT-5, o1, GPT-4",[2025-03-19] OpenAI has developed ChatGPT into one of the prominent alternatives to Le Chat.,pending_team_review
+developer_hub,Anthropic,developed by in-degree 22,83.0,"Claude, MCP, Sonnet, Claude Code","[2026-03-25] Claude can now use your computer (Activity: 2106): Claude, an AI developed by Anthropic, is now capable of using your computer to perform tasks via Claude Cowork and Claude Code.",pending_team_review
+developer_hub,DeepSeek,developed by in-degree 17,149.0,"R1, R1 model, Chinese AI, V3","[2025-01-27] The model was developed by the Chinese AI startup DeepSeek, which claims that R1 matches or even surpasses OpenAI’s ChatGPT o1 on multiple key benchmarks but operates at a fraction of the cost.",pending_team_review
+strong_competes_with,DeepSeek -> competes with -> OpenAI,supporting articles,103.0,2024-12-17 ~ 2026-08-11,[2024-12-17] DeepSeek said last month that its R1 model competes with OpenAI's o1 — a model designed for reasoning or solving more complex tasks.,pending_team_review
+strong_competes_with,Anthropic -> competes with -> OpenAI,supporting articles,97.0,2024-09-25 ~ 2026-08-27,"[2026-01-15] The company is a public benefit corporation, like OpenAI and competitor Anthropic, which created Claude.",pending_team_review
+strong_competes_with,Google -> competes with -> OpenAI,supporting articles,80.0,2024-09-25 ~ 2026-08-19,"[2025-01-30] This development intensifies the AI-generated media race, placing Google in competition with OpenAI’s Sora and other video synthesis models emerging in the industry.",pending_team_review
+strong_competes_with,Anthropic -> competes with -> Google,supporting articles,51.0,2024-09-25 ~ 2026-08-19,"[2026-07-09] Muse Spark 1.1 changes that equation by allowing developers to call Meta’s own hosted infrastructure via the new Meta Model API, putting the company in direct competition with OpenAI, Anthropic, and Google for API worklo",pending_team_review
+strong_outperforms,Qwen -> outperforms -> Gemma,supporting articles,7.0,2025-06-25 ~ 2026-08-11,"[2025-11-20] The team argues that it outperforms models like Qwen 2.5, Google’s Gemma 3 and Llama 3 — and even gets close in performance to Qwen 3.",pending_team_review
+strong_outperforms,Qwen -> outperforms -> Llama,supporting articles,7.0,2024-12-18 ~ 2026-07-21,"[2025-11-20] The team argues that it outperforms models like Qwen 2.5, Google’s Gemma 3 and Llama 3 — and even gets close in performance to Qwen 3.",pending_team_review
+strong_outperforms,GLM -> outperforms -> Claude Opus,supporting articles,4.0,2026-06-28 ~ 2026-08-11,"[2026-08-11] From a Chinese lab.
+
+GLM-5.2 (Zhipu AI) beats Claude Opus on some coding benchmarks at 46% of the cost.",pending_team_review
+strong_outperforms,GPT-4o -> outperforms -> Claude,supporting articles,4.0,2024-10-23 ~ 2025-02-05,"[2025-01-27] Meanwhile, ByteDance, the Chinese tech giant that owns TikTok, recently announced its own reasoning agent, UI-TARS, which it claims outperforms OpenAI’s GPT-4o, Anthropic’s Claude and Google’s Gemini on certain benchmark",pending_team_review
+emerging_2026,NemoClaw -> developed by -> NVIDIA,first seen,9.0,2026-03-11,"[2026-03-16] ”
+
+Nvidia says it developed NemoClaw in collaboration with OpenClaw founder Peter Steinberger, who remains the maintainer of OpenClaw even after he joined OpenAI earlier this year.",pending_team_review
+emerging_2026,Latent Space -> acquired by -> AINews,first seen,8.0,2026-03-25,"[2026-03-25] As a reminder, AINews is now a section of Latent Space.",pending_team_review
+emerging_2026,Muse Spark -> developed by -> Meta,first seen,7.0,2026-04-08,"[2026-07-24] How it works: Meta disclosed few details about how it built Muse Spark 1.1, which updates the initial Muse Spark, the model behind Meta AI since April.",pending_team_review
+emerging_2026,GLM -> competes with -> Anthropic,first seen,5.0,2026-06-25,"[2026-06-30] ""
+
+Sam Bresnick, a research fellow at Georgetown's Center for Security and Emerging Technology, called the recent developments ""a pretty good wake-up call,"" and Jefferies strategist Christopher Wood wrote in a report t",pending_team_review
+emerging_2026,GPT-5.5 -> developed by -> OpenAI,first seen,4.0,2026-04-24,"[2026-04-24] OpenAI’s GPT-5.5 launch: stronger agentic coding, broader computer use, and a push on token-efficiency
+
+GPT-5.5 is the day’s dominant release: OpenAI launched GPT-5.5, positioned as “ a new class of intelligence for re",pending_team_review
+rising_entity,Anthropic,relation evidence share +14.9pp (P2 - P1),,ORGANIZATION,,pending_team_review
+rising_entity,Nemotron,relation evidence share +9.9pp (P2 - P1),,MODEL,,pending_team_review
+rising_entity,Kimi,relation evidence share +7.4pp (P2 - P1),,MODEL,,pending_team_review

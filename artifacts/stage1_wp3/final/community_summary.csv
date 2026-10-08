@@ -1,0 +1,193 @@
+﻿community_id,node_count,edge_count,top_entities,share_of_nodes
+1,1666,6739,"OpenAI, Google, open_source_model, Llama, Anthropic, Qwen, Meta, open_weight",0.343
+2,1338,3899,"united_states, DeepSeek, China, NVIDIA, Microsoft, Beijing, Apple, Sam Altman",0.275
+3,896,3582,"vllm, Nemotron, Google Cloud, IBM, Dell Technologies, Cisco, Red Hat, LangChain",0.184
+4,124,313,"TrueFoundry, observability, routing, reliability, caching, security, LiteLLM, rate limiting",0.026
+5,97,162,"MLA, Grouped-Query Attention, Multi-Head Attention, GQA, Multi-head Latent Attention, RoPE, Gated DeltaNet, Mamba",0.02
+6,44,65,"Facebook, Instagram, WhatsApp, Discord, Messenger, Spotify, Pinecone, Telegram",0.009
+7,29,36,"MLLM, ControlNet, CLIP, T5-XXL, SD3, IP-Adapter, segmentation, Diffusers",0.006
+8,16,32,"Kit, WebGPU, personality, Nico, Michael Knight, WebAssembly, autonomy, Knight Industries",0.003
+9,16,49,"Arka Venture Labs, Astir VC, Good News Ventures, GradCapital, MyAsiaVC, Nivesha Ventures, SenseAI Ventures, Y Combinator",0.003
+10,15,27,"Liquid AI, LFMs, Liquid, liquid neural networks, Frugal AI Hub, Saving Voices Project, Arjuna Sathiaseelan, Cambridge",0.003
+11,14,29,"SpeciesNet, Colombia, Tanzania, Idaho Department of Fish and Game, Red Otus, Serengeti National Park, Universidad de los Andes, Idaho",0.003
+12,14,55,"Roger G. Mark, PhysioNet, Alistair E. W., Chih-Ying Deng, Matthew P. Lungren, Mike Johnson, Nathaniel R. Greenbaum, Seth J. Berkowitz",0.003
+13,14,91,"A. G. C., Alves, Biral, de Angelo, F. O. G., G. G., G. R., I. P.",0.003
+14,13,78,"Mendeley, Abraham Owodunni, Charles Nimo, Chinemelu Aka, Emmanuel Ayodele, Gornale, Mardhiyah Sanni, Olatunji",0.003
+15,12,19,"E4B, E2B, All models, audio inputs, image inputs, 4B model, text output, 27B model",0.002
+16,11,55,"MedXpertQA, Bowen Zhou, Ermo Hua, Kaiyan Zhang, Ning Ding, Shang Qu, Xuekai Zhu, Yifei Li",0.002
+17,9,14,"CC-MAIN-2025-08, Common Crawl, CC-MAIN-2013-20, CC-MAIN-2024-51, CC-MAIN-2025-18, Common Crawl Foundation, FAQ, CC-MAIN-2025-13",0.002
+18,9,29,"MedQA, Eileen Pan, Hanyi Fang, Jin, Nassim Oufattole, Peter Szolovits, Wei-Hung Weng, Di",0.002
+19,9,21,"WRN, Collaborative Innovation Program, Mack Institute, University of Pennsylvania, Wharton School, WTW, CIP, Green Algorithms - AI and Sustainability",0.002
+20,8,10,"Multiverse, Bank of Canada, Bosch, CompactifAI, Iberdrola, Multiverse Computing, quantum-inspired tensor networks, Enrique Lizaso Olmos",0.002
+21,8,11,"Helsing, HX-2, mass production, swarm capabilities, decision-making support, situational awareness, electronic warfare resistance, Munich",0.002
+22,8,12,"osaid, OSI, Open Source Initiative, Stefano Maffulli, OSIAD, OpenUK, Open Future, OpenInfra Foundation",0.002
+23,8,28,"CAMELYON, Mendeley Digital Knee X-Ray, MIMIC-CXR, PAD-UFES-20, PMC-OA, SCIN, Slake-VQA, TCGA",0.002
+24,8,17,"DAPO, Yu et al., Dr. GRPO, Liu et al., Yao et al., Active sampling, Token-level loss, KL",0.002
+25,8,28,"SLAKE, Bo, Li-Ming Zhan, Li Xu, Lin Ma, Liu, Xiao-Ming Wu, Yan Yang",0.002
+26,8,28,"Abbi, Ashley Carrick, Bilson Campana, Jay Hartford, Jimmy Li, Julie Wang, SCIN Ward, Sriram Lakshminarasimhan",0.002
+27,8,28,"Babak, Bram van Ginneken, Ehteshami Bejnordi, Geert Litjens, Jeroen A. W. M. van der Laak, Mitko Veta, Nico Karssemeijer, Paul Johannes van Diest",0.002
+28,7,7,"Alipay, Ling-1T, Cainiao, evolutionary chain-of-thought, LPO, Eddie Wu, Ant",0.001
+29,7,6,"AI Security Institute, frontier closed models, University of Oxford, open harnesses, Inspect, AISI, University of Cambridge",0.001
+30,7,12,"NotebookLM, Dia, Toby Kim, Nari Labs, emotional tone, speaker tagging, natural timing",0.001
+31,6,15,"CN, EN, BT/Elo, Data Visualization, SVG, Web Design",0.001
+32,5,5,"SpinQuant, generative post-training quantization, GPTQ, BF16 baseline, WikiText 2 dataset",0.001
+33,5,10,"targeted designs, generation stability, high visual quality, motion diversity, text-video alignment",0.001
+34,5,4,"retrieval, semantic similarity, This approach, extraction, reranking",0.001
+35,5,7,"visual question answering, report generation, multimodal classification, text-based tasks, image captioning",0.001
+36,5,7,"Block, Goose, Square, Jack Dorsey, Cash App",0.001
+37,5,10,"Charles University, Czechia, Silo AI, Peter Sarlin, Jan Hajič",0.001
+38,5,6,"Equal Weight ETF, Invesco, QUAL Quick QuoteQUAL, RSP Quick QuoteRSP - Free Report, Vanguard Value ETF",0.001
+39,5,10,"Zuess, Krishna Mehra, Kulveer Taggar, Umur Cubukcu, Ubicloud",0.001
+40,5,10,"Asma Ben Abacha, Chuck Lau, Dina Demner-Fushman, Jason J., Soumya Gayen",0.001
+41,5,6,"Peter Kairouz, Kimberly Schwede, Mark Simborg, Prem Eruvbetine, Steve He",0.001
+42,4,6,"asynchronous RL frameworks, environment orchestration, massive-scale agent scaffolds, Next-Generation Training Infrastructure",0.001
+43,4,6,"final layer, hybrid attention mechanism, full global attention, local sliding window attention",0.001
+44,4,6,"FrugalGPT, AI Frontiers group, Microsoft Research, Lingjiao Chen",0.001
+45,4,6,"global layers, p-RoPE, Proportional RoPE, unified Keys and Values",0.001
+46,4,3,"PPO, Alec Radford, GAE, Proximal Policy Optimization",0.001
+47,4,3,"Zacks, Strong Buy, EPS, Zacks Rank",0.001
+48,4,3,"Writing Assistance APIs, High, W3C Web Machine Learning Working Group, Microsoft Edge",0.001
+49,4,4,"Q4, Q2, Q3, Q1",0.001
+50,4,6,"agentic capability, loss of control, sabotage potential, strategic deception",0.001
+51,4,3,"role-based access control, audit logs, private networking, RBAC",0.001
+52,4,6,"decision consistency, full context continuity, preserved thinking, reduced redundant reasoning",0.001
+53,4,6,"Buzz-V1.2, Dolma, FineWeb, KD",0.001
+54,4,3,"ID, endpoint ID, MODEL NAME, PUBLISHER NAME",0.001
+55,4,4,"Notion, PDF, Khoj, Gamma",0.001
+56,4,6,"AlphaFold 3, Google Cloud Cluster Toolkit, Isomorphic Labs, AlphaFold 3 High-Throughput Solution",0.001
+57,4,4,"ViDoRe, Manuel Faysse, Tony Wu, ColSmolVLM",0.001
+58,4,3,"MBZUAI, Inception, Jais, Mohamed bin Zayed University of Artificial Intelligence",0.001
+59,4,4,"Imagen 3, Bending Spoons, Remini app, Veo 2",0.001
+60,4,5,"Bill and Melinda Gates Foundation Trust, Edeka, Picnic, Amsterdam",0.001
+61,4,4,"WDP, Wild Dolphin Project, Bahamas, Georgia Institute of Technology",0.001
+62,4,5,"Ilan Strauss, Sruly Rosenblat, O' Reilly, Tim O' Reilly",0.001
+63,4,6,"Grasshopper, CAD, Rhino, V-Ray",0.001
+64,3,3,"black-box dependence, modular improvisation, sovereign design",0.001
+65,3,2,"RNNs, Fast Autoregressive Transformers, LSTMs",0.001
+66,3,2,"Cosmos 3, mixture-of-transformers architecture, RTX Spark",0.001
+67,3,2,"Responsible Use Guide, optimized transformer architecture, our Responsible Use Guide",0.001
+68,3,3,"3SAT, TSP, BA-Calendar",0.001
+69,3,2,"HellaSwag, BoolQ, Winogrande",0.001
+70,3,3,"Visual Quality, motion quality, Text Alignment",0.001
+71,3,3,"categorization, extracting information, summarizing text",0.001
+72,3,3,"Enhanced Coding & Agentic Capabilities, native function-calling support, Small models",0.001
+73,3,2,"faster, more capable, multi-modal",0.001
+74,3,3,"fine-tuning enabling code, inference-enabling code, training-enabling code",0.001
+75,3,3,"greedy decoding, Reasoning Off, Reasoning On",0.001
+76,3,3,"knowledge retrieval and summarization, query and prompt rewriting, Instruction tuned text only models",0.001
+77,3,2,"PII, Personal and Sensitive Information, CommonCrawl",0.001
+78,3,3,"this Agreement, State of California, UN Convention on Contracts for the International Sale of Goods",0.001
+79,3,2,"Palisade Research, Stockfish, Dmitrii Volkov",0.001
+80,3,2,"Vestbee, CEE, FIRSTPICK",0.001
+81,3,3,"Engadget, Nintendo, Switch 2",0.001
+82,3,3,"Globo, Lowe, Vertex AI Search",0.001
+83,3,3,"Agerri, Alonso, I., Oronoz, M.",0.001
+84,3,3,"Ali Farhadi, Hanna Hajishirzi, Ranjay Krishna",0.001
+85,3,3,"Gus, Olivier, Olivier Ian",0.001
+86,3,3,"Jakarta, Lagos, São Paulo",0.001
+87,3,3,"TurboLLM, FreeLLM, TestLLM",0.001
+88,3,3,"Emacs package, Obsidian plugin, Whatsapp AI",0.001
+89,2,1,"9B parameter architecture, Table 9",0.0
+90,2,1,"architectural design, AI-driven generative tools",0.0
+91,2,1,"architecture of participation, World Wide Web",0.0
+92,2,1,"CNNs, convolutional neural networks",0.0
+93,2,1,"custom nodes, ComfyUI Manager",0.0
+94,2,1,"decoder-style transformer, LLM architectures",0.0
+95,2,1,"deeper layers, early layers",0.0
+96,2,1,"Dense and Mixture-of-Experts (MoE, Diverse & Efficient Architectures",0.0
+97,2,1,"extended context, thinking capabilities",0.0
+98,2,1,"Full Attention mechanism, Transformer design",0.0
+99,2,1,"gating module, MoE layer",0.0
+100,2,1,"linear variants, traditional quadratic attention variants",0.0
+101,2,1,"multi-turn, open-ended external red-teaming",0.0
+102,2,1,"NAS approach, non-reasoning capabilities",0.0
+103,2,1,"open AI systems, Roadmap",0.0
+104,2,1,"ShadowGenes, ShadowLogic",0.0
+105,2,1,"AfriMed-QA, Multi-Specialty",0.0
+106,2,1,"AyaVisionBench, m-WildVision",0.0
+107,2,1,"ChartQA, DocVQA",0.0
+108,2,1,"M2.7, Gemini 3.1",0.0
+109,2,1,"MedExpQA, Multilingual Benchmarking of Large Language Models for Medical",0.0
+110,2,1,"Needle in a Haystack, NIAH",0.0
+111,2,1,"Quality of Service, English text",0.0
+112,2,1,"TAU2-Bench, Claude Opus 4.5 system card",0.0
+113,2,1,"VSI-Bench, MathVision",0.0
+114,2,1,"ability to inform decision making, High level findings",0.0
+115,2,1,"accessible, adaptable",0.0
+116,2,1,"advanced AI safety capabilities, NVIDIA Labs",0.0
+117,2,1,"AI powers, Obsidian",0.0
+118,2,1,"CLASSIFY, generate",0.0
+119,2,1,"clinical correlation, All model outputs",0.0
+120,2,1,"context-aware, reliable",0.0
+121,2,1,"hardware capabilities, memory constraints",0.0
+122,2,1,"knowledge update, temporal reasoning",0.0
+123,2,1,"latent capability, CBRN",0.0
+124,2,1,"maximum accuracy, Avoid Quantized Models",0.0
+125,2,1,"rapid remediation, rigorous evaluation",0.0
+126,2,1,"reason, 5-VL",0.0
+127,2,1,"retry logic, timeouts",0.0
+128,2,1,"robust real-world adaptability, Scalable RL Generalization",0.0
+129,2,1,"A Large-Scale Open Domain Question Answering Dataset, Medical Exams",0.0
+130,2,1,"Gaussian noise, 3D VAE decoder",0.0
+131,2,1,"WMT24, XCOMET-XXL",0.0
+132,2,1,"x1, x2",0.0
+133,2,1,"Jetson AGX, Orin Developer Kit",0.0
+134,2,1,"NVIDIA RTX PRO 6000 Blackwell GPUs, Confidential G4 VMs",0.0
+135,2,1,"Section 2.2, Section 3",0.0
+136,2,1,"1B model, 3B model",0.0
+137,2,1,"AMIE, Beth Israel Deaconess Medical Center",0.0
+138,2,1,"ColPali, ColBERT",0.0
+139,2,1,"DeepCoder-14B-Preview, Agentica",0.0
+140,2,1,"Gemma3-12B-Base, N-Nano-V2-9B-Base",0.0
+141,2,1,"OpenAI models, Quantum Network Monitor agent",0.0
+142,2,1,"Your agents, Your AI agents",0.0
+143,2,1,"Avride, Ohio State University",0.0
+144,2,1,"BharatGPT, CoRover",0.0
+145,2,1,"BigDATAwire, HPCwire",0.0
+146,2,1,"Cambrian AI Research, Karl Freund",0.0
+147,2,1,"Cantor Fitzgerald, Overweight",0.0
+148,2,1,"Deep Blue, Garry Kasparov",0.0
+149,2,1,"Deployment Company, Tomoro",0.0
+150,2,1,"Developer Relations, Sophia Yang",0.0
+151,2,1,"ECMWF, European Centre for Medium-Range Weather Forecasts",0.0
+152,2,1,"Etsy, Walmart",0.0
+153,2,1,"Genmo, Kling",0.0
+154,2,1,"House Foreign Affairs Committee, Kratsios",0.0
+155,2,1,"Koah, Theory Ventures",0.0
+156,2,1,"Mobile World Congress, Barcelona",0.0
+157,2,1,"NYU School of Law, Winston Ma",0.0
+158,2,1,"OECD, United Nations",0.0
+159,2,1,"OutSystems, Mentor",0.0
+160,2,1,"Palantir Technologies Inc., PLTR",0.0
+161,2,1,"Synthesia, Victor Riparbelli",0.0
+162,2,1,"University of Buenos Aires, Sebastián Uchitel",0.0
+163,2,1,"Vectara, Amr Awadallah",0.0
+164,2,1,"VPTQ, AQLM",0.0
+165,2,1,"Alex Graves, John Schulman",0.0
+166,2,1,"Aviral Kumar, Yuxiao Qu",0.0
+167,2,1,"Charles Q. Choi, Lee",0.0
+168,2,1,"Chen, Chi",0.0
+169,2,1,"Chip Huyen, AI Engineering",0.0
+170,2,1,"David Mytton, Arcjet",0.0
+171,2,1,"Gudrun Socher, Maximilian Dauner",0.0
+172,2,1,"Nye et al., Wei et al",0.0
+173,2,1,"PMs, Product Managers",0.0
+174,2,1,"Ray Kurzweil, Vernor Vinge",0.0
+175,2,1,"SAI, Stratospheric Aerosol Injection",0.0
+176,2,1,"USERNAME, KAGGLE KEY",0.0
+177,2,1,"YOLO, ResNet",0.0
+178,2,1,"Discords, Twitters",0.0
+179,2,1,"Tinker Cookbook, Tinker Playground",0.0
+180,2,1,"Apple Pay, Google Pay",0.0
+181,2,1,"Cauldron, Docmatix",0.0
+182,2,1,"Code Shield, Prompt Guard",0.0
+183,2,1,"Hailuo AI, Talkie",0.0
+184,2,1,"IQ3 XS, Ultra-low-bit quantization",0.0
+185,2,1,"Network Monitor Assistant, Network Monitor Assitant",0.0
+186,2,1,"Photoshop, Prompt Travel",0.0
+187,2,1,"SSE, Server-Sent Events",0.0
+188,2,1,"TDD, Test Driven Development",0.0
+189,2,1,"base64, URLs",0.0
+190,2,1,"GRPO algorithm, Reinforcement Learning with Verifiable Rewards",0.0
+191,2,1,"Master mode, Normal mode",0.0
+192,2,1,"MCTS, Monte Carlo Tree Search",0.0

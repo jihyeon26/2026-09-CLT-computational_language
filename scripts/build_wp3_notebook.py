@@ -4,6 +4,8 @@ from pathlib import Path
 
 import nbformat as nbf
 
+from wp3_notebook_part3 import part3_cells
+
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / "notebooks" / "stage1_wp3_open_models_contract.ipynb"
@@ -33,7 +35,7 @@ def main() -> None:
 이 노트북은 팀원의 공식 WP1·WP2 산출물을 사용해 Stage 1 WP3 지식그래프 작업을 시작하는
 **한국어 검토용 작업본**이다. 기존 300문서 파일럿 결과는 사용하지 않는다.
 
-현재 범위는 WP3 1단계 교정 완료와 2단계 품질 정책 시작까지다.
+현재 범위는 1단계 교정, 2단계 품질 정책, 3단계 보정 relation 기반 최종 지식그래프 구축까지다.
 
 1. 공식 WP2 원본을 수정하지 않고 별도 입력 폴더에서 읽는다.
 2. 실제 파일명과 열 이름을 WP3 canonical contract에 연결한다.
@@ -44,6 +46,8 @@ def main() -> None:
 7. compact schema와 candidate graph 품질 등급을 적용한다.
 8. Claude 1차 스크리닝을 진단하되 사람 검수로 간주하지 않는다.
 9. score·co-occurrence threshold에 따른 graph metric 민감도를 비교한다.
+10. 보정된 relation(Tier A+B)으로 최종 graph를 만들고 metric·community·시간 분석을 수행한다.
+11. 시각화, insight 후보, graph·schema 저장과 Stage 3 smoke test로 Stage 1을 마무리한다.
 
 분석과 팀 검토가 끝난 뒤 최종 제출본에서는 설명, 셀 제목과 주석을 영어로 바꾼다.
 """
@@ -811,6 +815,8 @@ variant 분석을 human-validated graph에 다시 실행해 최종 표와 그림
 """
         ),
     ]
+
+    nb["cells"].extend(part3_cells())
 
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     nbf.write(nb, OUTPUT)
