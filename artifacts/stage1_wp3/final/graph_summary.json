@@ -1,7 +1,7 @@
 {
   "schema_version": "stage1-wp3-open-models-kg-v1.0",
   "status": "candidate_pending_human_review",
-  "created_at_utc": "2026-10-08T17:21:13+00:00",
+  "created_at_utc": "2026-10-08T18:50:05+00:00",
   "graphs": {
     "assertion": {
       "nodes": 775,

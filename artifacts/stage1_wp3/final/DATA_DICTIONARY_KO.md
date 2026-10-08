@@ -31,7 +31,7 @@ Schema: `stage1-wp3-open-models-kg-v1.0` · 상태: `candidate_pending_human_rev
 ## 분석 표
 `node_metrics`, `relation_type_metrics`, `relation_type_summary`, `node_communities`, `community_summary`,
 `quarterly_relation_assertions`, `quarterly_new_typed_edges`, `family_quarterly_share`,
-`emerging_relations_2026`, `entity_period_share`, `graph_finding_candidates`(팀 검토 전 후보)
+`emerging_relations_2026`, `entity_period_share`, `graph_finding_candidates`(검토 전 후보)
 
 ## Stage 3 provenance
 `entity_id` → `relation_id` → `text_unit_id` → `document_id` → `published_at`.

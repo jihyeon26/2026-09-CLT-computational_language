@@ -1,8 +1,5 @@
-"""Part 3 of the WP3 notebook: build the final Stage 1 knowledge graph from the corrected relations.
-
-The cells are kept in a separate module so that `build_wp3_notebook.py` stays readable. Part 3 starts with its own
-setup cell and only reads files from disk, so it can be re-run without re-running Parts 1-2.
-"""
+"""Cells of the Stage 1 WP3 notebook: validate the WP2 handover and build the Open Models knowledge graph
+from the corrected relations. `build_wp3_notebook.py` writes these cells to the notebook."""
 from __future__ import annotations
 
 import nbformat as nbf
@@ -16,44 +13,55 @@ def code(text: str):
     return nbf.v4.new_code_cell(text.strip())
 
 
-def part3_cells() -> list:
+def notebook_cells() -> list:
     return [
         markdown(
             """
-# WP3 3단계 — 보정 관계로 최종 지식그래프 구축 (Stage 1 완결)
+# Stage 1 WP3 — Open Models 지식그래프 구축
 
-2단계까지의 결론은 **raw candidate graph는 그대로 사실 그래프로 쓸 수 없다**는 것이었다. 이후
-`notebooks/stage1_wp3_relation_correction.ipynb`에서 오류 원인별 규칙으로 relation을 보정했다.
+| | |
+|---|---|
+| **Work package** | WP3 — Knowledge Graph Construction (Stage 1의 마지막 단계) |
+| **Track** | Open Models |
+| **입력** | WP2 entity·relation·co-occurrence handover, WP3 relation correction 결과 |
+| **상태** | 그래프 구축 완료, Tier B relation 사람 검수 대기 |
 
-- 이름 변형·별칭 병합, 잘못된 node type 수정, 일반명사 node 표시
-- `Llama Nemotron`처럼 다른 제품명 안의 family 이름 연결 해제
-- WP1 lexicon 개발사와 충돌하는 `developed by` 제외, 자기 회사 제품과의 `competes with` 제외
-- 같은 문장 반복을 제거한 뒤 서로 다른 근거 문장이 2개 이상인 relation만 Tier B로 분류
+과제 안내서의 Stage 1 *Knowledge Graph Construction* 요구사항과 이 notebook의 대응은 다음과 같다.
 
-3단계는 이 보정 결과(Tier A + B)로 과제 요구사항의 Knowledge Graph Construction을 완성한다.
+| 요구사항 | 절 |
+|---|---|
+| graph 전에 compact topic-specific schema 정의 | 5 |
+| node = entity, edge = co-mention 또는 extracted relation | 6 |
+| centrality·clustering 등 network metric으로 영향력 있는 entity와 새로운 관계 분석 | 7–10 |
+| NetworkX·Graphviz 시각화 | 11 |
+| Stage 3에서 다시 쓸 graph와 schema 저장 | 14–15 |
+| topic-focused KG와 short schema/data dictionary, 주요 insight 문서화 | 12–14 |
 
-1. compact topic-specific schema 확정
-2. assertion·collapsed typed·co-occurrence graph 생성
-3. centrality, clustering, community, 시간 분석
-4. 목적별 시각화
-5. 근거 문장이 연결된 insight 후보
-6. Stage 3에서 다시 쓸 graph·schema·data dictionary 저장과 재로딩 검증
+```
+WP2 handover (수정하지 않음)
+  → 2. 입력 검증
+  → 3. relation 보정 결과 (stage1_wp3_relation_correction.ipynb)
+  → 4–6. 검수 규칙 · compact schema · graph 생성
+  → 7–10. 구조 · 중심성 · community · 시간 분석
+  → 11–13. 시각화 · insight · 한계
+  → 14–15. 저장 · Stage 3 연결 검증
+```
 
-3단계는 디스크의 파일만 읽으므로 1·2단계를 다시 실행하지 않고 이 셀부터 실행할 수 있다.
 """
         ),
         markdown(
             """
-## 22. 3단계 실행 환경
+## 1. 실행 환경과 입력 경로
 
-입력은 세 곳에서 읽는다.
+입력은 세 곳에서 읽는다. WP1 `open_models_core.parquet`은 선택 입력으로, 있으면 문서 범위 검증과 기사
+제목·URL 연결에 사용한다.
 
 - `outputs/stage1_wp2_open_models_official_20261007/`: 공식 WP2 handover (수정하지 않음)
 - `outputs/stage1_wp3_relation_correction_20261008/`: relation correction notebook 산출물
 - `artifacts/stage1_wp3/evaluation/relation_correction/`: 사람 검수용 Tier B 표본
 
-대용량 결과는 Git-ignored `outputs/stage1_wp3_knowledge_graph_final/`에, 제출·공유용 작은 파일은
-`artifacts/stage1_wp3/final/`에 저장한다.
+대용량 결과는 Git-ignored `outputs/stage1_wp3_knowledge_graph_final/`(공유 Drive로 전달)에, 제출·공유용
+작은 파일은 `artifacts/stage1_wp3/final/`에 저장한다.
 """
         ),
         code(
@@ -94,14 +102,15 @@ CORRECTED_REVIEW_PATH = (
     / "relation_review_corrected_seed2026.csv"
 )
 COMPACT_SCHEMA_PATH = ROOT / "config" / "wp3_compact_schema.json"
-WP1_CORE_PATH = ROOT / "dataset" / "processed" / "open_models_core.parquet"  # 선택: 기사 제목·URL
+COOCCURRENCE_SENSITIVITY_PATH = ROOT / "artifacts" / "stage1_wp3" / "sensitivity" / "cooccurrence_threshold_summary.csv"
+WP1_CORE_PATH = ROOT / "dataset" / "processed" / "open_models_core.parquet"  # 선택: 문서 범위 검증, 기사 제목·URL
 FINAL_OUTPUT_DIR = ROOT / "outputs" / "stage1_wp3_knowledge_graph_final"
 FINAL_ARTIFACT_DIR = ROOT / "artifacts" / "stage1_wp3" / "final"
 FIGURE_DIR = FINAL_ARTIFACT_DIR / "figures"
 for directory in [FINAL_OUTPUT_DIR, FIGURE_DIR]:
     directory.mkdir(parents=True, exist_ok=True)
 
-MIN_COOCCURRENCE_DOCUMENTS = 2   # 19절 민감도 분석에서 정한 탐색용 기본값
+MIN_COOCCURRENCE_DOCUMENTS = 2   # 6절의 threshold 비교 참고
 DRAW_COOCCURRENCE_DOCUMENTS = 5  # community 그림에서만 쓰는 더 높은 기준
 SEED = 42
 PERIODS = {"P1 (2024-09~2025-08)": ("2024-09-01", "2025-08-31"),
@@ -125,12 +134,86 @@ def pretty(label):
         ),
         markdown(
             """
-## 23. 보정 relation 입력과 단계별 감소
+## 2. WP2 인계 데이터 검증
 
-보정 notebook의 결과를 읽고, WP2 원본에서 최종 graph 후보까지 relation이 어떻게 줄었는지 확인한다.
-Tier A는 WP1 lexicon의 model family → developer, Tier B는 모든 보정 검사를 통과하고 서로 다른 근거
-문장이 2개 이상인 GLiREL relation이다. 같은 triple이 Tier A와 B에 모두 있으면 하나로 합치고
-`sources`에 두 출처를 함께 기록했다.
+graph를 만들기 전에 WP2 handover가 완전하고 서로 연결되는지 확인한다. 원본 파일은 수정하지 않는다.
+
+- 필요한 파일이 모두 있는가
+- node ID와 문장 ID(`doc_id` + 문서 안의 `sentence_id`)가 고유한가
+- 모든 relation 근거 문장이 `sentences.csv`에 있고, 모든 relation endpoint가 node table에 있는가
+- WP1 핵심 문서 집합과 WP2 기사 집합이 같은가 (WP1 parquet이 있을 때)
+"""
+        ),
+        code(
+            """
+WP2_FILES = ["nodes.csv", "nodes_quarterly.csv", "entity_mentions.csv", "sentences.csv", "edges_relations.csv",
+             "relations_evidence.csv", "edges_cooccurrence.csv", "schema.json"]
+missing_files = [name for name in WP2_FILES if not (WP2_INPUT_DIR / name).exists()]
+assert not missing_files, f"WP2 파일이 없습니다: {missing_files}"
+
+wp2_nodes = pd.read_csv(WP2_INPUT_DIR / "nodes.csv", keep_default_na=False, na_values=[""])
+wp2_edges = pd.read_csv(WP2_INPUT_DIR / "edges_relations.csv")
+wp2_evidence = pd.read_csv(WP2_INPUT_DIR / "relations_evidence.csv")
+wp2_cooccurrence = pd.read_csv(WP2_INPUT_DIR / "edges_cooccurrence.csv")
+nodes_quarterly = pd.read_csv(WP2_INPUT_DIR / "nodes_quarterly.csv")
+sentences = pd.read_csv(WP2_INPUT_DIR / "sentences.csv")
+wp2_schema = json.loads((WP2_INPUT_DIR / "schema.json").read_text(encoding="utf-8"))
+
+glirel_evidence = wp2_evidence[wp2_evidence["source"] == "glirel"]
+sentence_keys = set(zip(sentences["doc_id"], sentences["sentence_id"]))
+evidence_keys = set(zip(glirel_evidence["doc_id"], glirel_evidence["sentence_id"].astype(int)))
+node_ids = set(wp2_nodes["entity_id"])
+endpoints = set(wp2_evidence["head_id"]) | set(wp2_evidence["tail_id"])
+if WP1_CORE_PATH.exists():
+    wp1_doc_ids = set(pd.read_parquet(WP1_CORE_PATH, columns=["doc_id"])["doc_id"])
+    lineage = ("PASS" if wp1_doc_ids == set(sentences["doc_id"]) else "FAIL", f"WP1 {len(wp1_doc_ids):,}개 문서")
+else:
+    lineage = ("SKIP", "WP1 parquet 없음")
+
+input_checks = pd.DataFrame(
+    [
+        ("WP2 인계 파일", "PASS", f"{len(WP2_FILES)}개 파일"),
+        ("node ID 고유", "PASS" if wp2_nodes["entity_id"].is_unique else "FAIL", f"{len(wp2_nodes):,}개 node"),
+        ("문장 ID 고유", "PASS" if len(sentence_keys) == len(sentences) else "FAIL",
+         f"{len(sentences):,}개 문장 / {sentences['doc_id'].nunique():,}개 기사"),
+        ("relation 근거 문장이 sentences에 있음", "PASS" if evidence_keys <= sentence_keys else "FAIL",
+         f"GLiREL 근거 {len(glirel_evidence):,}행"),
+        ("relation endpoint가 node table에 있음", "PASS" if endpoints <= node_ids else "FAIL",
+         f"{wp2_edges['source'].value_counts().to_dict()}"),
+        ("WP1 핵심 문서 = WP2 기사", *lineage),
+        ("WP2 schema 범위", "INFO", f"entity type {len(wp2_schema['node']['entity_types'])}개, "
+         f"relation type {len(wp2_schema['edges']['relation']['types'])}개"),
+    ],
+    columns=["검사", "결과", "내용"],
+)
+display(input_checks)
+assert not input_checks["결과"].eq("FAIL").any()
+"""
+        ),
+        markdown(
+            """
+## 3. relation 보정이 필요한 이유와 결과
+
+WP2는 recall을 위해 넓은 schema(entity type 20개, relation type 36개)로 GLiREL relation을 추출했고, relation
+정확도는 평가하지 않았다. WP3에서 relation 90개 표본을 검토한 결과(AI 1차 판정이며 공식 사람 검수가 아님)
+precision은 약 0.47이었고, 오류는 대부분 관계 추출보다 entity 단계에서 생겼다.
+
+- **일반명사 node**: `model`, `company`, `AI models`, `GPUs`가 relation의 head·tail이 됨
+- **잘못된 연결**: WP1 regex가 "Llama Nemotron"의 Llama도 Llama family로 잡아 `Llama → developed by → NVIDIA`(42문장)가 생김.
+  나열 문장에서 엉뚱한 쌍이 연결됨 (예: Gemma → developed by → Microsoft)
+- **별칭·type 오류**: `Ai2` / `Allen Institute for AI`가 다른 node이고, `Alibaba`가 장소로 분류됨
+
+score threshold로 거르면 맞는 relation도 함께 사라지므로, `notebooks/stage1_wp3_relation_correction.ipynb`에서
+오류 원인별 규칙으로 보정했다.
+
+1. 이름 변형·별칭 병합, node type 수정, 규칙 기반 일반명사 node 표시
+2. 다른 제품명 안의 family 이름(Llama Nemotron, Llama Stack) 연결 해제
+3. WP1 lexicon 개발사와 충돌하는 `developed by`, 자기 회사 제품과의 `competes with`, 양방향 중복 제외
+4. 같은 문장 반복을 제거한 뒤 서로 다른 근거 문장 수 계산
+
+보정 결과 각 relation은 **Tier A**(WP1 lexicon model family → developer), **Tier B**(모든 검사 통과 + 서로
+다른 근거 문장 2개 이상), **C**(근거 1개), **X**(제외)로 분류된다. 지식그래프에는 A와 B를 사용하고, C와 X는
+삭제하지 않고 사유와 함께 보정 산출물에 남긴다.
 """
         ),
         code(
@@ -141,12 +224,6 @@ nodes_corrected = pd.read_csv(
 edges_corrected = pd.read_csv(CORRECTION_DIR / "edges_relations_corrected.csv")
 graph_candidates = pd.read_csv(CORRECTION_DIR / "edges_graph_candidates.csv")
 evidence_corrected = pd.read_csv(CORRECTION_DIR / "relations_evidence_corrected.csv")
-wp2_edges = pd.read_csv(WP2_INPUT_DIR / "edges_relations.csv")
-wp2_nodes = pd.read_csv(WP2_INPUT_DIR / "nodes.csv", keep_default_na=False, na_values=[""])
-wp2_cooccurrence = pd.read_csv(WP2_INPUT_DIR / "edges_cooccurrence.csv")
-nodes_quarterly = pd.read_csv(WP2_INPUT_DIR / "nodes_quarterly.csv")
-sentences = pd.read_csv(WP2_INPUT_DIR / "sentences.csv")
-wp2_schema = json.loads((WP2_INPUT_DIR / "schema.json").read_text(encoding="utf-8"))
 compact_schema = json.loads(COMPACT_SCHEMA_PATH.read_text(encoding="utf-8"))
 
 glirel_raw = wp2_edges[wp2_edges["source"] == "glirel"]
@@ -174,14 +251,13 @@ display(graph_candidates["sources"].value_counts().rename_axis("출처").reset_i
             """
 WP2 권장 필터의 1,629개 대신 1,067개 triple을 사용한다. 줄어든 이유는 점수 threshold가 아니라 구체적인
 오류 원인이다. 가장 큰 제외 사유는 schema type 위반과 `model`, `company`, `AI` 같은 일반명사 node다.
-Tier C(근거 문장 1개)와 X(제외)도 삭제하지 않고 보정 산출물에 사유와 함께 남아 있다.
 """
         ),
         markdown(
             """
-## 24. 사람 검수 결과 반영 규칙
+## 4. 사람 검수 결과 반영 규칙
 
-Tier B 표본 90개(`relation_review_corrected_seed2026.csv`)는 팀원 3명이 30개씩 검수한다. 이 셀은
+Tier B 표본 90개(`relation_review_corrected_seed2026.csv`)는 사람이 검수한다. 이 셀은
 검수 파일을 읽어 다음 규칙을 적용한다. 검수가 아직 없으면 graph는 `candidate` 상태로 유지된다.
 
 - `FALSE`로 판정된 triple은 graph에서 제외한다.
@@ -233,10 +309,10 @@ display(pd.DataFrame(
         ),
         markdown(
             """
-## 25. Compact topic-specific schema 확정
+## 5. Compact topic-specific schema 확정
 
 과제는 graph를 만들기 전에 compact schema를 정의하도록 요구한다. WP2의 20개 entity type과 36개
-relation type은 추출 recall을 위한 넓은 schema이므로, 분석에는 2단계에서 정한 상위 그룹을 쓴다.
+relation type은 추출 recall을 위한 넓은 schema이므로, 분석에는 `config/wp3_compact_schema.json`에 정의한 상위 그룹을 쓴다.
 
 - **node**: 9개 compact entity type. 원래 type은 `entity_type`에 그대로 남긴다.
 - **edge**: 실제 graph에 남은 raw relation type과 이를 묶는 8개 predicate group
@@ -334,7 +410,7 @@ display(compact_counts)
         ),
         markdown(
             """
-## 26. 세 가지 graph view 생성
+## 6. 세 가지 graph view 생성
 
 과제의 "nodes represent entities and edges represent co-mentions or extracted relations"를 세 view로
 나누어 구현한다. typed relation과 co-occurrence는 의미가 다르므로 같은 graph에 섞지 않는다.
@@ -482,7 +558,24 @@ print(f"co-occurrence: 일반명사 제외 후 {len(cooccurrence_all):,}쌍 중 
         ),
         markdown(
             """
-## 27. 기본 구조 통계
+**co-occurrence 문서 수 기준을 2로 둔 이유**: 보정 전 co-occurrence graph에서 기준을 1·2·5개 문서로 바꿔
+비교했다. 1개 문서 기준은 node 48,304개와 community 2,543개로 우연한 공동출현이 너무 많다. 5개 문서 기준은
+node 2,377개만 남아 작은 model·조직이 대부분 사라진다. 2개 문서 기준(node 8,922개, community 114개)을 coverage와
+noise 사이의 기본값으로 쓰고, 그림에서는 가독성을 위해 5개 문서 이상의 edge만 그린다.
+"""
+        ),
+        code(
+            """
+threshold_comparison = pd.read_csv(COOCCURRENCE_SENSITIVITY_PATH)[
+    ["minimum_document_count", "node_count", "edge_count", "component_count", "largest_component_share",
+     "community_count", "largest_community_nodes"]
+].round(3)
+display(threshold_comparison)
+"""
+        ),
+        markdown(
+            """
+## 7. 기본 구조 통계
 
 node·edge 수, density, component, relation type별 edge 수를 먼저 본다. density가 매우 낮고 component가
 많으면 graph metric을 전체 산업 구조로 일반화하기 어렵다는 뜻이므로, 이후 해석의 범위를 정하는 기준이 된다.
@@ -529,7 +622,7 @@ save_figure(fig, "01_relation_type_counts.png")
         ),
         markdown(
             """
-## 28. Centrality 분석
+## 8. Centrality 분석
 
 **왜**: 어떤 entity가 관계망의 중심에 있는지 보기 위해서다. 세 가지 지표를 함께 본다.
 
@@ -591,7 +684,7 @@ print(f"두 view의 PageRank 상위 20 중 겹치는 entity: {len(overlap)}개 -
         ),
         markdown(
             """
-**해석 (팀 검토 전 초안)**
+**해석 (검토 전 초안)**
 
 - typed graph의 PageRank 상위 7개는 NVIDIA, OpenAI, Google, DeepSeek, Meta, Anthropic, Microsoft로 모두
   조직이다. 모델 family 중에서는 Llama, Nemotron, Gemma, Qwen, Kimi가 상위 15위 안에 든다.
@@ -602,13 +695,14 @@ print(f"두 view의 PageRank 상위 20 중 겹치는 entity: {len(overlap)}개 -
   잇는 위치에 있다.
 - co-occurrence graph에서는 `United States`, `China`, `open source model`처럼 맥락을 나타내는 entity가 상위에
   들어온다. 같은 문장에 함께 쓰인 빈도라서 담론의 배경(미·중 경쟁, open vs closed 논쟁)을 반영한다.
-- 두 view의 PageRank 상위 20 중 14개가 겹쳐, **핵심 행위자 집합**은 view에 덜 민감하다. 그러나 18절에서 본
-  것처럼 **순위**는 threshold에 따라 바뀌므로 산업 영향력 순위로 표현하지 않는다.
+- 두 view의 PageRank 상위 20 중 14개가 겹쳐, **핵심 행위자 집합**은 view에 덜 민감하다. 그러나 보정 전 graph의
+  민감도 분석(`artifacts/stage1_wp3/sensitivity/`)에서 **순위**는 score threshold에 따라 크게 바뀌었으므로 산업
+  영향력 순위로 표현하지 않는다.
 """
         ),
         markdown(
             """
-## 29. Clustering과 community
+## 9. Clustering과 community
 
 **왜**: 함께 언급되는 entity 묶음은 담론의 하위 주제(예: 중국 오픈 모델, NVIDIA 하드웨어 생태계)를
 보여 준다. clustering coefficient는 triangle이 많은 co-occurrence graph에서 의미가 있고, 희소한 typed
@@ -671,7 +765,7 @@ save_figure(fig, "03_cooccurrence_communities.png")
         ),
         markdown(
             """
-**해석 (팀 검토 전 초안)**
+**해석 (검토 전 초안)**
 
 - 평균 clustering은 co-occurrence graph가 0.54, typed graph가 0.10이다. 공동출현은 한 기사 안의 여러 entity가
   서로 묶여 triangle이 많고, typed graph는 모델 → 개발사처럼 별 모양 구조라 낮게 나오는 것이 정상이다.
@@ -682,12 +776,12 @@ save_figure(fig, "03_cooccurrence_communities.png")
   - **C2 (28%)** United States, DeepSeek, China, NVIDIA, Microsoft: DeepSeek 이후 미·중 경쟁, 칩, 수출 통제 담론
   - **C3 (18%)** vLLM, Nemotron, Google Cloud, IBM, Dell: 기업용 배포·추론 인프라
   - 작은 community는 특정 기사 주제다: LLM gateway 운영(C4), attention 구조(C5: MLA, GQA), Meta 앱(C6).
-- community 이름은 상위 entity를 보고 붙인 해석이므로 팀 검토 대상이다.
+- community 이름은 상위 entity를 보고 붙인 해석이므로 검토 대상이다.
 """
         ),
         markdown(
             """
-## 30. 시간 분석
+## 10. 시간 분석
 
 모든 날짜는 기사 발행일이므로 "그 시점에 데이터셋에서 관찰된 관계"로 해석한다.
 
@@ -773,7 +867,7 @@ display(pd.concat([shares.nlargest(10, "change_pp"), shares.nsmallest(5, "change
         ),
         markdown(
             """
-**해석 (팀 검토 전 초안)**
+**해석 (검토 전 초안)**
 
 - **2025Q1 집중**: relation 근거 문장이 약 1,700개로 다른 분기의 2~4배이고, 기사 수도 349개로 가장 많다
   (DeepSeek-R1 공개 직후). 처음 관찰된 triple도 이 분기에 가장 많다. 따라서 분기 비교는 기사 수로 정규화한
@@ -793,7 +887,7 @@ display(pd.concat([shares.nlargest(10, "change_pp"), shares.nsmallest(5, "change
         ),
         markdown(
             """
-## 31. 목적별 graph 시각화
+## 11. 목적별 graph 시각화
 
 전체 graph를 한 그림에 그리면 읽을 수 없으므로 질문별로 subgraph를 나눈다. 모든 그림에서 node 색은
 compact entity type, edge 색은 predicate group이고, threshold는 제목에 적었다.
@@ -878,11 +972,11 @@ draw_typed_subgraph(compete, f"Competition and benchmark claims among the 35 mos
         ),
         markdown(
             """
-## 32. Insight 후보와 근거 문장
+## 12. Insight 후보와 근거 문장
 
 graph pattern을 insight로 쓰기 전에 원문 근거와 대조해야 한다. 아래 표는 graph에서 자동으로 고른
 후보이며, 각 후보에 근거 기사 수와 대표 근거 문장(점수가 가장 높은 문장, 기사 발행일 포함)을 붙인다.
-`review_status=pending_team_review`이므로 팀 검토 전에는 확정된 결론이 아니다.
+`review_status=pending_review`이므로 검토 전에는 확정된 결론이 아니다.
 """
         ),
         code(
@@ -917,20 +1011,20 @@ for row in shares.nlargest(3, "change_pp").itertuples():
     findings.append({"finding_type": "rising_entity", "entity_or_edge": row.canonical_name,
                      "metric": f"relation evidence share {row.change_pp:+.1f}pp (P2 - P1)", "documents": None,
                      "detail": row.entity_type_compact, "evidence": ""})
-finding_candidates = pd.DataFrame(findings).assign(review_status="pending_team_review")
+finding_candidates = pd.DataFrame(findings).assign(review_status="pending_review")
 with pd.option_context("display.max_colwidth", 160):
     display(finding_candidates)
 """
         ),
         markdown(
             """
-### 핵심 insight 초안 (팀 검토 전)
+### 핵심 insight 초안 (검토 전)
 
 각 항목은 관찰 → 사용한 graph·지표 → 근거 → 한계 순서로 적었다. 위 후보 표의 근거 문장을 원문과 대조한 뒤
 확정한다.
 
 **1. 오픈 모델 담론의 중심이 Llama에서 중국 family와 Nemotron으로 분산되었다.**
-30절 family 기사 비율과 relation 근거 비중을 사용했다. Llama 68% → 19%, Qwen 5% → 32%, Kimi 0% → 40%,
+10절 family 기사 비율과 relation 근거 비중을 사용했다. Llama 68% → 19%, Qwen 5% → 32%, Kimi 0% → 40%,
 GLM 0% → 27%이고, `GLM → outperforms → Claude Opus`(2026-08-11, "GLM-5.2 (Zhipu AI) beats Claude Opus on some
 coding benchmarks at 46% of the cost") 같은 2026년 relation이 나타났다.
 한계: 언급 비율은 실제 사용량이나 성능이 아니라 기사 노출이다.
@@ -958,7 +1052,7 @@ DeepSeek의 relation 근거 기사 비중은 P1 39% → P2 12%이고, 2025Q1에 
         ),
         markdown(
             """
-## 33. 한계와 타당성 위협
+## 13. 한계와 타당성 위협
 
 - **Tier B precision 미확인**: 보정 전 표본의 precision은 AI 초안 기준 약 0.47, 단어 목록 필터 후
   약 0.71이었다. 보정 규칙의 효과는 새 Tier B 표본 90개의 사람 검수로만 확정할 수 있다. 그 전까지
@@ -968,8 +1062,8 @@ DeepSeek의 relation 근거 기사 비중은 P1 39% → P2 12%이고, 2025Q1에 
 - **날짜 의미**: 모든 날짜는 기사 발행일이다. 출시일이나 사건 발생일로 표현하지 않는다.
 - **co-occurrence ≠ 의미 관계**: 같은 문장에 함께 등장했다는 뜻일 뿐, 경쟁·협력·인과를 뜻하지 않는다.
   병합 node 쌍의 문서 수는 상한값이다.
-- **중심성 ≠ 산업 영향력**: 1,210개 Open Models 기사에서의 언급·관계 구조다. 2단계에서 확인했듯 score와
-  threshold에 따라 순위가 크게 바뀐다.
+- **중심성 ≠ 산업 영향력**: 1,210개 Open Models 기사에서의 언급·관계 구조다. 보정 전 graph의 민감도
+  분석에서 score와 threshold에 따라 순위가 크게 바뀌었다.
 - **일반명사 규칙과 별칭 표의 한계**: 규칙이 놓친 일반명사(예: `Fox`, `Nari`)와 등록되지 않은 별칭이
   남아 있을 수 있다. `outputs/stage1_wp3_relation_correction_20261008/corrections/`를 검토해 보완한다.
 - **family 단위 축약**: `MedGemma` → `Gemma`, `Mixtral` → `Mistral`처럼 WP1 lexicon이 family 단위로
@@ -978,7 +1072,7 @@ DeepSeek의 relation 근거 기사 비중은 P1 39% → P2 12%이고, 2025Q1에 
         ),
         markdown(
             """
-## 34. 저장과 재로딩 검증
+## 14. 저장과 재로딩 검증
 
 Stage 3에서 다시 쓰도록 graph와 schema를 저장한다.
 
@@ -1125,7 +1219,7 @@ Schema: `{graph_schema["schema_version"]}` · 상태: `{GRAPH_STATUS}` · Track:
 ## 분석 표
 `node_metrics`, `relation_type_metrics`, `relation_type_summary`, `node_communities`, `community_summary`,
 `quarterly_relation_assertions`, `quarterly_new_typed_edges`, `family_quarterly_share`,
-`emerging_relations_2026`, `entity_period_share`, `graph_finding_candidates`(팀 검토 전 후보)
+`emerging_relations_2026`, `entity_period_share`, `graph_finding_candidates`(검토 전 후보)
 
 ## Stage 3 provenance
 `entity_id` → `relation_id` → `text_unit_id` → `document_id` → `published_at`.
@@ -1138,7 +1232,7 @@ print(DATA_DICTIONARY[:600])
         ),
         markdown(
             """
-## 35. Stage 3 Graph-RAG 연결 smoke test
+## 15. Stage 3 Graph-RAG 연결 smoke test
 
 저장한 graph를 기존 `GraphEvidenceRetriever`로 다시 읽어, 질문 속 entity → typed edge → 근거 문장 →
 기사 ID·발행일로 돌아갈 수 있는지 확인한다. WP1 `open_models_core.parquet`이 있으면 기사 제목과 URL도
@@ -1184,10 +1278,10 @@ with pd.option_context("display.max_colwidth", 160):
         ),
         markdown(
             """
-## 36. Stage 1 완료 체크리스트
+## 16. WP3 요구사항 확인
 
-과제 안내서의 Knowledge Graph Construction·Outputs 요구사항을 기준으로 자동 확인 결과와 사람이
-해야 할 항목을 구분한다. `PENDING`은 코드로 확정할 수 없는 팀 작업이다.
+과제 안내서의 Knowledge Graph Construction 요구사항을 기준으로 자동 확인 결과와 사람이 확인해야 할 항목을
+구분한다. `PENDING`은 코드로 확정할 수 없는 검토 항목이다.
 """
         ),
         code(
@@ -1209,34 +1303,13 @@ checklist = pd.DataFrame(
         ("Stage 3 provenance smoke test", "PASS" if len(smoke_test) else "FAIL", f"{len(smoke_test)}개 근거 반환"),
         ("Tier B relation 사람 검수 90개, precision >= 0.80", "PASS" if GRAPH_STATUS == "human_validated_sample" else "PENDING",
          f"검수 {int(review_labels.notna().sum())}/90"),
-        ("insight를 원문 근거와 대조해 확정", "PENDING", "graph_finding_candidates 팀 검토"),
+        ("insight를 원문 근거와 대조해 확정", "PENDING", "graph_finding_candidates 원문 대조"),
         ("그림 label·legend·threshold 사람 승인", "PENDING", ", ".join(figure_files)),
-        ("WP1 topic·temporal 결과와 통합 (stage1_final.ipynb)", "PENDING", "WP1 표와 30절 family 추이 비교"),
-        ("팀원 기여·AI 도구 공개, 최종본 영어 전환", "PENDING", "37절 초안 확인"),
     ],
     columns=["요구사항", "상태", "근거"],
 )
 display(checklist)
 assert not checklist["상태"].eq("FAIL").any()
-"""
-        ),
-        markdown(
-            """
-## 37. 팀원 기여와 AI 도구 공개 (초안)
-
-| 작업 | 담당 | 내용 |
-|---|---|---|
-| Stage 1 WP1 | Daliasny Gonzalez Guzman | 데이터 정제·전처리, EDA, sentiment/frame, topic modeling, Open Models lexicon |
-| Stage 1 WP2 | Jennifer Spieser | spaCy·GLiNER entity 추출, GLiREL relation 추출, co-occurrence, handover schema |
-| Stage 1 WP3 | Jihyeon Choung | WP2 인계 검증, relation 검수·보정, compact schema, knowledge graph 구축·분석·시각화, Stage 3 인계 |
-| relation 검수 | 팀원 3명 | Tier B 표본 90개 (각 30개) — 진행 예정 |
-
-**AI 도구 사용 공개 (초안)**
-
-- **Claude Code (Anthropic)**: WP2 relation 표본의 1차 판정 초안 작성(공식 검수에 사용하지 않음),
-  relation correction notebook 초안과 보정 규칙 설계, 본 notebook 3단계(22–37절)의 코드와 설명 초안
-  작성. 모든 수치는 notebook 실행 결과에서 나왔고, 해석과 결론은 팀 검토 대상이다.
-- 다른 AI 도구를 사용했다면 도구 이름과 사용 범위를 여기에 추가한다.
 """
         ),
     ]
