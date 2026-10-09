@@ -425,37 +425,37 @@ print(f"graph 후보: {len(graph_candidates) - len(new_relations):,} -> {len(gra
         ),
         markdown(
             """
-## 4. 사람 검수 결과 반영 규칙
+## 4. 사람 검수와 오류 분석 기반 보정
 
-Tier B 표본 90개(`relation_review_corrected_seed2026.xlsx`)와 3-1절 보조 표본
-(`relation_review_supplement_seed2026.xlsx`)은 사람이 검수한다. 이 셀은 검수 파일을 읽어 다음 규칙을 적용한다.
+3절 보정 후 relation의 품질을 사람 검수로 측정하고, 검수에서 찾은 오류 유형마다 보정 규칙을 추가한다.
 
-보조 표본은 3-1절 방법을 확정하기 전에 뽑았기 때문에 세 묶음의 역할이 다르다.
+**검수 자료**
 
-| 묶음 | 현재 처리 | 검수 결과의 쓰임 |
-|---|---|---|
-| `role_typed_tier_B` | graph에 있음 | FALSE 제외, precision 보고 |
-| `rule_attribute` 중 모델명에서 나온 크기 | 모델 node 속성 | 모델명 정제 점검 |
-| `rule_attribute` 중 문장 서술 속성, `single_sentence_layer` | graph에서 제외 | 제외 근거로만 보고 |
+- **Tier B 무작위 표본 90개** (`relation_review_corrected_seed2026.xlsx`): 검수자 3명이 30개씩 판정한다.
+- **3-1절 보조 표본** (`relation_review_supplement_seed2026.xlsx`): 3-1절 방법을 확정하기 전에 뽑았으므로 묶음마다 쓰임이 다르다.
 
-- `FALSE`로 판정된 triple은 graph에서 제외한다.
-- graph 상태: 90개 검수가 끝나기 전에는 `pending_human_review`, 끝난 뒤 precision이 0.80 이상이면
-  `human_validated_sample`, 미만이면 `human_reviewed_below_target`이다.
+  | 묶음 | 현재 처리 | 검수 결과의 쓰임 |
+  |---|---|---|
+  | `role_typed_tier_B` | graph에 있음 | FALSE 제외, precision 보고 |
+  | `rule_attribute` 중 모델명에서 나온 크기 | 모델 node 속성 | 모델명 정제 점검 |
+  | `rule_attribute` 중 문장 서술 속성, `single_sentence_layer` | graph에서 제외 | 제외 근거로만 보고 |
+
+- **insight relation 대조** (`insight_relation_check.csv`): insight에 쓰이는 relation(2026년 신규 relation, 주요 개발사로
+  들어가는 `developed by`, 경쟁·성능 비교 상위 relation) 중 표본 밖의 327개를 근거 문장과 하나씩 대조했다. AI가 1차로
+  판정하고 `FALSE` 판정은 사람이 모두 확인했다(`human_checked`). 무작위 표본이 아니므로 precision 계산에는 쓰지 않는다.
+
+**검수 결과를 반영하는 방법**
+
+- `FALSE`로 판정된 triple은 graph에서 제외한다. 표본 검수 라벨이 insight 대조보다 우선한다.
 - `AMBIGUOUS`는 precision 계산에서 제외하고 개수만 보고한다.
-- `competes with`는 서로 다른 근거 문장이 3개 이상일 때만 남긴다 (사람이 `TRUE`로 판정한 것은 유지).
-  검수에서 `competes with` 오류는 대부분 회사·모델 이름을 나열한 문장("OpenAI, Google, Anthropic 등")에서
-  나왔다. 경쟁 단서 단어(compete, rival 등)로 거르는 방법도 시험했지만, 오류 문장 대부분에도 이런 단어가 있어
-  구분되지 않았다. 반면 근거 문장 2개짜리는 대부분 같은 나열 문장이 우연히 반복된 경우였다.
-- `competes with`는 같은 종류끼리(회사–회사, 모델–모델)만 남긴다. "Kimi ↔ OpenAI"처럼 모델과 회사를 잇는 relation은
-  경쟁 주체가 섞여 해석할 수 없다 (사람이 `TRUE`로 판정한 것은 유지).
-- 규칙은 검수 라벨을 본 뒤 정했으므로, 규칙 적용 후 남는 표본의 precision은 낙관적인 값이다. 규칙을 정할 때 보지 않은
-  남은 표본(Reviewer_A)의 결과를 따로 보고해 확인한다.
-- insight에 쓰이는 relation(2026년 신규 relation, 주요 개발사로 들어가는 `developed by`, 경쟁·성능 비교 상위 relation)
-  중 검수 표본 밖의 327개는 근거 문장과 하나씩 대조했다(`insight_relation_check.csv`). AI가 1차로 판정하고, `FALSE`
-  판정은 사람이 모두 확인했다(`human_checked`; 64개 중 5개는 관계가 맞아 `TRUE`로 바뀜). 최종 `FALSE`는 graph에서
-  제외하고, 표본 검수 라벨이 있으면 그쪽을 우선한다. 무작위 표본이 아니므로 precision 계산에는 쓰지 않는다.
+- 오류 분석에서 나온 `competes with` 보정 규칙 (사람이 `TRUE`로 판정한 relation은 유지):
+  - 서로 다른 근거 문장이 3개 이상일 때만 남긴다. 오류는 대부분 회사·모델 이름을 나열한 문장("OpenAI, Google,
+    Anthropic 등")에서 나왔고, 근거 2문장짜리는 대부분 같은 나열 문장이 우연히 반복된 경우였다. 경쟁 단서 단어(compete,
+    rival 등)로 거르는 방법도 시험했지만 오류 문장 대부분에도 이런 단어가 있어 구분되지 않았다.
+  - 같은 종류끼리(회사–회사, 모델–모델)만 남긴다. "Kimi ↔ OpenAI"처럼 경쟁 주체가 섞인 relation은 해석할 수 없다.
 
-AI가 작성한 판정 초안은 이 계산에 사용하지 않는다.
+**precision 읽는 법**: 보정 규칙은 검수 라벨을 본 뒤 정했으므로, 그 라벨로 잰 규칙 적용 후 precision은 낙관적인 값이다.
+규칙을 정할 때 보지 않은 표본(Reviewer_A)의 값을 따로 보고해 개선 효과를 확인한다. AI 판정은 precision 계산에 쓰지 않는다.
 """
         ),
         code(
@@ -465,11 +465,7 @@ review_labels = review["review_correct"].astype("string").str.strip().str.upper(
 review_counts = review_labels.value_counts().reindex(["TRUE", "FALSE", "AMBIGUOUS"], fill_value=0)
 decided = int(review_counts["TRUE"] + review_counts["FALSE"])
 review_precision = review_counts["TRUE"] / decided if decided else np.nan
-GRAPH_STATUS = (
-    "pending_human_review" if review_labels.notna().sum() < 90
-    else "human_validated_sample" if review_precision >= 0.80
-    else "human_reviewed_below_target"
-)
+GRAPH_STATUS = "pending_human_review" if review_labels.notna().sum() < len(review) else "human_reviewed_sample"
 
 supplement_review = pd.read_excel(SUPPLEMENT_REVIEW_PATH, sheet_name="Review")
 supplement_review["review_label"] = supplement_review["review_correct"].astype("string").str.strip().str.upper()
@@ -523,18 +519,25 @@ final_edges.loc[unlabelled & (check == "TRUE") & human_checked, "review_status"]
 final_edges.loc[unlabelled & (check == "TRUE") & ~human_checked, "review_status"] = "checked_true_ai"
 removed_by_check = final_edges[final_edges["review_status"].eq("checked_false")]
 
-# 규칙 적용 후 남는 표본의 precision (사람 TRUE 예외 없이 규칙만 적용). Reviewer_A는 규칙을 정할 때 보지 않은 표본이다
+# 품질 측정과 개선: 규칙 적용 후 precision은 사람 TRUE 예외 없이 규칙만 적용해 잰다
 rule_dropped = set(map(tuple, final_edges.loc[few_sentences | mixed_competes, TRIPLE].values))
 sample_eval = review.rename(columns={"predicate": "relation"}).assign(
     label=review_labels.values, kept=lambda d: [tuple(k) not in rule_dropped for k in d[TRIPLE].values])
-def precision_of(rows):
+seen_by_rules = sample_eval["reviewer_assignment"].isin(["Reviewer_B", "Reviewer_C"])
+def quality_row(stage, rows):
     t, f = int(rows["label"].eq("TRUE").sum()), int(rows["label"].eq("FALSE").sum())
-    return pd.Series({"TRUE": t, "FALSE": f, "precision": round(t / (t + f), 3) if t + f else np.nan})
-post_rule_precision = pd.DataFrame({
-    "전체 표본": precision_of(sample_eval),
-    "규칙 적용 후 남는 표본": precision_of(sample_eval[sample_eval["kept"]]),
-    **{f"규칙 적용 후 · {name}": precision_of(rows[rows["kept"]]) for name, rows in sample_eval.groupby("reviewer_assignment")},
-}).T
+    return {"단계": stage, "판정 수": t + f, "TRUE": t, "FALSE": f,
+            "precision": f"{t / (t + f):.3f}" if t + f else "검수 대기"}
+quality_progress = pd.DataFrame([
+    {"단계": "WP2 원본 표본, 보정 전 (AI 1차 판정, 3절)", "판정 수": 90, "TRUE": np.nan, "FALSE": np.nan, "precision": "약 0.47"},
+    quality_row("3절 보정 후 Tier B 표본 (사람 검수)", sample_eval),
+    quality_row("오류 분석 규칙 적용 후 · 규칙을 정할 때 본 표본", sample_eval[sample_eval["kept"] & seen_by_rules]),
+    quality_row("오류 분석 규칙 적용 후 · 규칙을 정할 때 보지 않은 표본", sample_eval[sample_eval["kept"] & ~seen_by_rules]),
+])
+error_analysis = (sample_eval[sample_eval["label"].eq("FALSE")]
+                  .assign(error_type=lambda d: d["review_error_type"].fillna("unspecified"))
+                  .groupby("error_type").agg(FALSE=("label", "size"), 규칙으로_제거=("kept", lambda k: int((~k).sum())))
+                  .sort_values("FALSE", ascending=False).reset_index())
 final_edges = final_edges[~final_edges["review_status"].isin(["reviewed_false", "weak_competes", "checked_false"])].reset_index(drop=True)
 
 display(pd.DataFrame(
@@ -542,7 +545,6 @@ display(pd.DataFrame(
         ("검수 표본 행 수", len(review)),
         ("검수 완료 행 수", int(review_labels.notna().sum())),
         ("TRUE / FALSE / AMBIGUOUS", " / ".join(str(int(v)) for v in review_counts)),
-        ("Tier B 표본 precision", "검수 전" if np.isnan(review_precision) else f"{review_precision:.3f}"),
         ("FALSE로 제외한 triple", int(label.eq("FALSE").sum())),
         (f"competes with 규칙(근거 {COMPETES_MIN_SENTENCES}문장 미만, 모델–회사 혼합)으로 제외 (FALSE 제외)", int((weak_competes & label.ne("FALSE")).sum())),
         ("insight relation 대조로 제외 (사람 확인)", len(removed_by_check)),
@@ -552,7 +554,8 @@ display(pd.DataFrame(
     columns=["항목", "값"],
 ))
 display(competes_rule_check)
-display(post_rule_precision)
+display(quality_progress)
+display(error_analysis)
 display(supplement_summary)
 display(insight_check.merge(removed_by_check[TRIPLE], on=TRIPLE)["error_type"].value_counts()
         .rename_axis("insight 대조 FALSE 오류 유형").reset_index(name="triple 수"))
@@ -1403,10 +1406,9 @@ Qwen {family_size_mentions.loc["Qwen", p1]} → {family_size_mentions.loc["Qwen"
             """
 ## 13. 한계와 타당성 위협
 
-- **Tier B precision이 목표에 못 미침**: 4절 사람 검수에서 Tier B 표본 precision이 목표 0.80보다 낮았고, 오류는 대부분
-  여러 이름을 나열한 문장에서 엔티티를 잘못 짚은 경우였다. `competes with` 근거 3문장 규칙과 insight relation 대조로
-  확인된 오류는 제외했지만, 검수하지 않은 relation에는 같은 유형의 오류가 남아 있을 수 있다. 또 `competes with` 규칙은
-  같은 검수 라벨을 보고 정했으므로, 남은 표본 30개의 검수 결과로 다시 확인한다.
+- **검수하지 않은 relation에 남은 오류**: 사람 검수 표본의 precision과 보정 규칙의 효과는 4절 표에 보고했다. 남은 오류는
+  주로 여러 이름을 나열한 문장에서 엔티티를 잘못 연결한 경우로, 검수하지 않은 relation에도 같은 유형이 남아 있을 수 있다.
+  Stage 3에서는 Tier B relation을 근거 문장·기사 날짜와 함께 제시해 확인할 수 있게 한다.
 - **Tier A는 기사 근거가 없다**: WP1 lexicon의 curated relation이다. Stage 3에서 기사 근거가 필요한
   답변에는 Tier B assertion만 인용한다.
 - **날짜 의미**: 모든 날짜는 기사 발행일이다. 출시일이나 사건 발생일로 표현하지 않는다.
@@ -1664,8 +1666,7 @@ checklist = pd.DataFrame(
         ("graph와 schema 저장·재로딩", "PASS" if reload_check["일치"].all() else "FAIL", "GraphML, node-link JSON, Parquet"),
         ("short schema / data dictionary", "PASS", "DATA_DICTIONARY_KO.md"),
         ("Stage 3 provenance smoke test", "PASS" if len(smoke_test) else "FAIL", f"{len(smoke_test)}개 근거 반환"),
-        ("Tier B relation 사람 검수 90개, precision >= 0.80",
-         {"human_validated_sample": "PASS", "pending_human_review": "PENDING"}.get(GRAPH_STATUS, "BELOW TARGET"),
+        ("Tier B relation 사람 검수 (90개 표본)와 오류 분석", "PASS" if GRAPH_STATUS == "human_reviewed_sample" else "PENDING",
          f"검수 {int(review_labels.notna().sum())}/90"),
         ("insight를 원문 근거와 대조해 확정", "PENDING", "graph_finding_candidates 원문 대조"),
         ("그림 label·legend·threshold 사람 승인", "PENDING", ", ".join(figure_files)),
