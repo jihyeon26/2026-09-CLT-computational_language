@@ -12,7 +12,8 @@
     "first_seen",
     "last_seen",
     "is_open_model_family",
-    "aliases"
+    "aliases",
+    "parameter_sizes_b"
   ],
   "entity_types": {
     "MODEL": {
@@ -82,6 +83,17 @@
     }
   },
   "relation_types": {
+    "has capability": {
+      "group": "ATTRIBUTE",
+      "directed": true,
+      "observed_head_types": [
+        "MODEL"
+      ],
+      "observed_tail_types": [
+        "MODEL_ATTRIBUTE"
+      ],
+      "definition": "capability provided by the model, product, technology, platform or hardware"
+    },
     "available on": {
       "group": "DEPLOYMENT",
       "directed": true,
@@ -159,8 +171,7 @@
       "observed_tail_types": [
         "INFRASTRUCTURE",
         "MODEL",
-        "ORGANIZATION",
-        "TECHNICAL_COMPONENT"
+        "ORGANIZATION"
       ],
       "definition": "direct competitor, rival model, organisation, product, technology, platform or hardware"
     },
@@ -210,6 +221,28 @@
         "GOVERNANCE"
       ],
       "definition": "the model, organisation or artifact is subject to a law, regulation or regulatory standard"
+    },
+    "member of family": {
+      "group": "LINEAGE",
+      "directed": true,
+      "observed_head_types": [
+        "MODEL"
+      ],
+      "observed_tail_types": [
+        "MODEL"
+      ],
+      "definition": "the model is a version or variant of a model family"
+    },
+    "based on": {
+      "group": "LINEAGE",
+      "directed": true,
+      "observed_head_types": [
+        "MODEL"
+      ],
+      "observed_tail_types": [
+        "MODEL"
+      ],
+      "definition": "the model, product, technology or platform is built on top of another model, product, technology, platform or architecture"
     },
     "distilled from": {
       "group": "LINEAGE",
@@ -293,7 +326,8 @@
       ],
       "observed_tail_types": [
         "ORGANIZATION",
-        "PERSON"
+        "PERSON",
+        "TECHNICAL_COMPONENT"
       ],
       "definition": "the organisation/person created or developed the model, product, technology, platform, hardware, architecture, dataset, benchmark, standard or license"
     },
@@ -349,13 +383,15 @@
   },
   "edge_quality_tiers": {
     "A": "curated WP1 lexicon model family -> developer (no article sentence)",
-    "B": "GLiREL relation passing all WP3 checks with >= 2 distinct evidence sentences"
+    "B": "relation passing all WP3 checks with >= 2 distinct evidence sentences (GLiREL, role-typed GLiREL, or model-name member of family); competes with needs >= 3 unless labelled TRUE in the review"
   },
   "review_status_values": [
     "curated_lexicon",
+    "unreviewed",
     "reviewed_true",
     "reviewed_ambiguous",
-    "unreviewed"
+    "checked_true_ai",
+    "checked_true_human"
   ],
   "graph_views": {
     "assertion": "directed multigraph, one edge per evidence sentence (edge key = relation_id)",

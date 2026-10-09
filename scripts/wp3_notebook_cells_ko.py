@@ -1396,9 +1396,6 @@ Qwen {family_size_mentions.loc["Qwen", p1]} → {family_size_mentions.loc["Qwen"
 언급 증가가 함께 나타난다.
 한계: 이름에 크기가 적힌 모델만 대상이라 표본이 작고(기사 {size_docs[p1]}개 → {size_docs[p2]}개), 출시·사용량이 아니라 기사 언급의
 구성 변화다. 특정 family의 보도량 변화가 크기 분포를 좌우할 수 있으므로 "중형 모델로의 이동을 시사한다" 정도로만 쓴다.
-
-**insight로 쓰지 않는 것**: `outperforms` relation은 "it outperforms Qwen 2.5, Gemma 3 and Llama 3"처럼 제3의 모델이
-둘 다를 능가한다는 서술에서 잘못 추출된 경우가 많아, 사람 검수 전까지 insight에서 제외한다.
 '''))
 """
         ),
