@@ -41,7 +41,7 @@ def notebook_cells() -> list:
 WP2 handover (수정하지 않음)
   → 2. 입력 검증
   → 3. relation 보정 결과 (stage1_wp3_relation_correction.ipynb)
-  → 3-1. 속성·계보 관계 보강 (관계 기준 type, 규칙 기반 속성, 보조 층)
+  → 3-1. 모델 관계 보강 (관계 기준 type, 모델명 정제)
   → 4–6. 검수 규칙 · compact schema · graph 생성
   → 7–10. 구조 · 중심성 · community · 시간 분석
   → 11–13. 시각화 · insight · 한계
@@ -261,22 +261,24 @@ WP2 권장 필터의 1,629개 대신 1,067개 triple을 사용한다. 줄어든 
         ),
         markdown(
             r"""
-## 3-1. 속성·계보 관계 보강
+## 3-1. 모델 관계 보강
 
-보정 후 graph에는 계보(`based on`, `distilled from` 등), 속성(파라미터 수, context window, capability),
-학습(학습 데이터·하드웨어) 관계가 거의 남지 않았다. 원인과 대응은 다음과 같다. 모두 WP2 산출물을 수정하지 않고
-WP3에서 처리한다.
+보정 후 graph에는 모델의 계보·속성·학습 relation이 거의 남지 않았다. 원인과 대응은 다음과 같다. 모두 WP2 산출물을
+수정하지 않고 WP3에서 처리한다.
 
 | 원인 | 대응 |
 |---|---|
 | `DeepSeek`, `Mistral`처럼 회사명과 모델명이 같은 WP1 family node가 회사 type으로 분류되어, 모델 관계가 schema type 검사에서 제외됨 | **관계 기준 type 판단**: WP1 family node가 모델 자리에 오면 모델로 보고 type을 다시 검사 |
-| 파라미터 수가 `70B`, `70 billion parameters` 등 서로 다른 문자열 node라 같은 관계가 반복되지 않아 항상 근거 1개(Tier C) | **규칙 기반 속성 추출**: 문장에서 모델명 바로 뒤의 크기(`Llama 3.1 405B`)나 `N billion parameters`, `128K context`를 숫자로 정규화한다 |
-| WP1 lexicon이 Qwen2.5·Qwen3 등을 `Qwen` 하나로 묶어, 크기가 family에 붙으면 "Qwen의 파라미터 수가 1.7B"처럼 부정확해짐 | **모델 단위 node**: 원문 이름에서 `Qwen3 1.7B`, `Llama 4 Scout` 같은 모델 node를 만들어 값을 붙이고 `member of family`로 family에 연결한다. 이름에 버전이 없으면 family node에 남기고 `family_level`로 표시한다 |
-| 계보·속성·학습 관계는 근거 문장 2개 조건(Tier B)을 거의 넘지 못함 | **보조 층**: 이 세 그룹의 Tier C(근거 1개) relation을 graph에 포함하고 `tier = C`로 구분 |
+| WP1 lexicon이 Qwen2.5·Qwen3 등을 `Qwen` 하나로 묶어, 버전별 크기를 표현할 수 없음 ("Qwen의 파라미터 수가 1.7B") | **모델명 정제**: 원문의 `Qwen3-1.7B`, `Llama 3.1 405B`처럼 family 이름 뒤에 크기가 붙은 모델명으로 모델 node를 만들고 `member of family`로 family에 연결한다. 크기는 이름에 적힌 값이므로 문장에서 뽑은 relation이 아니라 모델 node의 속성(`parameter_sizes_b`)으로 둔다 |
 
-새로 graph에 들어간 relation은 별도 검수 표본(`relation_review_supplement_seed2026.xlsx`)으로 사람이 확인한다.
-표본 비율은 기존 Tier B 표본 비율보다 조금 높게 잡았다. 결과를 원문과 대조하다 확인한 명백한 오류 4개는
-`MANUAL_EXCLUSIONS`에 사유와 함께 적어 graph에서 제외했다.
+검토했지만 쓰지 않은 방법은 다음과 같다.
+
+- **문장 서술에서 속성 추출**("Kimi K3 has 2.8 trillion parameters", "128K context"): graph에 들어갈 relation이 15개뿐이고,
+  비교 대상 모델의 값이 붙는 오류를 규칙으로 완전히 막기 어렵다. 그래서 context window 정보는 graph에 없다.
+- **근거 1문장 보조 층**(계보·속성·학습 그룹의 Tier C relation): 보조 검수에서 대부분 엔티티 오류로 판정되어 제외했다(4절).
+
+관계 기준 type으로 새로 들어간 relation은 별도 검수 표본(`relation_review_supplement_seed2026.xlsx`)으로 사람이 확인했다.
+결과를 원문과 대조하다 확인한 명백한 오류 4개는 `MANUAL_EXCLUSIONS`에 사유와 함께 적어 graph에서 제외했다.
 """
         ),
         code(
@@ -317,17 +319,7 @@ existing = set(map(tuple, graph_candidates[TRIPLE].values))
 role_typed = role_typed[[(t, r, h) not in existing or r == "competes with"
                          for h, r, t in role_typed[TRIPLE].values]]  # 반대 방향이 이미 graph에 있으면 제외
 
-# 2) 보조 층: 계보·속성·학습 그룹의 Tier C (파라미터 수·context window는 아래 규칙 기반 추출로 대체)
-FOCUS_GROUPS = {"LINEAGE", "ATTRIBUTE", "TRAINING"}
-RULE_RELATIONS = {"has parameter count", "has context window"}
-single_sentence = pd.concat([edges_corrected[edges_corrected["tier"] == "C"], role_typed[role_typed["tier"] == "C"]])
-single_sentence = single_sentence[single_sentence["relation"].map(PREDICATE_GROUP).isin(FOCUS_GROUPS)
-                                  & ~single_sentence["relation"].isin(RULE_RELATIONS)]
-
-new_relations = pd.concat([
-    role_typed[role_typed["tier"] == "B"].assign(sources="glirel", added_by="role_typed_tier_B"),
-    single_sentence.assign(sources="glirel", added_by="single_sentence_layer"),
-], ignore_index=True).drop_duplicates(TRIPLE)
+new_relations = role_typed[role_typed["tier"] == "B"].assign(sources="glirel", added_by="role_typed_tier_B").drop_duplicates(TRIPLE)
 new_relations = new_relations[[tuple(k) not in existing for k in new_relations[TRIPLE].values]]
 display(new_relations.groupby(["added_by", "relation"]).size().rename("triple 수").reset_index()
         .sort_values(["added_by", "triple 수"], ascending=[True, False]))
@@ -335,145 +327,74 @@ display(new_relations.groupby(["added_by", "relation"]).size().rename("triple �
         ),
         code(
             r"""
-# 3) 규칙 기반 속성 추출: 파라미터 수와 context window를 모델(버전·크기) 단위로 연결
+# 2) 모델명 정제: family 이름 바로 뒤에 크기가 붙은 모델명("Qwen3-1.7B", "Llama 3.1 405B")으로 모델 node를 만든다
 MATCH_MAP = str.maketrans({"‐": "-", "‑": "-", "‒": "-", "–": "-", "−": "-", "‘": "'", "’": "'", "“": '"', "”": '"'})
 FAMILY_RX = {fid: re.compile(f["rx"]) for fid, f in lexicon["families"].items()}
 family_node = (nodes_corrected[nodes_corrected["canonical_id"].isin(lexicon["families"])]
                .set_index("canonical_id")["entity_id"])
 SIZE_AFTER_NAME = re.compile(r"^(?P<prefix>[\s\-]*(?:[A-Za-z]{0,10}[\d.]*[\s\-]*){0,2}?)(?P<num>\d+(?:\.\d+)?)\s?(?P<unit>[BbTt])(?![\w])")
-PARAMETER_TEXT = re.compile(r"(?P<num>\d+(?:\.\d+)?)\s*(?P<unit>billion|trillion|[BT])\b[\s\-]*(?:total\s+)?param", re.I)
-CONTEXT_TEXT = re.compile(r"(?P<num>\d+(?:\.\d+)?)\s*(?P<unit>[KkM]|million|thousand)\b[\s\-]*(?:token|context)", re.I)
-COMPARISON = re.compile(r"\b(?:than|outperform\w*|compared|versus|vs\.?|rival\w*|beat\w*|like|such as)\b", re.I)
-NEAR_CHARS = 50  # 숫자는 family 이름 뒤 50자 이내에 있어야 그 family의 값으로 본다
+MIN_MODEL_SENTENCES = 2  # 우연한 표기를 피하려고 서로 다른 문장 2개 이상에 나온 모델명만 node로 만든다
 
-def nearest_family(spans, position, view):
-    # 숫자 바로 앞(50자 이내)에 있고 사이에 비교 표현이 없는 family 언급 위치를 돌려준다
-    candidates = [(start, end) for start, end in spans
-                  if 0 <= position - end <= NEAR_CHARS and not COMPARISON.search(view[end:position])]
-    return max(candidates, key=lambda span: span[1]) if candidates else None
-
-def model_name_before(view, start, position):
-    # family 언급부터 숫자 앞까지 이어지는 이름 토큰: "Llama 4 Scout has 109 billion" -> "Llama 4 Scout"
-    tokens = []
-    for token in view[start:position].split():
-        token = re.sub(r"'s$", "", token.strip(",;:()"))
-        if not re.match(r"^[A-Z0-9][\w.\-]*$", token):
-            break
-        tokens.append(token)
-    return " ".join(tokens)
-
-attribute_rows = []
+model_rows = []
 for doc_id, sentence_id, text in zip(sentences["doc_id"], sentences["sentence_id"], sentences["sentence_text"]):
     view = str(text).translate(MATCH_MAP)
-    hits = [(fid, m) for fid, rx in FAMILY_RX.items() if fid in family_node.index for m in rx.finditer(view)]
-    if not hits:
-        continue
-    for fid, m in hits:  # 모델명 바로 뒤의 크기: "Llama 3.1 405B", "Qwen2.5-72B"
-        size = SIZE_AFTER_NAME.match(view[m.end():m.end() + 30])
-        if size and not re.search(r"\d\s?x\s?$", size["prefix"]):  # MoE 표기(8x22B) 제외
-            value = float(size["num"]) * (1000 if size["unit"] in "Tt" else 1)
-            surface = (m.group() + view[m.end():m.end() + size.end()]).strip()
-            attribute_rows.append((fid, "has parameter count", value, surface, surface, "name_suffix", doc_id, sentence_id, text))
-    if len({fid for fid, _ in hits}) == 1:  # 한 family만 나온 문장에서 family 이름 바로 뒤의 서술형 표현
-        fid = hits[0][0]
-        spans = [(m.start(), m.end()) for _, m in hits]
-        matches = [("has parameter count", p) for p in PARAMETER_TEXT.finditer(view)
-                   # "37B parameters activated": param 뒤에 eters가 먼저 오므로 \w*로 건너뛴 뒤 active를 확인한다
-                   if not re.match(r"\w*\s*(?:active|activated)", view[p.end():p.end() + 20])]
-        if re.search(r"context|window", view, re.I):
-            matches += [("has context window", c) for c in CONTEXT_TEXT.finditer(view)]
-        for relation, match in matches:
-            span = nearest_family(spans, match.start(), view)
-            if span is None:
-                continue
-            unit = match["unit"].lower()
-            if relation == "has parameter count":
-                value = float(match["num"]) * (1000 if unit.startswith("t") else 1)
-            else:
-                value = float(match["num"]) * (1_000_000 if unit in ("m", "million") else 1000)
-            name = model_name_before(view, span[0], match.start())
-            attribute_rows.append((fid, relation, value, match.group(), name, "single_family_sentence", doc_id, sentence_id, text))
+    for fid, rx in FAMILY_RX.items():
+        if fid not in family_node.index:
+            continue
+        for m in rx.finditer(view):
+            size = SIZE_AFTER_NAME.match(view[m.end():m.end() + 30])
+            if size and not re.search(r"\d\s?x\s?$", size["prefix"]):  # MoE 표기(8x22B) 제외
+                value = float(size["num"]) * (1000 if size["unit"] in "Tt" else 1)
+                surface = (m.group() + view[m.end():m.end() + size.end()]).strip()
+                model_rows.append((fid, value, surface, doc_id, sentence_id, text))
 
-doc_dates = (pd.read_csv(WP2_INPUT_DIR / "entity_mentions.csv", usecols=["doc_id", "date"])
-             .drop_duplicates("doc_id").set_index("doc_id")["date"])
-attribute_evidence = (pd.DataFrame(attribute_rows, columns=["family", "relation", "value", "surface", "model_text", "rule",
-                                                            "doc_id", "sentence_id", "sentence_text"])
-                      .drop_duplicates(["family", "relation", "value", "doc_id", "sentence_id"]))
-attribute_evidence["family_id"] = attribute_evidence["family"].map(family_node)
-attribute_evidence["date"] = attribute_evidence["doc_id"].map(doc_dates)
-attribute_evidence["sentence_key"] = attribute_evidence["sentence_text"].map(lambda s: re.sub(r"\W+", " ", str(s).lower()).strip())
-
-# 모델 이름 정규화: "Qwen 2.5 7B", "Qwen2.5-7B"는 같은 모델. family 이름만 있으면 family node에 남긴다(family_level)
+# 모델 이름 정규화: "Qwen 2.5 7B", "Qwen2.5-7B"는 같은 모델
 family_label = nodes_corrected.set_index("entity_id")["entity"]
 def model_label(text):
     name = re.sub(r"\s+", " ", str(text)).strip()
     return re.sub(r"(\d+(?:\.\d+)?)\s?([BbTt])$", lambda m: m.group(1) + m.group(2).upper(), name)
 def model_key(label):
     return re.sub(r"[^0-9a-z.]", "", label.lower())
-attribute_evidence["model_label"] = attribute_evidence["model_text"].map(model_label)
-attribute_evidence["model_key"] = attribute_evidence["model_label"].map(model_key)
-family_keys = {model_key(name) for name in family_label[list(family_node.values)]}
-attribute_evidence["family_level"] = (attribute_evidence["model_key"].eq("")
-                                      | attribute_evidence["model_key"].isin(family_keys)
-                                      | attribute_evidence["model_key"].eq(attribute_evidence["family"].str.replace("_", "")))
-display_label = (attribute_evidence[~attribute_evidence["family_level"]]
-                 .groupby("model_key")["model_label"].agg(lambda x: x.value_counts().index[0]))
-attribute_evidence["head_id"] = np.where(attribute_evidence["family_level"], attribute_evidence["family_id"],
-                                         "model:variant_" + attribute_evidence["model_key"].str.replace(".", "_"))
-attribute_evidence["head"] = np.where(attribute_evidence["family_level"], attribute_evidence["family_id"].map(family_label),
-                                      attribute_evidence["model_key"].map(display_label))
 
-def spec_node(relation, value):
-    if relation == "has parameter count":
-        return f"spec:params_{value:g}b", f"{value:g}B parameters"
-    return f"spec:context_{value / 1000:g}k", (f"{value / 1_000_000:g}M-token context" if value >= 1_000_000
-                                              else f"{value / 1000:g}K-token context")
-attribute_evidence[["tail_id", "tail"]] = [spec_node(r, v) for r, v in zip(attribute_evidence["relation"], attribute_evidence["value"])]
+doc_dates = (pd.read_csv(WP2_INPUT_DIR / "entity_mentions.csv", usecols=["doc_id", "date"])
+             .drop_duplicates("doc_id").set_index("doc_id")["date"])
+model_mentions = pd.DataFrame(model_rows, columns=["family", "parameter_size_b", "surface", "doc_id", "sentence_id", "sentence_text"])
+model_mentions["family_id"] = model_mentions["family"].map(family_node)
+model_mentions["date"] = model_mentions["doc_id"].map(doc_dates)
+model_mentions["sentence_key"] = model_mentions["sentence_text"].map(lambda s: re.sub(r"\W+", " ", str(s).lower()).strip())
+model_mentions["model_label"] = model_mentions["surface"].map(model_label)
+model_mentions["model_key"] = model_mentions["model_label"].map(model_key)
+model_mentions = model_mentions.drop_duplicates(["family", "model_key", "doc_id", "sentence_id"]).reset_index(drop=True)
+display_label = model_mentions.groupby("model_key")["model_label"].agg(lambda x: x.value_counts().index[0])
+model_mentions["head_id"] = "model:variant_" + model_mentions["model_key"].str.replace(".", "_")
+model_mentions["head"] = model_mentions["model_key"].map(display_label)
+model_mentions = model_mentions.assign(relation="member of family", tail_id=model_mentions["family_id"],
+                                       tail=model_mentions["family_id"].map(family_label))
 
-def aggregate(evidence):
-    return (evidence.groupby(TRIPLE)
-            .agg(head=("head", "first"), tail=("tail", "first"), n_sentences=("sentence_key", "size"),
-                 n_distinct_sentences=("sentence_key", "nunique"), n_docs=("doc_id", "nunique"),
-                 first_seen=("date", "min"), last_seen=("date", "max"), family_level=("family_level", "first"))
-            .reset_index())
-attribute_relations = aggregate(attribute_evidence)
-attribute_relations = attribute_relations[attribute_relations["n_distinct_sentences"] >= 2].assign(
-    head_type="FOUNDATION_MODEL", tail_type="MODEL_SPEC", type_valid=True, tier="B", exclusion_reason="",
-    sources="rule_attribute", added_by="rule_attribute")
-
-# 모델 node를 family에 연결: "Qwen3 1.7B -> member of family -> Qwen" (근거는 같은 문장들)
-variants = attribute_relations.loc[~attribute_relations["family_level"], "head_id"].unique()
-member_evidence = (attribute_evidence[attribute_evidence["head_id"].isin(variants)]
-                   .assign(relation="member of family", tail_id=lambda d: d["family_id"],
-                           tail=lambda d: d["family_id"].map(family_label)))
-member_relations = aggregate(member_evidence).assign(
+member_relations = (model_mentions.groupby(TRIPLE)
+                    .agg(head=("head", "first"), tail=("tail", "first"), n_sentences=("sentence_key", "size"),
+                         n_distinct_sentences=("sentence_key", "nunique"), n_docs=("doc_id", "nunique"),
+                         first_seen=("date", "min"), last_seen=("date", "max"))
+                    .reset_index())
+member_relations = member_relations[member_relations["n_distinct_sentences"] >= MIN_MODEL_SENTENCES].assign(
     head_type="FOUNDATION_MODEL", tail_type="FOUNDATION_MODEL", type_valid=True, tier="B", exclusion_reason="",
-    sources="rule_attribute", added_by="rule_family_member")
-attribute_evidence = pd.concat([attribute_evidence, member_evidence], ignore_index=True)
+    sources="model_name", added_by="model_name_member")
+model_mentions = model_mentions[model_mentions["head_id"].isin(member_relations["head_id"])].reset_index(drop=True)
 
-# 새 node: 모델(버전·크기) node와 값 node
-new_nodes = (attribute_evidence[attribute_evidence["head_id"].isin(variants)]
-             .groupby("head_id").agg(entity=("head", "first"), mentions=("sentence_key", "size"), n_docs=("doc_id", "nunique"),
-                                     first_seen=("date", "min"), last_seen=("date", "max"), family_id=("family_id", "first"))
-             .reset_index().rename(columns={"head_id": "entity_id"}).assign(entity_type="FOUNDATION_MODEL"))
-spec_ids = set(attribute_relations["tail_id"])
-spec_nodes = (attribute_evidence[attribute_evidence["tail_id"].isin(spec_ids)]
-              .groupby("tail_id").agg(entity=("tail", "first"), mentions=("sentence_key", "size"),
-                                      n_docs=("doc_id", "nunique"), first_seen=("date", "min"), last_seen=("date", "max"))
-              .reset_index().rename(columns={"tail_id": "entity_id"}).assign(entity_type="MODEL_SPEC"))
-added_nodes = pd.concat([new_nodes, spec_nodes], ignore_index=True).assign(
-    merged_ids=lambda d: d["entity_id"], n_merged=1, is_generic=False)
-nodes_corrected = pd.concat([nodes_corrected, added_nodes[~added_nodes["entity_id"].isin(nodes_corrected["entity_id"])]],
+# 새 모델 node: 크기는 이름에서 나온 node 속성이다. family node에는 그 family 모델들의 크기 목록을 붙인다
+as_list = lambda values: json.dumps(sorted(set(values)))
+new_nodes = (model_mentions.groupby("head_id")
+             .agg(entity=("head", "first"), mentions=("sentence_key", "size"), n_docs=("doc_id", "nunique"),
+                  first_seen=("date", "min"), last_seen=("date", "max"), family_id=("family_id", "first"))
+             .reset_index().rename(columns={"head_id": "entity_id"})
+             .assign(entity_type="FOUNDATION_MODEL", merged_ids=lambda d: d["entity_id"], n_merged=1, is_generic=False))
+nodes_corrected = pd.concat([nodes_corrected, new_nodes[~new_nodes["entity_id"].isin(nodes_corrected["entity_id"])]],
                             ignore_index=True)
+sizes_by_node = pd.concat([model_mentions.groupby("head_id")["parameter_size_b"].apply(as_list),
+                           model_mentions.groupby("family_id")["parameter_size_b"].apply(as_list)])
+nodes_corrected["parameter_sizes_b"] = nodes_corrected["entity_id"].map(sizes_by_node).fillna("")
 
-# family node에는 그 family의 모델들에서 관찰된 값 목록을 붙인다 (어느 모델의 값인지는 모델 node에 있음)
-for column, relation in [("parameter_sizes_b", "has parameter count"), ("context_windows_tokens", "has context window")]:
-    graph_values = attribute_relations[attribute_relations["relation"] == relation][TRIPLE]
-    values = (attribute_evidence.merge(graph_values, on=TRIPLE)
-              .groupby("family_id")["value"].apply(lambda v: json.dumps(sorted(set(v)))))
-    nodes_corrected[column] = nodes_corrected["entity_id"].map(values).fillna("")
-
-new_relations = pd.concat([new_relations, attribute_relations, member_relations], ignore_index=True)
+new_relations = pd.concat([new_relations, member_relations], ignore_index=True)
 graph_candidates = pd.concat([graph_candidates.assign(added_by="correction"), new_relations], ignore_index=True)
 assert not graph_candidates.duplicated(TRIPLE).any()
 
@@ -488,102 +409,39 @@ manual_exclusions = pd.DataFrame(MANUAL_EXCLUSIONS, columns=TRIPLE + ["reason"])
 excluded_keys = set(map(tuple, manual_exclusions[TRIPLE].values))
 graph_candidates = graph_candidates[[tuple(k) not in excluded_keys for k in graph_candidates[TRIPLE].values]].reset_index(drop=True)
 
-print(f"규칙 기반 속성 근거 문장 {(attribute_evidence['relation'] != 'member of family').sum():,}개 -> 근거 문장 2개 이상인 속성 relation "
-      f"{len(attribute_relations)}개 (모델 단위 {int((~attribute_relations['family_level']).sum())}, family 단위 "
-      f"{int(attribute_relations['family_level'].sum())}) | 모델 node {len(new_nodes)}개, member of family {len(member_relations)}개")
-display(attribute_relations[~attribute_relations["family_level"]].sort_values("n_distinct_sentences", ascending=False)
-        .head(12)[["head", "relation", "tail", "n_distinct_sentences"]])
-display(nodes_corrected.loc[nodes_corrected["parameter_sizes_b"] != "", ["entity", "parameter_sizes_b", "context_windows_tokens"]]
-        .sort_values("entity"))
+print(f"모델명 언급 {len(model_rows):,}개 -> 서로 다른 문장 {MIN_MODEL_SENTENCES}개 이상에 나온 모델 node {len(new_nodes)}개 "
+      f"(member of family {len(member_relations)}개)")
+display(nodes_corrected[nodes_corrected["entity_id"].isin(new_nodes["entity_id"])]
+        .sort_values("mentions", ascending=False).head(12)[["entity", "parameter_sizes_b", "mentions", "n_docs"]])
+display(nodes_corrected.loc[nodes_corrected["entity_id"].isin(family_node.values) & nodes_corrected["parameter_sizes_b"].ne(""),
+                            ["entity", "parameter_sizes_b"]].sort_values("entity"))
 display(new_relations.groupby("added_by").size().rename("graph에 추가된 triple").reset_index())
-print(f"graph 후보: {len(graph_candidates) - len(new_relations):,} -> {len(graph_candidates):,} triple")
-"""
-        ),
-        code(
-            r"""
-# 4) 추가된 relation의 사람 검수 표본
-#    - 표본 비율은 기존 Tier B 표본(90개 / Tier B 전체)과 비슷하게, 조금 더 많게 잡는다
-#    - 이미 파일이 있으면 그대로 쓰고, graph 후보에서 사라진 행(규칙이 바뀐 그룹)만 같은 그룹에서 다시 뽑는다
-#    - 판정이 적힌 행은 절대 지우지 않는다
-from openpyxl.utils import get_column_letter
-from openpyxl.worksheet.datavalidation import DataValidation
-MAIN_SAMPLE_RATE = len(pd.read_excel(CORRECTED_REVIEW_PATH, sheet_name="Review")) / int((edges_corrected["tier"] == "B").sum())
-SUPPLEMENT_RATE = MAIN_SAMPLE_RATE * 1.15
-SAMPLED_GROUPS = ["role_typed_tier_B", "rule_attribute", "single_sentence_layer"]  # member of family는 모델 이름에서 바로 나오므로 제외
-sentence_text = sentences.set_index(["doc_id", "sentence_id"])["sentence_text"]
-ok_rows = evidence_corrected[evidence_corrected["evidence_status"] == "ok"]
-sample_relations = new_relations[new_relations["added_by"].isin(SAMPLED_GROUPS)
-                                 & np.array([tuple(k) not in excluded_keys for k in new_relations[TRIPLE].values])]
-
-def review_row(row, sample_id):
-    source = attribute_evidence if row.added_by == "rule_attribute" else ok_rows
-    evidence = source[(source["head_id"] == row.head_id) & (source["relation"] == row.relation)
-                      & (source["tail_id"] == row.tail_id)].sort_values("doc_id")
-    primary, support = evidence.iloc[0], evidence.drop_duplicates("sentence_text").iloc[1:2]
-    doc_id, sentence_id = primary["doc_id"], int(primary["sentence_id"])
-    return {"sample_id": sample_id, "added_by": row.added_by, "head": row.head, "predicate": row.relation,
-            "tail": row.tail, "n_sentences": int(row.n_distinct_sentences),
-            "primary_context_before": sentence_text.get((doc_id, sentence_id - 1), ""),
-            "evidence_text": primary["sentence_text"],
-            "primary_context_after": sentence_text.get((doc_id, sentence_id + 1), ""),
-            "support_2_context": support["sentence_text"].iloc[0] if len(support) else "",
-            "review_correct": "", "reviewer": "", "review_error_type": "", "review_notes": "",
-            "head_id": row.head_id, "tail_id": row.tail_id, "document_id": doc_id,
-            "text_unit_id": f"{doc_id}:{sentence_id}", "published_at": primary["date"]}
-
-if SUPPLEMENT_REVIEW_PATH.exists():
-    supplement = pd.read_excel(SUPPLEMENT_REVIEW_PATH, sheet_name="Review", dtype={"review_correct": str})
-else:
-    supplement = pd.DataFrame(columns=["sample_id", "added_by", "head_id", "predicate", "tail_id", "review_correct"])
-current = set(map(tuple, sample_relations[TRIPLE].values))
-in_graph = [(h, r, t) in current for h, r, t in supplement[["head_id", "predicate", "tail_id"]].values]
-stale = supplement[[not x for x in in_graph]]
-assert stale["review_correct"].isna().all(), f"판정이 적힌 행이 graph 후보에서 사라졌습니다: {stale['sample_id'].tolist()}"
-supplement = supplement[in_graph].copy()
-# 아직 판정하지 않은 행은 현재 graph의 표시 이름으로 갱신한다 (ID는 그대로)
-names = sample_relations.set_index(TRIPLE)[["head", "tail"]]
-unlabelled = supplement["review_correct"].isna()
-for column in ["head", "tail"]:
-    supplement.loc[unlabelled, column] = [names.loc[(h, r, t), column] for h, r, t in
-                                          supplement.loc[unlabelled, ["head_id", "predicate", "tail_id"]].values]
-added_rows, next_id = [], len(supplement) + len(stale) + 1
-for group_name, group in sample_relations.groupby("added_by"):
-    target = max(2, int(np.ceil(len(group) * SUPPLEMENT_RATE)))
-    have = int((supplement["added_by"] == group_name).sum())
-    remaining = group[[tuple(k) not in set(map(tuple, supplement[["head_id", "predicate", "tail_id"]].values))
-                       for k in group[TRIPLE].values]]
-    for row in remaining.sample(min(len(remaining), max(0, target - have)), random_state=SEED).itertuples(index=False):
-        added_rows.append(review_row(row, f"S{next_id:03d}"))
-        next_id += 1
-if True:  # 표시 이름 갱신과 추가 행을 반영해 다시 저장 (판정이 적힌 행은 그대로)
-    supplement = pd.concat([supplement, pd.DataFrame(added_rows)], ignore_index=True)
-    with pd.ExcelWriter(SUPPLEMENT_REVIEW_PATH, engine="openpyxl") as writer:
-        supplement.to_excel(writer, sheet_name="Review", index=False)
-        sheet = writer.sheets["Review"]
-        sheet.freeze_panes = "D2"
-        column = {c: get_column_letter(i + 1) for i, c in enumerate(supplement.columns)}
-        for field, values in (("review_correct", "TRUE,FALSE,AMBIGUOUS"),
-                              ("review_error_type", "entity_boundary,entity_linking,wrong_predicate,reversed_direction,"
-                               "negation_or_uncertainty,insufficient_context,duplicate_or_noise,schema_or_catalogue,other")):
-            validation = DataValidation(type="list", formula1=f'"{values}"', allow_blank=True)
-            validation.add(f"{column[field]}2:{column[field]}{len(supplement) + 1}")
-            sheet.add_data_validation(validation)
-print(f"보조 검수 표본: 유지 {len(supplement) - len(added_rows)}행, 제거(규칙 변경으로 사라짐) {len(stale)}행, 새로 추가 {len(added_rows)}행")
-print(f"기존 표본 비율 {MAIN_SAMPLE_RATE:.1%} -> 보조 표본 비율 {SUPPLEMENT_RATE:.1%}")
-display(supplement.groupby("added_by").size().rename("검수 행").reset_index())
 display(manual_exclusions)
+print(f"graph 후보: {len(graph_candidates) - len(new_relations):,} -> {len(graph_candidates):,} triple")
 """
         ),
         markdown(
             """
 ## 4. 사람 검수 결과 반영 규칙
 
-Tier B 표본 90개(`relation_review_corrected_seed2026.xlsx`)는 사람이 검수한다. 이 셀은
-검수 파일을 읽어 다음 규칙을 적용한다. 검수가 아직 없으면 graph는 `candidate` 상태로 유지된다.
+Tier B 표본 90개(`relation_review_corrected_seed2026.xlsx`)와 3-1절 보조 표본
+(`relation_review_supplement_seed2026.xlsx`)은 사람이 검수한다. 이 셀은 검수 파일을 읽어 다음 규칙을 적용한다.
+
+보조 표본은 3-1절 방법을 확정하기 전에 뽑았기 때문에 세 묶음의 역할이 다르다.
+
+| 묶음 | 현재 처리 | 검수 결과의 쓰임 |
+|---|---|---|
+| `role_typed_tier_B` | graph에 있음 | FALSE 제외, precision 보고 |
+| `rule_attribute` 중 모델명에서 나온 크기 | 모델 node 속성 | 모델명 정제 점검 |
+| `rule_attribute` 중 문장 서술 속성, `single_sentence_layer` | graph에서 제외 | 제외 근거로만 보고 |
 
 - `FALSE`로 판정된 triple은 graph에서 제외한다.
 - 검수 행이 90개 이상이고 precision이 0.80 이상이면 graph 상태를 `human_validated_sample`로 바꾼다.
 - `AMBIGUOUS`는 precision 계산에서 제외하고 개수만 보고한다.
+- `competes with`는 서로 다른 근거 문장이 3개 이상일 때만 남긴다 (사람이 `TRUE`로 판정한 것은 유지).
+  검수에서 `competes with` 오류는 대부분 회사·모델 이름을 나열한 문장("OpenAI, Google, Anthropic 등")에서
+  나왔다. 경쟁 단서 단어(compete, rival 등)로 거르는 방법도 시험했지만, 오류 문장 대부분에도 이런 단어가 있어
+  구분되지 않았다. 반면 근거 문장 2개짜리는 대부분 같은 나열 문장이 우연히 반복된 경우였다.
 
 AI가 작성한 판정 초안은 이 계산에 사용하지 않는다.
 """
@@ -602,12 +460,22 @@ GRAPH_STATUS = (
 )
 
 supplement_review = pd.read_excel(SUPPLEMENT_REVIEW_PATH, sheet_name="Review")
-supplement_labels = supplement_review["review_correct"].astype("string").str.strip().str.upper()
-supplement_counts = supplement_labels.value_counts().reindex(["TRUE", "FALSE", "AMBIGUOUS"], fill_value=0)
-supplement_decided = int(supplement_counts["TRUE"] + supplement_counts["FALSE"])
+supplement_review["review_label"] = supplement_review["review_correct"].astype("string").str.strip().str.upper()
+supplement_review["묶음"] = np.select(
+    [supplement_review["added_by"].eq("role_typed_tier_B"),
+     supplement_review["added_by"].eq("rule_attribute") & supplement_review["head_id"].isin(new_nodes["entity_id"])],
+    ["관계 기준 type (graph)", "모델명에서 나온 크기 (모델 node 속성)"],
+    default="문장 서술 속성·근거 1문장 보조 층 (제외)",
+)
+def label_summary(labels):
+    counts = labels.value_counts().reindex(["TRUE", "FALSE", "AMBIGUOUS"], fill_value=0)
+    decided = counts["TRUE"] + counts["FALSE"]
+    return pd.Series({"검수": int(labels.notna().sum()), **counts.astype(int).to_dict(),
+                      "precision": round(counts["TRUE"] / decided, 3) if decided else np.nan})
+supplement_summary = supplement_review.groupby("묶음")["review_label"].apply(label_summary).unstack()
+graph_supplement = supplement_review[supplement_review["added_by"].eq("role_typed_tier_B")]
 review_keys = pd.concat([
-    review.assign(review_label=review_labels),
-    supplement_review.assign(review_label=supplement_labels),
+    review.assign(review_label=review_labels), graph_supplement,
 ]).rename(columns={"predicate": "relation"})[TRIPLE + ["review_label"]]
 assert set(map(tuple, review_keys[TRIPLE].values)) <= set(map(tuple, graph_candidates[TRIPLE].values)), \
     "검수한 relation은 모두 graph 후보에 있어야 한다 (검수 결과가 조용히 무시되지 않도록)"
@@ -618,7 +486,15 @@ final_edges["review_status"] = np.select(
     ["reviewed_true", "reviewed_false", "reviewed_ambiguous", "curated_lexicon"],
     default="unreviewed",
 )
-final_edges = final_edges[final_edges["review_status"] != "reviewed_false"].reset_index(drop=True)
+COMPETES_MIN_SENTENCES = 3
+few_sentences = final_edges["relation"].eq("competes with") & (final_edges["n_distinct_sentences"] < COMPETES_MIN_SENTENCES)
+weak_competes = few_sentences & final_edges["review_status"].ne("reviewed_true")
+competes_rule_check = (final_edges[final_edges["relation"].eq("competes with") & label.isin(["TRUE", "FALSE"])]
+                       .assign(rule=lambda d: np.where(few_sentences[d.index], "제외", "유지"))
+                       .pipe(lambda d: pd.crosstab(d["rule"], d["review_label"]))
+                       .rename_axis(index="근거 3문장 규칙", columns="사람 검수"))
+final_edges.loc[weak_competes & final_edges["review_status"].ne("reviewed_false"), "review_status"] = "weak_competes"
+final_edges = final_edges[~final_edges["review_status"].isin(["reviewed_false", "weak_competes"])].reset_index(drop=True)
 
 display(pd.DataFrame(
     [
@@ -626,15 +502,15 @@ display(pd.DataFrame(
         ("검수 완료 행 수", int(review_labels.notna().sum())),
         ("TRUE / FALSE / AMBIGUOUS", " / ".join(str(int(v)) for v in review_counts)),
         ("Tier B 표본 precision", "검수 전" if np.isnan(review_precision) else f"{review_precision:.3f}"),
-        ("보조 표본(3-1절 추가분) 검수 / TRUE·FALSE·AMBIGUOUS",
-         f"{int(supplement_labels.notna().sum())}/{len(supplement_review)} · " + " / ".join(str(int(v)) for v in supplement_counts)),
-        ("보조 표본 precision", "검수 전" if not supplement_decided else f"{supplement_counts['TRUE'] / supplement_decided:.3f}"),
-        ("FALSE로 제외한 triple", len(graph_candidates) - len(final_edges)),
+        ("FALSE로 제외한 triple", int(label.eq("FALSE").sum())),
+        (f"근거 {COMPETES_MIN_SENTENCES}문장 미만 competes with 제외 (FALSE 제외)", int((weak_competes & label.ne("FALSE")).sum())),
         ("최종 graph triple", len(final_edges)),
         ("graph 상태", GRAPH_STATUS),
     ],
     columns=["항목", "값"],
 ))
+display(competes_rule_check)
+display(supplement_summary)
 """
         ),
         markdown(
@@ -702,7 +578,7 @@ graph_schema = {
     "node_key": "entity_id",
     "node_attributes": ["canonical_name", "entity_type", "entity_type_compact", "mention_count",
                         "document_count", "first_seen", "last_seen", "is_open_model_family", "aliases",
-                        "parameter_sizes_b", "context_windows_tokens"],
+                        "parameter_sizes_b"],
     "entity_types": {
         compact: {"definition": COMPACT_TYPE_DEFINITIONS[compact],
                   "wp2_entity_types": sorted(t for t, c in ENTITY_GROUP.items() if c == compact)}
@@ -720,8 +596,8 @@ graph_schema = {
     },
     "edge_quality_tiers": {
         "A": "curated WP1 lexicon model family -> developer (no article sentence)",
-        "B": "relation passing all WP3 checks with >= 2 distinct evidence sentences (GLiREL, role-typed GLiREL or rule-based attribute)",
-        "C": "lineage, attribute or training relation with a single evidence sentence (supplementary layer)",
+        "B": "relation passing all WP3 checks with >= 2 distinct evidence sentences (GLiREL, role-typed GLiREL, "
+             "or model-name member of family); competes with needs >= 3 unless human-reviewed TRUE",
     },
     "review_status_values": ["curated_lexicon", "unreviewed", "reviewed_true", "reviewed_ambiguous"],
     "graph_views": {
@@ -785,16 +661,16 @@ lexicon_assertions = pd.DataFrame({
     "evidence_text": pd.NA, "published_at": pd.NA, "extraction_method": "wp1_lexicon",
     "rule_score": np.nan, "assertion_status": "asserted",
 })
-attribute_keys = final_edges.loc[final_edges["sources"].eq("rule_attribute"), TRIPLE]
-attribute_rows_graph = attribute_evidence.merge(attribute_keys, on=TRIPLE, how="inner")
-attribute_assertions = pd.DataFrame({
-    "subject_id": attribute_rows_graph["head_id"], "predicate": attribute_rows_graph["relation"],
-    "object_id": attribute_rows_graph["tail_id"], "document_id": attribute_rows_graph["doc_id"],
-    "text_unit_id": text_unit(attribute_rows_graph["doc_id"], attribute_rows_graph["sentence_id"]),
-    "evidence_text": attribute_rows_graph["sentence_text"], "published_at": attribute_rows_graph["date"],
-    "extraction_method": "rule_attribute", "rule_score": np.nan, "assertion_status": "asserted",
+model_name_keys = final_edges.loc[final_edges["sources"].eq("model_name"), TRIPLE]
+model_name_rows = model_mentions.merge(model_name_keys, on=TRIPLE, how="inner")
+model_name_assertions = pd.DataFrame({
+    "subject_id": model_name_rows["head_id"], "predicate": model_name_rows["relation"],
+    "object_id": model_name_rows["tail_id"], "document_id": model_name_rows["doc_id"],
+    "text_unit_id": text_unit(model_name_rows["doc_id"], model_name_rows["sentence_id"]),
+    "evidence_text": model_name_rows["sentence_text"], "published_at": model_name_rows["date"],
+    "extraction_method": "model_name", "rule_score": np.nan, "assertion_status": "asserted",
 })
-assertions = pd.concat([glirel_assertions, lexicon_assertions, attribute_assertions], ignore_index=True)
+assertions = pd.concat([glirel_assertions, lexicon_assertions, model_name_assertions], ignore_index=True)
 assertions.insert(0, "relation_id", [
     "rel_" + hashlib.sha1("|".join(map(str, key)).encode()).hexdigest()[:16]
     for key in assertions[["subject_id", "predicate", "object_id", "text_unit_id", "extraction_method"]]
@@ -922,9 +798,9 @@ display(pd.DataFrame(threshold_rows, columns=["최소 문서 수", "node", "edge
 node·edge 수, density, component, relation type별 edge 수를 먼저 본다. density가 매우 낮고 component가
 많으면 graph metric을 전체 산업 구조로 일반화하기 어렵다는 뜻이므로, 이후 해석의 범위를 정하는 기준이 된다.
 
-**분석용 view**: `70B parameters` 같은 속성(ATTRIBUTE) node는 실체가 아니라 값이다. 모델 하나에 값이 수십 개씩
-붙으면 그 모델이 허브처럼 보이므로, 속성 relation과 속성 추출에서 함께 생긴 `모델 → member of family → family`
-relation은 graph와 Stage 3 검색에는 그대로 두되 중심성·clustering·emerging relation·기간별 근거 비중 계산에서는 제외한다.
+**분석용 view**: 3-1절 모델명 정제로 생긴 `모델 → member of family → family` relation은 family 하나에 모델 node가
+수십 개씩 붙어 family가 허브처럼 보이게 한다. 속성(ATTRIBUTE) relation도 실체가 아니라 값을 가리킨다. 그래서 둘 다
+graph와 Stage 3 검색에는 그대로 두되 중심성·clustering·emerging relation·기간별 근거 비중 계산에서는 제외한다.
 """
         ),
         code(
@@ -934,7 +810,7 @@ structure = pd.DataFrame(
      [("assertion", assertion_graph), ("typed", typed_graph), ("co-occurrence", cooccurrence_graph)]}
 ).T
 ANALYSIS_EXCLUDED_GROUPS = {"ATTRIBUTE"}
-analysis_excluded = collapsed["predicate_group"].isin(ANALYSIS_EXCLUDED_GROUPS) | collapsed["added_by"].eq("rule_family_member")
+analysis_excluded = collapsed["predicate_group"].isin(ANALYSIS_EXCLUDED_GROUPS) | collapsed["added_by"].eq("model_name_member")
 collapsed_analysis = collapsed[~analysis_excluded].copy()
 excluded_edges = set(zip(collapsed.loc[analysis_excluded, "subject_id"], collapsed.loc[analysis_excluded, "object_id"],
                          collapsed.loc[analysis_excluded, "predicate"]))
@@ -1433,8 +1309,8 @@ Kimi {fs.loc["Kimi", last_q]:.0%}, GLM {fs.loc["GLM", last_q]:.0%}({last_q}).
 {f"DeepSeek의 relation 근거 기사 비중은 P1 {deepseek[p1]:.0%} → P2 {deepseek[p2]:.0%}이다. " if deepseek is not None else ""}전체 기간을 합친
 centrality는 이 분기의 영향을 크게 받으므로 기간별 지표와 함께 해석해야 한다.
 
-**5. 기사에서 관찰된 모델 규모** (3-1절 규칙 기반 속성, 근거 문장 2개 이상): {size_text}.
-family 단위로 모은 값이므로 어느 버전의 크기인지는 `model_attribute_evidence`의 근거 문장(`surface`)으로 확인한다.
+**5. 기사에서 관찰된 모델 규모** (3-1절 모델명 정제, 서로 다른 문장 2개 이상에 나온 모델명): {size_text}.
+family에 속한 모델 node들의 크기를 모은 값이다. 어느 모델의 크기인지는 `member of family`로 연결된 모델 node에서 확인한다.
 
 **insight로 쓰지 않는 것**: `outperforms` relation은 "it outperforms Qwen 2.5, Gemma 3 and Llama 3"처럼 제3의 모델이
 둘 다를 능가한다는 서술에서 잘못 추출된 경우가 많아, 사람 검수 전까지 insight에서 제외한다.
@@ -1445,8 +1321,9 @@ family 단위로 모은 값이므로 어느 버전의 크기인지는 `model_att
             """
 ## 13. 한계와 타당성 위협
 
-- **Tier B precision 미확인**: 보정 전 표본의 precision은 AI 초안 기준 약 0.47, 단어 목록 필터 후
-  약 0.71이었다. 보정 규칙의 효과는 새 Tier B 표본 90개의 사람 검수로만 확정할 수 있다. 그 전까지
+- **Tier B precision이 목표에 못 미침**: 4절 사람 검수에서 Tier B 표본 precision이 목표 0.80보다 낮았고, 오류는 대부분
+  여러 이름을 나열한 문장에서 엔티티를 잘못 짚은 경우였다. 오류가 가장 많은 `competes with`에는 근거 3문장 규칙을
+  추가했지만, 이 기준은 같은 검수 라벨을 보고 정했으므로 아직 검수하지 않은 표본으로 다시 확인해야 한다. 그 전까지
   graph 상태는 `candidate_pending_human_review`다.
 - **Tier A는 기사 근거가 없다**: WP1 lexicon의 curated relation이다. Stage 3에서 기사 근거가 필요한
   답변에는 Tier B assertion만 인용한다.
@@ -1462,12 +1339,13 @@ family 단위로 모은 값이므로 어느 버전의 크기인지는 `model_att
 - **일반명사 규칙과 별칭 표의 한계**: 규칙이 놓친 일반명사(예: `Fox`, `Nari`)와 등록되지 않은 별칭이
   남아 있을 수 있다. `outputs/stage1_wp3_relation_correction_20261008/corrections/`를 검토해 보완한다.
 - **family 단위 축약**: `MedGemma` → `Gemma`, `Mixtral` → `Mistral`처럼 WP1 lexicon이 family 단위로
-  묶으므로 같은 family 안의 버전 간 계보(`Llama 4 Behemoth` → `Llama 4 Maverick`)는 표현할 수 없다. 파라미터 수와
-  context window는 3-1절에서 family node에 붙였지만, 어느 버전의 값인지는 근거 문장(`surface`)에서 확인해야 한다.
+  묶으므로 같은 family 안의 버전 간 계보(`Llama 4 Behemoth` → `Llama 4 Maverick`)는 표현할 수 없다. 3-1절 모델명
+  정제로 이름에 크기가 적힌 모델(`Qwen3 1.7B`)만 별도 node가 되었고, 이름에 크기가 없는 모델(`Llama 4 Scout`)의 크기와
+  context window는 graph에 없다.
 - **회사이자 모델인 node**: `DeepSeek`처럼 WP1 family이면서 회사로 분류된 node는 3-1절에서 모델 자리의 relation도
   받으므로 한 node가 두 역할을 한다. relation별 표에서 `entity_type`이 COMPANY로 보이는 모델 relation은 이 때문이다.
-- **보조 층(Tier C)**: 3-1절의 계보·속성·학습 relation 중 일부는 근거 문장이 1개뿐이다. 보조 검수 표본으로 정확도를
-  확인하기 전에는 낮은 신뢰도의 relation으로 다룬다.
+- **계보·학습 relation 부족**: 근거 1문장 보조 층을 검수 결과에 따라 제외했으므로 `based on`, `distilled from`,
+  `trained on` 같은 relation은 graph에 거의 없다. Stage 3에서 이런 질문은 graph보다 근거 문장 검색에 의존해야 한다.
 """
         ),
         markdown(
@@ -1517,7 +1395,7 @@ tables = {
     "emerging_relations_2026": emerging,
     "entity_period_share": shares.reset_index(names="entity_id"),
     "graph_finding_candidates": finding_candidates,
-    "model_attribute_evidence": attribute_evidence.drop(columns=["sentence_key"]),
+    "model_name_mentions": model_mentions.drop(columns=["sentence_key"]),
 }
 for name, table in tables.items():
     table.to_parquet(FINAL_OUTPUT_DIR / f"{name}.parquet", index=False)
@@ -1600,16 +1478,16 @@ Schema: `{graph_schema["schema_version"]}` · 상태: `{GRAPH_STATUS}` · Track:
 | `entity_type` / `entity_type_compact` | WP2 type / 9개 compact type |
 | `mention_count`, `document_count` | 언급 수 / 언급 기사 수 |
 | `is_open_model_family` | WP1 lexicon의 open model family 여부 |
-| `parameter_sizes_b`, `context_windows_tokens` | 기사에서 관찰된 파라미터 크기(B)와 context window(토큰) 목록(JSON). 3-1절 규칙 기반 추출, 근거 문장 2개 이상 |
+| `parameter_sizes_b` | 파라미터 크기(B) 목록(JSON). 모델 node는 이름에 적힌 크기, family node는 소속 모델 node들의 크기 (3-1절 모델명 정제) |
 | `typed_*`, `cooc_*`, `community_id` | typed·co-occurrence graph metric과 community |
 
 ## Typed edge
 - `typed_edges_assertions.*`: 근거 문장 1개당 1행. `relation_id`, `subject_id`, `predicate`, `object_id`,
   `document_id`, `text_unit_id`(= `doc_id:sentence_id`), `evidence_text`, `published_at`, `extraction_method`
-  (`glirel`, `wp1_lexicon`, `rule_attribute`), `rule_score`
+  (`glirel`, `wp1_lexicon`, `model_name`), `rule_score`
 - `typed_edges_collapsed.*`: unique triple 1개당 1행. `evidence_count`, `document_count`(edge weight),
-  `n_distinct_sentences`, `first_seen`, `last_seen`, `tier`(A: lexicon, B: 근거 문장 2개 이상, C: 근거 1개인 계보·속성·학습 보조 층),
-  `sources`, `added_by`(보정 / 관계 기준 type / 보조 층 / 규칙 기반 속성), `review_status`,
+  `n_distinct_sentences`, `first_seen`, `last_seen`, `tier`(A: lexicon, B: 근거 문장 2개 이상, `competes with`는 3개 이상),
+  `sources`, `added_by`(보정 / 관계 기준 type / 모델명 정제), `review_status`,
   `predicate_group`, `directed`, `relation_ids`/`text_unit_ids`(JSON list)
 
 ## Co-occurrence edge (`cooccurrence_edges.*`)
@@ -1623,7 +1501,7 @@ Schema: `{graph_schema["schema_version"]}` · 상태: `{GRAPH_STATUS}` · Track:
 `node_metrics`, `relation_type_metrics`, `relation_type_summary`, `node_communities`, `community_summary`,
 `quarterly_relation_assertions`, `quarterly_new_typed_edges`, `family_quarterly_share`,
 `emerging_relations_2026`, `entity_period_share`, `graph_finding_candidates`(검토 전 후보),
-`model_attribute_evidence`(규칙 기반 속성의 근거 문장 전체: family, 값, 원문 표현 `surface`, 적용 규칙)
+`model_name_mentions`(모델 node의 근거 문장 전체: family, 모델 node, 크기, 원문 표현 `surface`)
 
 ## Stage 3 provenance
 `entity_id` → `relation_id` → `text_unit_id` → `document_id` → `published_at`.

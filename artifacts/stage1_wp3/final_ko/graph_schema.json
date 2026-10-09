@@ -13,8 +13,7 @@
     "last_seen",
     "is_open_model_family",
     "aliases",
-    "parameter_sizes_b",
-    "context_windows_tokens"
+    "parameter_sizes_b"
   ],
   "entity_types": {
     "MODEL": {
@@ -84,63 +83,16 @@
     }
   },
   "relation_types": {
-    "has parameter count": {
-      "group": "ATTRIBUTE",
-      "directed": true,
-      "observed_head_types": [
-        "MODEL"
-      ],
-      "observed_tail_types": [
-        "MODEL_ATTRIBUTE"
-      ],
-      "definition": "parameter count associated with the model or model architecture"
-    },
     "has capability": {
       "group": "ATTRIBUTE",
       "directed": true,
       "observed_head_types": [
-        "INFRASTRUCTURE",
-        "MODEL",
-        "TECHNICAL_COMPONENT"
+        "MODEL"
       ],
       "observed_tail_types": [
         "MODEL_ATTRIBUTE"
       ],
       "definition": "capability provided by the model, product, technology, platform or hardware"
-    },
-    "uses architecture": {
-      "group": "ATTRIBUTE",
-      "directed": true,
-      "observed_head_types": [
-        "INFRASTRUCTURE",
-        "MODEL"
-      ],
-      "observed_tail_types": [
-        "TECHNICAL_COMPONENT"
-      ],
-      "definition": "architecture or architectural technology used by the model, product, technology or platform"
-    },
-    "has context window": {
-      "group": "ATTRIBUTE",
-      "directed": true,
-      "observed_head_types": [
-        "MODEL"
-      ],
-      "observed_tail_types": [
-        "MODEL_ATTRIBUTE"
-      ],
-      "definition": "maximum context or input length supported by the model"
-    },
-    "uses technique": {
-      "group": "ATTRIBUTE",
-      "directed": true,
-      "observed_head_types": [
-        "MODEL"
-      ],
-      "observed_tail_types": [
-        "TECHNICAL_COMPONENT"
-      ],
-      "definition": "training, inference or implementation technique used by the model, product, technology or platform"
     },
     "available on": {
       "group": "DEPLOYMENT",
@@ -286,13 +238,10 @@
       "group": "LINEAGE",
       "directed": true,
       "observed_head_types": [
-        "INFRASTRUCTURE",
         "MODEL"
       ],
       "observed_tail_types": [
-        "INFRASTRUCTURE",
-        "MODEL",
-        "TECHNICAL_COMPONENT"
+        "MODEL"
       ],
       "definition": "the model, product, technology or platform is built on top of another model, product, technology, platform or architecture"
     },
@@ -306,17 +255,6 @@
         "MODEL"
       ],
       "definition": "the model was trained to imitate another model"
-    },
-    "successor of": {
-      "group": "LINEAGE",
-      "directed": true,
-      "observed_head_types": [
-        "MODEL"
-      ],
-      "observed_tail_types": [
-        "MODEL"
-      ],
-      "definition": "the artifact is a newer version or generation that follows an earlier one"
     },
     "works for": {
       "group": "ORGANIZATION_RELATION",
@@ -441,34 +379,11 @@
         "ORGANIZATION"
       ],
       "definition": "the organisation/person publicly released or published the model, product, technology, platform, hardware, dataset, benchmark, standard or license"
-    },
-    "trained on data": {
-      "group": "TRAINING",
-      "directed": true,
-      "observed_head_types": [
-        "MODEL"
-      ],
-      "observed_tail_types": [
-        "EVALUATION_RESOURCE"
-      ],
-      "definition": "dataset or data source used to train the model"
-    },
-    "trained using hardware": {
-      "group": "TRAINING",
-      "directed": true,
-      "observed_head_types": [
-        "MODEL"
-      ],
-      "observed_tail_types": [
-        "INFRASTRUCTURE"
-      ],
-      "definition": "hardware, accelerator or infrastructure technology used to train the model"
     }
   },
   "edge_quality_tiers": {
     "A": "curated WP1 lexicon model family -> developer (no article sentence)",
-    "B": "relation passing all WP3 checks with >= 2 distinct evidence sentences (GLiREL, role-typed GLiREL or rule-based attribute)",
-    "C": "lineage, attribute or training relation with a single evidence sentence (supplementary layer)"
+    "B": "relation passing all WP3 checks with >= 2 distinct evidence sentences (GLiREL, role-typed GLiREL, or model-name member of family); competes with needs >= 3 unless human-reviewed TRUE"
   },
   "review_status_values": [
     "curated_lexicon",

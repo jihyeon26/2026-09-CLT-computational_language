@@ -11,16 +11,16 @@ Schema: `stage1-wp3-open-models-kg-v1.0` · 상태: `candidate_pending_human_rev
 | `entity_type` / `entity_type_compact` | WP2 type / 9개 compact type |
 | `mention_count`, `document_count` | 언급 수 / 언급 기사 수 |
 | `is_open_model_family` | WP1 lexicon의 open model family 여부 |
-| `parameter_sizes_b`, `context_windows_tokens` | 기사에서 관찰된 파라미터 크기(B)와 context window(토큰) 목록(JSON). 3-1절 규칙 기반 추출, 근거 문장 2개 이상 |
+| `parameter_sizes_b` | 파라미터 크기(B) 목록(JSON). 모델 node는 이름에 적힌 크기, family node는 소속 모델 node들의 크기 (3-1절 모델명 정제) |
 | `typed_*`, `cooc_*`, `community_id` | typed·co-occurrence graph metric과 community |
 
 ## Typed edge
 - `typed_edges_assertions.*`: 근거 문장 1개당 1행. `relation_id`, `subject_id`, `predicate`, `object_id`,
   `document_id`, `text_unit_id`(= `doc_id:sentence_id`), `evidence_text`, `published_at`, `extraction_method`
-  (`glirel`, `wp1_lexicon`, `rule_attribute`), `rule_score`
+  (`glirel`, `wp1_lexicon`, `model_name`), `rule_score`
 - `typed_edges_collapsed.*`: unique triple 1개당 1행. `evidence_count`, `document_count`(edge weight),
-  `n_distinct_sentences`, `first_seen`, `last_seen`, `tier`(A: lexicon, B: 근거 문장 2개 이상, C: 근거 1개인 계보·속성·학습 보조 층),
-  `sources`, `added_by`(보정 / 관계 기준 type / 보조 층 / 규칙 기반 속성), `review_status`,
+  `n_distinct_sentences`, `first_seen`, `last_seen`, `tier`(A: lexicon, B: 근거 문장 2개 이상, `competes with`는 3개 이상),
+  `sources`, `added_by`(보정 / 관계 기준 type / 모델명 정제), `review_status`,
   `predicate_group`, `directed`, `relation_ids`/`text_unit_ids`(JSON list)
 
 ## Co-occurrence edge (`cooccurrence_edges.*`)
@@ -34,7 +34,7 @@ Schema: `stage1-wp3-open-models-kg-v1.0` · 상태: `candidate_pending_human_rev
 `node_metrics`, `relation_type_metrics`, `relation_type_summary`, `node_communities`, `community_summary`,
 `quarterly_relation_assertions`, `quarterly_new_typed_edges`, `family_quarterly_share`,
 `emerging_relations_2026`, `entity_period_share`, `graph_finding_candidates`(검토 전 후보),
-`model_attribute_evidence`(규칙 기반 속성의 근거 문장 전체: family, 값, 원문 표현 `surface`, 적용 규칙)
+`model_name_mentions`(모델 node의 근거 문장 전체: family, 모델 node, 크기, 원문 표현 `surface`)
 
 ## Stage 3 provenance
 `entity_id` → `relation_id` → `text_unit_id` → `document_id` → `published_at`.
