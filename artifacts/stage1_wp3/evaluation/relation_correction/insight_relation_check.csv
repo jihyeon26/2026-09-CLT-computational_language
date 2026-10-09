@@ -64,7 +64,7 @@ org:ant_group,subsidiary of,org:alibaba,Ant Group,Alibaba,2,FALSE,FALSE,wrong_pr
 model:kimi,supported by,org:alibaba,Kimi,Alibaba,3,FALSE,FALSE,entity_linking,"Alibaba backs Moonshot AI (company), not the Kimi model",True,confirmed FALSE
 model:kimi,supported by,org:hongshan,Kimi,HongShan,2,FALSE,FALSE,entity_linking,"HongShan backs Moonshot AI (company), not the Kimi model",True,confirmed FALSE
 platform:github,supported by,org:ycombinator,GitHub,YCombinator,2,FALSE,FALSE,entity_linking,"YCombinator backs the project hosted on GitHub, not GitHub",True,confirmed FALSE
-org:deepmind,acquired by,org:google,DeepMind,Google,2,TRUE,TRUE,,DeepSeek acquired by Google in 2014,False,
+org:google_deepmind,acquired by,org:google,Google DeepMind,Google,2,TRUE,TRUE,,DeepSeek acquired by Google in 2014,False,
 org:cursor,acquired by,org:spacex,Cursor,SpaceX,3,TRUE,TRUE,,Cursor recently acquired by SpaceX,False,
 product:nemo_switchyard,available on,platform:github,NeMo Switchyard,GitHub,2,TRUE,TRUE,,NeMo Switchyard available on GitHub,False,
 model:nemotron,available on,platform:openrouter,Nemotron,OpenRouter,3,TRUE,TRUE,,Nemotron models available on OpenRouter,False,

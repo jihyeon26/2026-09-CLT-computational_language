@@ -327,7 +327,8 @@
       ],
       "observed_tail_types": [
         "ORGANIZATION",
-        "PERSON"
+        "PERSON",
+        "TECHNICAL_COMPONENT"
       ],
       "definition": "the organisation/person created or developed the model, product, technology, platform, hardware, architecture, dataset, benchmark, standard or license"
     },

@@ -503,8 +503,10 @@ competes_rule_check = (final_edges[final_edges["relation"].eq("competes with") &
 final_edges.loc[weak_competes & final_edges["review_status"].ne("reviewed_false"), "review_status"] = "weak_competes"
 
 insight_check = pd.read_csv(INSIGHT_CHECK_PATH)
-assert set(map(tuple, insight_check[TRIPLE].values)) <= set(map(tuple, graph_candidates[TRIPLE].values)), \
-    "대조한 relation은 모두 graph 후보에 있어야 한다"
+# 보정 규칙이 바뀌어 graph 후보에서 빠진 relation은 FALSE여야 한다 (TRUE가 조용히 사라지지 않도록)
+not_candidate = insight_check[[tuple(k) not in set(map(tuple, graph_candidates[TRIPLE].values))
+                               for k in insight_check[TRIPLE].values]]
+assert not_candidate["verdict"].eq("FALSE").all(), f"대조에서 TRUE인 relation이 graph 후보에서 사라졌습니다: {not_candidate[TRIPLE].values.tolist()}"
 checked = final_edges[TRIPLE].merge(insight_check[TRIPLE + ["verdict", "human_checked"]], on=TRIPLE, how="left")
 check, human_checked = checked["verdict"].fillna("").values, checked["human_checked"].fillna(False).astype(bool).values
 unlabelled = (label.eq("") & final_edges["review_status"].ne("weak_competes")).values
@@ -1226,15 +1228,26 @@ draw_typed_subgraph(core_edges, f"Core typed graph: relations among the 45 highe
 family_ids = set(nodes_kg.loc[nodes_kg["is_open_model_family"], "entity_id"])
 family_edges = collapsed[collapsed["subject_id"].isin(family_ids)
                          & collapsed["predicate"].isin(["developed by", "released by"])]
-# Family -> developer pairs are mostly disconnected, so a ranked bar chart is clearer than a network layout.
-family_plot = family_edges.assign(
-    pair=family_edges["subject_id"].map(labels).map(pretty) + "  ->  " + family_edges["object_id"].map(labels).map(pretty)
-         + np.where(family_edges["predicate"].eq("released by"), "  (released by)", ""),
-    evidence=np.select(
-        [family_edges["sources"].str.contains("glirel") & family_edges["sources"].str.contains("wp1_lexicon"),
-         family_edges["sources"].str.contains("glirel")],
-        ["lexicon + article evidence", "article evidence only"], default="lexicon only (no article sentence)"),
-).sort_values(["document_count", "pair"]).reset_index(drop=True)
+# 그림에서는 developed by / released by를 합치고, 하위 연구조직은 모회사 막대에 묶는다 (graph node는 그대로)
+PARENT_ORG = {"org:google_deepmind": "org:google", "org:google_research": "org:google", "org:cohere_labs": "org:cohere",
+              "org:microsoft_research": "org:microsoft", "org:ibm_research": "org:ibm", "org:nvidia_research": "org:nvidia",
+              "org:fair": "org:meta", "org:meta_superintelligence_labs": "org:meta"}
+as_ids = lambda v: v if isinstance(v, (list, tuple, set, np.ndarray)) else json.loads(v)
+family_plot = (family_edges.assign(developer=family_edges["object_id"].map(lambda x: PARENT_ORG.get(x, x)))
+               .groupby(["subject_id", "developer"])
+               .agg(document_count=("document_ids", lambda v: len(set().union(*map(set, map(as_ids, v))))),
+                    sources=("sources", lambda v: ";".join(v)),
+                    members=("object_id", lambda v: sorted(set(v))))
+               .reset_index())
+family_plot["pair"] = [
+    f"{pretty(labels[s])}  ->  {pretty(labels[d])}"
+    + ("" if members == [d] else " (incl. " + ", ".join(pretty(labels[m]) for m in members if m != d) + ")")
+    for s, d, members in zip(family_plot["subject_id"], family_plot["developer"], family_plot["members"])]
+family_plot["evidence"] = np.select(
+    [family_plot["sources"].str.contains("glirel") & family_plot["sources"].str.contains("wp1_lexicon"),
+     family_plot["sources"].str.contains("glirel")],
+    ["lexicon + article evidence", "article evidence only"], default="lexicon only (no article sentence)")
+family_plot = family_plot.sort_values(["document_count", "pair"]).reset_index(drop=True)
 EVIDENCE_COLORS = {"lexicon + article evidence": "#4C78A8", "article evidence only": "#F58518",
                    "lexicon only (no article sentence)": "#BAB0AC"}
 fig, ax = plt.subplots(figsize=(10, 0.28 * len(family_plot) + 1.5))
