@@ -107,6 +107,9 @@ SUPPLEMENT_REVIEW_PATH = (
     ROOT / "artifacts" / "stage1_wp3" / "evaluation" / "relation_correction"
     / "relation_review_supplement_seed2026.xlsx"
 )
+INSIGHT_CHECK_PATH = (
+    ROOT / "artifacts" / "stage1_wp3" / "evaluation" / "relation_correction" / "insight_relation_check.csv"
+)
 LEXICON_PATH = ROOT / "artifacts" / "stage1_wp1" / "lexicon" / "open_models_lexicon.json"
 COMPACT_SCHEMA_PATH = ROOT / "config" / "wp3_compact_schema.json"
 WP1_CORE_PATH = ROOT / "dataset" / "processed" / "open_models_core.parquet"  # 선택: 문서 범위 검증, 기사 제목·URL
@@ -442,6 +445,10 @@ Tier B 표본 90개(`relation_review_corrected_seed2026.xlsx`)와 3-1절 보조 
   검수에서 `competes with` 오류는 대부분 회사·모델 이름을 나열한 문장("OpenAI, Google, Anthropic 등")에서
   나왔다. 경쟁 단서 단어(compete, rival 등)로 거르는 방법도 시험했지만, 오류 문장 대부분에도 이런 단어가 있어
   구분되지 않았다. 반면 근거 문장 2개짜리는 대부분 같은 나열 문장이 우연히 반복된 경우였다.
+- insight에 쓰이는 relation(2026년 신규 relation, 주요 개발사로 들어가는 `developed by`, 경쟁·성능 비교 상위 relation)
+  중 검수 표본 밖의 327개는 근거 문장과 하나씩 대조했다(`insight_relation_check.csv`). AI가 1차로 판정하고, `FALSE`
+  판정은 사람이 모두 확인했다(`human_checked`; 64개 중 5개는 관계가 맞아 `TRUE`로 바뀜). 최종 `FALSE`는 graph에서
+  제외하고, 표본 검수 라벨이 있으면 그쪽을 우선한다. 무작위 표본이 아니므로 precision 계산에는 쓰지 않는다.
 
 AI가 작성한 판정 초안은 이 계산에 사용하지 않는다.
 """
@@ -494,7 +501,18 @@ competes_rule_check = (final_edges[final_edges["relation"].eq("competes with") &
                        .pipe(lambda d: pd.crosstab(d["rule"], d["review_label"]))
                        .rename_axis(index="근거 3문장 규칙", columns="사람 검수"))
 final_edges.loc[weak_competes & final_edges["review_status"].ne("reviewed_false"), "review_status"] = "weak_competes"
-final_edges = final_edges[~final_edges["review_status"].isin(["reviewed_false", "weak_competes"])].reset_index(drop=True)
+
+insight_check = pd.read_csv(INSIGHT_CHECK_PATH)
+assert set(map(tuple, insight_check[TRIPLE].values)) <= set(map(tuple, graph_candidates[TRIPLE].values)), \
+    "대조한 relation은 모두 graph 후보에 있어야 한다"
+checked = final_edges[TRIPLE].merge(insight_check[TRIPLE + ["verdict", "human_checked"]], on=TRIPLE, how="left")
+check, human_checked = checked["verdict"].fillna("").values, checked["human_checked"].fillna(False).astype(bool).values
+unlabelled = (label.eq("") & final_edges["review_status"].ne("weak_competes")).values
+final_edges.loc[unlabelled & (check == "FALSE"), "review_status"] = "checked_false"
+final_edges.loc[unlabelled & (check == "TRUE") & human_checked, "review_status"] = "checked_true_human"
+final_edges.loc[unlabelled & (check == "TRUE") & ~human_checked, "review_status"] = "checked_true_ai"
+removed_by_check = final_edges[final_edges["review_status"].eq("checked_false")]
+final_edges = final_edges[~final_edges["review_status"].isin(["reviewed_false", "weak_competes", "checked_false"])].reset_index(drop=True)
 
 display(pd.DataFrame(
     [
@@ -504,6 +522,7 @@ display(pd.DataFrame(
         ("Tier B 표본 precision", "검수 전" if np.isnan(review_precision) else f"{review_precision:.3f}"),
         ("FALSE로 제외한 triple", int(label.eq("FALSE").sum())),
         (f"근거 {COMPETES_MIN_SENTENCES}문장 미만 competes with 제외 (FALSE 제외)", int((weak_competes & label.ne("FALSE")).sum())),
+        ("insight relation 대조로 제외 (사람 확인)", len(removed_by_check)),
         ("최종 graph triple", len(final_edges)),
         ("graph 상태", GRAPH_STATUS),
     ],
@@ -511,6 +530,8 @@ display(pd.DataFrame(
 ))
 display(competes_rule_check)
 display(supplement_summary)
+display(insight_check.merge(removed_by_check[TRIPLE], on=TRIPLE)["error_type"].value_counts()
+        .rename_axis("insight 대조 FALSE 오류 유형").reset_index(name="triple 수"))
 """
         ),
         markdown(
@@ -599,7 +620,7 @@ graph_schema = {
         "B": "relation passing all WP3 checks with >= 2 distinct evidence sentences (GLiREL, role-typed GLiREL, "
              "or model-name member of family); competes with needs >= 3 unless human-reviewed TRUE",
     },
-    "review_status_values": ["curated_lexicon", "unreviewed", "reviewed_true", "reviewed_ambiguous"],
+    "review_status_values": ["curated_lexicon", "unreviewed", "reviewed_true", "reviewed_ambiguous", "checked_true_ai", "checked_true_human"],
     "graph_views": {
         "assertion": "directed multigraph, one edge per evidence sentence (edge key = relation_id)",
         "typed": "directed multigraph, one edge per unique (head, relation, tail); competes with is symmetric",
@@ -1325,6 +1346,11 @@ family에 속한 모델 node들의 크기를 모은 값이다. 어느 모델의 
   여러 이름을 나열한 문장에서 엔티티를 잘못 짚은 경우였다. 오류가 가장 많은 `competes with`에는 근거 3문장 규칙을
   추가했지만, 이 기준은 같은 검수 라벨을 보고 정했으므로 아직 검수하지 않은 표본으로 다시 확인해야 한다. 그 전까지
   graph 상태는 `candidate_pending_human_review`다.
+- **insight relation 대조의 TRUE는 AI 판정이다**: insight에 쓰는 relation 327개 중 AI가 FALSE로 본 64개는 사람이 확인해
+  59개를 제외했다(`insight_relation_check.csv`, 사유 포함). 대부분 나열 문장에서 다른 회사의 제품을 잘못 연결한 경우다
+  (예: OpenClaw → developed by → NVIDIA). AI가 TRUE로 본 262개(`checked_true_ai`)는 사람이 보지 않았다.
+- **node type 오류**: `Claude Sonnet 4.5`, `C2S-Scale`, `GTC 2026`이 BENCHMARK로, `AI Overviews`가 DATASET으로
+  분류되어 있다. relation은 맞으므로 graph에 두었지만 compact type별 집계에서는 잘못된 그룹에 들어간다.
 - **Tier A는 기사 근거가 없다**: WP1 lexicon의 curated relation이다. Stage 3에서 기사 근거가 필요한
   답변에는 Tier B assertion만 인용한다.
 - **날짜 의미**: 모든 날짜는 기사 발행일이다. 출시일이나 사건 발생일로 표현하지 않는다.
@@ -1487,7 +1513,7 @@ Schema: `{graph_schema["schema_version"]}` · 상태: `{GRAPH_STATUS}` · Track:
   (`glirel`, `wp1_lexicon`, `model_name`), `rule_score`
 - `typed_edges_collapsed.*`: unique triple 1개당 1행. `evidence_count`, `document_count`(edge weight),
   `n_distinct_sentences`, `first_seen`, `last_seen`, `tier`(A: lexicon, B: 근거 문장 2개 이상, `competes with`는 3개 이상),
-  `sources`, `added_by`(보정 / 관계 기준 type / 모델명 정제), `review_status`,
+  `sources`, `added_by`(보정 / 관계 기준 type / 모델명 정제), `review_status`(표본 사람 검수 `reviewed_*`, insight 대조 `checked_true_human`·`checked_true_ai`),
   `predicate_group`, `directed`, `relation_ids`/`text_unit_ids`(JSON list)
 
 ## Co-occurrence edge (`cooccurrence_edges.*`)

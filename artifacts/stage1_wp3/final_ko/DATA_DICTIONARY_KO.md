@@ -20,7 +20,7 @@ Schema: `stage1-wp3-open-models-kg-v1.0` · 상태: `candidate_pending_human_rev
   (`glirel`, `wp1_lexicon`, `model_name`), `rule_score`
 - `typed_edges_collapsed.*`: unique triple 1개당 1행. `evidence_count`, `document_count`(edge weight),
   `n_distinct_sentences`, `first_seen`, `last_seen`, `tier`(A: lexicon, B: 근거 문장 2개 이상, `competes with`는 3개 이상),
-  `sources`, `added_by`(보정 / 관계 기준 type / 모델명 정제), `review_status`,
+  `sources`, `added_by`(보정 / 관계 기준 type / 모델명 정제), `review_status`(표본 사람 검수 `reviewed_*`, insight 대조 `checked_true_human`·`checked_true_ai`),
   `predicate_group`, `directed`, `relation_ids`/`text_unit_ids`(JSON list)
 
 ## Co-occurrence edge (`cooccurrence_edges.*`)

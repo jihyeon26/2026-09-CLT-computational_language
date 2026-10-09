@@ -389,7 +389,9 @@
     "curated_lexicon",
     "unreviewed",
     "reviewed_true",
-    "reviewed_ambiguous"
+    "reviewed_ambiguous",
+    "checked_true_ai",
+    "checked_true_human"
   ],
   "graph_views": {
     "assertion": "directed multigraph, one edge per evidence sentence (edge key = relation_id)",
