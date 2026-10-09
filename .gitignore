@@ -34,3 +34,6 @@ artifacts/stage1_final/*
 artifacts/stage1_wp3/final/*
 !artifacts/stage1_wp3/final/graph_schema.json
 !artifacts/stage1_wp3/final/DATA_DICTIONARY.md
+artifacts/stage1_wp3/final_ko/*
+!artifacts/stage1_wp3/final_ko/graph_schema.json
+!artifacts/stage1_wp3/final_ko/DATA_DICTIONARY_KO.md
