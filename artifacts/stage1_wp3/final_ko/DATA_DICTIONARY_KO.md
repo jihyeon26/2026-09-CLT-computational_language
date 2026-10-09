@@ -1,6 +1,6 @@
 # Stage 1 WP3 최종 지식그래프 데이터 사전
 
-Schema: `stage1-wp3-open-models-kg-v1.0` · 상태: `candidate_pending_human_review` · Track: Open Models
+Schema: `stage1-wp3-open-models-kg-v1.0` · 상태: `pending_human_review` · Track: Open Models
 날짜(`published_at`, `first_seen`, `last_seen`)는 모두 **기사 발행일**이다.
 
 ## Node (`nodes.*`)
@@ -33,7 +33,7 @@ Schema: `stage1-wp3-open-models-kg-v1.0` · 상태: `candidate_pending_human_rev
 ## 분석 표
 `node_metrics`, `relation_type_metrics`, `relation_type_summary`, `node_communities`, `community_summary`,
 `quarterly_relation_assertions`, `quarterly_new_typed_edges`, `family_quarterly_share`,
-`emerging_relations_2026`, `entity_period_share`, `graph_finding_candidates`(검토 전 후보),
+`entity_period_share`, `graph_finding_candidates`(검토 전 후보),
 `model_name_mentions`(모델 node의 근거 문장 전체: family, 모델 node, 크기, 원문 표현 `surface`)
 
 ## Stage 3 provenance

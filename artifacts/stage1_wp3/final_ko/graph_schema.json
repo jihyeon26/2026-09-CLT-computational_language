@@ -1,6 +1,6 @@
 {
   "schema_version": "stage1-wp3-open-models-kg-v1.0",
-  "status": "candidate_pending_human_review",
+  "status": "pending_human_review",
   "track": "Open Models",
   "node_key": "entity_id",
   "node_attributes": [
@@ -171,8 +171,7 @@
       "observed_tail_types": [
         "INFRASTRUCTURE",
         "MODEL",
-        "ORGANIZATION",
-        "TECHNICAL_COMPONENT"
+        "ORGANIZATION"
       ],
       "definition": "direct competitor, rival model, organisation, product, technology, platform or hardware"
     },

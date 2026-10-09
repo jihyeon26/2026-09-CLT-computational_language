@@ -69,7 +69,7 @@ org:cursor,acquired by,org:spacex,Cursor,SpaceX,3,TRUE,TRUE,,Cursor recently acq
 product:nemo_switchyard,available on,platform:github,NeMo Switchyard,GitHub,2,TRUE,TRUE,,NeMo Switchyard available on GitHub,False,
 model:nemotron,available on,platform:openrouter,Nemotron,OpenRouter,3,TRUE,TRUE,,Nemotron models available on OpenRouter,False,
 model:kimi,available on,technology:hugging_face,Kimi,hugging_face,2,TRUE,TRUE,,Kimi K2.5 checkpoint available on Hugging Face,False,
-model:glm,competes with,org:anthropic,GLM,Anthropic,5,TRUE,TRUE,,GLM 5.2 described as competitor to Anthropic,False,
+model:glm,competes with,org:anthropic,GLM,Anthropic,5,TRUE,FALSE,schema_or_catalogue,GLM 5.2 described as competitor to Anthropic,True,model paired with a company
 org:anthropic,competes with,org:deepseek,Anthropic,DeepSeek,23,TRUE,TRUE,,Anthropic models competing against DeepSeek; DeepSeek compared to US competitor Claude,False,
 org:amazon,competes with,org:google,Amazon,Google,27,TRUE,TRUE,,Amazon entering direct competition with Google,False,
 org:anthropic,competes with,org:google,Anthropic,Google,51,TRUE,TRUE,,Anthropic competition with Google intensifies,False,
@@ -171,7 +171,7 @@ product:llama_4,developed by,org:meta,LLaMa 4,Meta,1,TRUE,TRUE,,Meta stated as b
 model:maverick,developed by,org:meta,Maverick,Meta,3,TRUE,TRUE,,Meta stated as builder/releaser,False,
 platform:messenger,developed by,org:meta,Messenger,Meta,2,TRUE,TRUE,,Meta stated as builder/releaser,False,
 model:muse_glimmer,developed by,org:meta,Muse Glimmer,Meta,2,TRUE,TRUE,,Sentence states the company created/released it,False,
-model:muse_spark,developed by,org:meta,Muse Spark,Meta,7,TRUE,TRUE,,Sentence states the company created/released it,False,
+model:muse_spark,developed by,org:meta,Muse Spark,Meta,7,TRUE,TRUE,,Sentence states the company created/released it,True,confirmed TRUE
 model:muse_spark_1_1,developed by,org:meta,Muse Spark 1.1,Meta,3,TRUE,TRUE,,Sentence states the company created/released it,False,
 product:ray_ban_smart_glasses,developed by,org:meta,Ray-Ban smart glasses,Meta,2,TRUE,TRUE,,Meta stated as builder/releaser,False,
 model:sam_3,developed by,org:meta,SAM 3,Meta,1,TRUE,TRUE,,Meta stated as builder/releaser,False,
@@ -226,7 +226,7 @@ model:nemo,developed by,org:nvidia,NeMo,NVIDIA,5,TRUE,TRUE,,NeMo is NVIDIA frame
 product:nemo_guardrails,developed by,org:nvidia,NeMo Guardrails,NVIDIA,2,TRUE,TRUE,,Evidence states head made by tail,False,
 product:nemo_retriever,developed by,org:nvidia,NeMo Retriever,NVIDIA,3,TRUE,TRUE,,Evidence states head made by tail,False,
 product:nemo_switchyard,developed by,org:nvidia,NeMo Switchyard,NVIDIA,2,TRUE,TRUE,,Evidence states head made by tail,False,
-product:nemoclaw,developed by,org:nvidia,NemoClaw,NVIDIA,9,TRUE,TRUE,,NVIDIA developed NemoClaw,False,
+product:nemoclaw,developed by,org:nvidia,NemoClaw,NVIDIA,9,TRUE,TRUE,,NVIDIA developed NemoClaw,True,confirmed TRUE
 model:newton,developed by,org:nvidia,Newton,NVIDIA,3,TRUE,TRUE,,"Newton co-developed by NVIDIA, DeepMind, Disney",False,
 platform:openshell,developed by,org:nvidia,OpenShell,NVIDIA,4,TRUE,TRUE,,NVIDIA OpenShell runtime in Agent Toolkit,False,
 product:project_digits,developed by,org:nvidia,Project Digits,NVIDIA,3,TRUE,TRUE,,Evidence states head made by tail,False,
@@ -261,7 +261,7 @@ model:gpt_4o_2,developed by,org:openai,GPT-4o,OpenAI,18,TRUE,TRUE,,Evidence stat
 model:gpt_4o_mini,developed by,org:openai,GPT-4o-mini,OpenAI,2,TRUE,TRUE,,Evidence states head made by tail,False,
 model:gpt_5_2,developed by,org:openai,GPT-5,OpenAI,24,TRUE,TRUE,,Evidence states head made by tail,False,
 model:gpt_5_4_2,developed by,org:openai,GPT-5.4,OpenAI,2,TRUE,TRUE,,Evidence states head made by tail,False,
-model:gpt_5_5_2,developed by,org:openai,GPT-5.5,OpenAI,4,TRUE,TRUE,,Evidence states head made by tail,False,
+model:gpt_5_5_2,developed by,org:openai,GPT-5.5,OpenAI,4,TRUE,TRUE,,Evidence states head made by tail,True,confirmed TRUE
 model:gpt_rosalind,developed by,org:openai,GPT-Rosalind,OpenAI,1,TRUE,TRUE,,Evidence states head made by tail,False,
 model:generative_pre_trained_transformer,developed by,org:openai,Generative Pre-trained Transformer,OpenAI,2,TRUE,TRUE,,GPT introduced by OpenAI in 2018,False,
 technology:responses_api,developed by,org:openai,Responses API,OpenAI,4,TRUE,TRUE,,Evidence states head made by tail,False,

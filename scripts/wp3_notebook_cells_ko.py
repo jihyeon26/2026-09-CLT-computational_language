@@ -439,12 +439,17 @@ Tier B 표본 90개(`relation_review_corrected_seed2026.xlsx`)와 3-1절 보조 
 | `rule_attribute` 중 문장 서술 속성, `single_sentence_layer` | graph에서 제외 | 제외 근거로만 보고 |
 
 - `FALSE`로 판정된 triple은 graph에서 제외한다.
-- 검수 행이 90개 이상이고 precision이 0.80 이상이면 graph 상태를 `human_validated_sample`로 바꾼다.
+- graph 상태: 90개 검수가 끝나기 전에는 `pending_human_review`, 끝난 뒤 precision이 0.80 이상이면
+  `human_validated_sample`, 미만이면 `human_reviewed_below_target`이다.
 - `AMBIGUOUS`는 precision 계산에서 제외하고 개수만 보고한다.
 - `competes with`는 서로 다른 근거 문장이 3개 이상일 때만 남긴다 (사람이 `TRUE`로 판정한 것은 유지).
   검수에서 `competes with` 오류는 대부분 회사·모델 이름을 나열한 문장("OpenAI, Google, Anthropic 등")에서
   나왔다. 경쟁 단서 단어(compete, rival 등)로 거르는 방법도 시험했지만, 오류 문장 대부분에도 이런 단어가 있어
   구분되지 않았다. 반면 근거 문장 2개짜리는 대부분 같은 나열 문장이 우연히 반복된 경우였다.
+- `competes with`는 같은 종류끼리(회사–회사, 모델–모델)만 남긴다. "Kimi ↔ OpenAI"처럼 모델과 회사를 잇는 relation은
+  경쟁 주체가 섞여 해석할 수 없다 (사람이 `TRUE`로 판정한 것은 유지).
+- 규칙은 검수 라벨을 본 뒤 정했으므로, 규칙 적용 후 남는 표본의 precision은 낙관적인 값이다. 규칙을 정할 때 보지 않은
+  남은 표본(Reviewer_A)의 결과를 따로 보고해 확인한다.
 - insight에 쓰이는 relation(2026년 신규 relation, 주요 개발사로 들어가는 `developed by`, 경쟁·성능 비교 상위 relation)
   중 검수 표본 밖의 327개는 근거 문장과 하나씩 대조했다(`insight_relation_check.csv`). AI가 1차로 판정하고, `FALSE`
   판정은 사람이 모두 확인했다(`human_checked`; 64개 중 5개는 관계가 맞아 `TRUE`로 바뀜). 최종 `FALSE`는 graph에서
@@ -461,9 +466,9 @@ review_counts = review_labels.value_counts().reindex(["TRUE", "FALSE", "AMBIGUOU
 decided = int(review_counts["TRUE"] + review_counts["FALSE"])
 review_precision = review_counts["TRUE"] / decided if decided else np.nan
 GRAPH_STATUS = (
-    "human_validated_sample"
-    if review_labels.notna().sum() >= 90 and review_precision >= 0.80
-    else "candidate_pending_human_review"
+    "pending_human_review" if review_labels.notna().sum() < 90
+    else "human_validated_sample" if review_precision >= 0.80
+    else "human_reviewed_below_target"
 )
 
 supplement_review = pd.read_excel(SUPPLEMENT_REVIEW_PATH, sheet_name="Review")
@@ -495,7 +500,10 @@ final_edges["review_status"] = np.select(
 )
 COMPETES_MIN_SENTENCES = 3
 few_sentences = final_edges["relation"].eq("competes with") & (final_edges["n_distinct_sentences"] < COMPETES_MIN_SENTENCES)
-weak_competes = few_sentences & final_edges["review_status"].ne("reviewed_true")
+compact_of = compact_schema["entity_type_mapping"]
+mixed_competes = (final_edges["relation"].eq("competes with")
+                  & final_edges["head_type"].map(compact_of).ne(final_edges["tail_type"].map(compact_of)))
+weak_competes = (few_sentences | mixed_competes) & final_edges["review_status"].ne("reviewed_true")
 competes_rule_check = (final_edges[final_edges["relation"].eq("competes with") & label.isin(["TRUE", "FALSE"])]
                        .assign(rule=lambda d: np.where(few_sentences[d.index], "제외", "유지"))
                        .pipe(lambda d: pd.crosstab(d["rule"], d["review_label"]))
@@ -514,6 +522,19 @@ final_edges.loc[unlabelled & (check == "FALSE"), "review_status"] = "checked_fal
 final_edges.loc[unlabelled & (check == "TRUE") & human_checked, "review_status"] = "checked_true_human"
 final_edges.loc[unlabelled & (check == "TRUE") & ~human_checked, "review_status"] = "checked_true_ai"
 removed_by_check = final_edges[final_edges["review_status"].eq("checked_false")]
+
+# 규칙 적용 후 남는 표본의 precision (사람 TRUE 예외 없이 규칙만 적용). Reviewer_A는 규칙을 정할 때 보지 않은 표본이다
+rule_dropped = set(map(tuple, final_edges.loc[few_sentences | mixed_competes, TRIPLE].values))
+sample_eval = review.rename(columns={"predicate": "relation"}).assign(
+    label=review_labels.values, kept=lambda d: [tuple(k) not in rule_dropped for k in d[TRIPLE].values])
+def precision_of(rows):
+    t, f = int(rows["label"].eq("TRUE").sum()), int(rows["label"].eq("FALSE").sum())
+    return pd.Series({"TRUE": t, "FALSE": f, "precision": round(t / (t + f), 3) if t + f else np.nan})
+post_rule_precision = pd.DataFrame({
+    "전체 표본": precision_of(sample_eval),
+    "규칙 적용 후 남는 표본": precision_of(sample_eval[sample_eval["kept"]]),
+    **{f"규칙 적용 후 · {name}": precision_of(rows[rows["kept"]]) for name, rows in sample_eval.groupby("reviewer_assignment")},
+}).T
 final_edges = final_edges[~final_edges["review_status"].isin(["reviewed_false", "weak_competes", "checked_false"])].reset_index(drop=True)
 
 display(pd.DataFrame(
@@ -523,7 +544,7 @@ display(pd.DataFrame(
         ("TRUE / FALSE / AMBIGUOUS", " / ".join(str(int(v)) for v in review_counts)),
         ("Tier B 표본 precision", "검수 전" if np.isnan(review_precision) else f"{review_precision:.3f}"),
         ("FALSE로 제외한 triple", int(label.eq("FALSE").sum())),
-        (f"근거 {COMPETES_MIN_SENTENCES}문장 미만 competes with 제외 (FALSE 제외)", int((weak_competes & label.ne("FALSE")).sum())),
+        (f"competes with 규칙(근거 {COMPETES_MIN_SENTENCES}문장 미만, 모델–회사 혼합)으로 제외 (FALSE 제외)", int((weak_competes & label.ne("FALSE")).sum())),
         ("insight relation 대조로 제외 (사람 확인)", len(removed_by_check)),
         ("최종 graph triple", len(final_edges)),
         ("graph 상태", GRAPH_STATUS),
@@ -531,6 +552,7 @@ display(pd.DataFrame(
     columns=["항목", "값"],
 ))
 display(competes_rule_check)
+display(post_rule_precision)
 display(supplement_summary)
 display(insight_check.merge(removed_by_check[TRIPLE], on=TRIPLE)["error_type"].value_counts()
         .rename_axis("insight 대조 FALSE 오류 유형").reset_index(name="triple 수"))
@@ -823,7 +845,7 @@ node·edge 수, density, component, relation type별 edge 수를 먼저 본다. 
 
 **분석용 view**: 3-1절 모델명 정제로 생긴 `모델 → member of family → family` relation은 family 하나에 모델 node가
 수십 개씩 붙어 family가 허브처럼 보이게 한다. 속성(ATTRIBUTE) relation도 실체가 아니라 값을 가리킨다. 그래서 둘 다
-graph와 Stage 3 검색에는 그대로 두되 중심성·clustering·emerging relation·기간별 근거 비중 계산에서는 제외한다.
+graph와 Stage 3 검색에는 그대로 두되 중심성·clustering·기간별 근거 비중 계산에서는 제외한다.
 """
         ),
         code(
@@ -941,7 +963,12 @@ print(f"두 view의 PageRank 상위 20 중 겹치는 entity: {len(overlap)}개 -
 labels = node_index["canonical_name"]
 top7 = typed_metrics.head(7)
 dev = relation_metrics[relation_metrics["predicate"] == "developed by"].nlargest(1, "in_degree").iloc[0]
-dev_products = collapsed[(collapsed["predicate"] == "developed by") & (collapsed["object_id"] == dev["entity_id"])]
+developed = collapsed[collapsed["predicate"] == "developed by"].assign(
+    product_type=lambda d: d["subject_id"].map(node_index["entity_type_compact"]))
+dev_products = developed[developed["object_id"] == dev["entity_id"]]
+dev_mix = dev_products["product_type"].value_counts()
+model_leader = developed[developed["product_type"] == "MODEL"]["object_id"].value_counts()
+fragments = [n for n in dev_products["subject_id"].map(labels) if "Blackwell" in n]
 comp = relation_metrics[relation_metrics["predicate"] == "competes with"].nlargest(1, "weighted_degree").iloc[0]
 bridge = typed_metrics.nlargest(1, "betweenness").iloc[0]
 context = cooc_metrics.head(15)
@@ -958,9 +985,11 @@ display(Markdown(f'''
 - typed graph의 PageRank 상위 7개는 {", ".join(top7["canonical_name"])}이다
   ({", ".join(sorted(set(top7["entity_type_compact"])))}). 상위 15위 안의 모델 family:
   {", ".join(typed_metrics.head(15).query("entity_type_compact == 'MODEL'")["canonical_name"])}.
-- `developed by` in-degree가 가장 큰 조직은 **{dev["canonical_name"]}**({int(dev["in_degree"])}개 산출물; 예:
-  {", ".join(dev_products.nlargest(4, "document_count")["subject_id"].map(labels))})이다. 하드웨어 공급자이면서 모델·소프트웨어
-  개발사로 가장 많은 산출물과 연결되어 있다.
+- `developed by` in-degree는 **{dev["canonical_name"]}**가 {int(dev["in_degree"])}개로 가장 크지만, 그중
+  {dev_mix.get("INFRASTRUCTURE", 0)}개가 GPU·시스템·소프트웨어 같은 인프라이고 모델은 {dev_mix.get("MODEL", 0)}개다. 같은 제품이
+  여러 이름으로 나뉜 경우도 있어(예: {", ".join(fragments[:4])}) 개수가 실제 제품 수보다 크다. 따라서 "가장 많은 것을 개발한
+  회사"가 아니라 "기사에서 이름 붙은 제품이 가장 많이 언급된 회사"로 읽어야 한다. 모델만 세면
+  {labels[model_leader.index[0]]}({model_leader.iloc[0]}개)가 가장 많다.
 - {comp_text}
 - co-occurrence graph에서는 {", ".join(context)}처럼 맥락을 나타내는 entity가 상위에 들어온다. 같은 문장에 함께
   쓰인 빈도라서 담론의 배경(미·중 경쟁, open vs closed 논쟁)을 반영한다.
@@ -1044,9 +1073,9 @@ display(Markdown(f'''
 - greedy modularity로 {len(community_summary)}개 community를 찾았고 modularity는 {modularity:.3f}이다. 값이 낮은 것은 주요
   조직·모델이 대부분의 기사에서 함께 언급되어 경계가 뚜렷하지 않기 때문이다.
 - 그래도 상위 3개 community(전체 node의 {c.loc[[1, 2, 3], "share_of_nodes"].sum():.0%})는 해석 가능한 담론 묶음으로 보인다.
-  - **C1 ({c.loc[1, "share_of_nodes"]:.0%})** {c.loc[1, "top_entities"]}: 미국 frontier lab과 open vs closed 모델 논의
-  - **C2 ({c.loc[2, "share_of_nodes"]:.0%})** {c.loc[2, "top_entities"]}: DeepSeek 이후 미·중 경쟁, 칩, 수출 통제 담론
-  - **C3 ({c.loc[3, "share_of_nodes"]:.0%})** {c.loc[3, "top_entities"]}: 기업용 배포·추론 인프라
+  - **C1 ({c.loc[1, "share_of_nodes"]:.0%})** {c.loc[1, "top_entities"]}: 주요 모델 개발사와 open/closed model 담론
+  - **C2 ({c.loc[2, "share_of_nodes"]:.0%})** {c.loc[2, "top_entities"]}: 미·중 AI 경쟁과 컴퓨팅 인프라 담론
+  - **C3 ({c.loc[3, "share_of_nodes"]:.0%})** {c.loc[3, "top_entities"]}: 기업용 배포·추론·클라우드 생태계
   - 작은 community는 특정 기사 주제다. 예: {c.loc[4, "top_entities"].split(", ")[0]}({c.loc[4, "node_count"]}개 node),
     {c.loc[5, "top_entities"].split(", ")[0]}({c.loc[5, "node_count"]}개 node)
 - community 이름은 상위 entity를 보고 붙인 해석이므로 검토 대상이다.
@@ -1061,9 +1090,9 @@ display(Markdown(f'''
 
 1. 분기별 relation 근거 문장 수 (predicate group별)
 2. 분기별 새로 처음 관찰된 typed triple 수
-3. 주요 open model family의 분기별 언급 기사 비율 (WP2 `nodes_quarterly`)
-4. 2026년에 처음 관찰된 relation (emerging relationship 후보)
-5. 전반기(P1)와 후반기(P2) 사이 relation 근거 비중이 가장 크게 늘어난 entity
+3. 주요 open model family의 분기별 언급 기사 비율 (WP2 `entity_mentions`, 기사 단위로 중복 제거)
+4. 전반기(P1)와 후반기(P2) 사이 relation 근거 비중이 가장 크게 늘어난 entity
+5. 2026년에 기사에서 처음 관찰된 relation (emerging relationship). 예시는 사람이 근거 문장을 확인한 relation에서만 고른다
 """
         ),
         code(
@@ -1079,12 +1108,13 @@ new_edges["quarter"] = pd.to_datetime(new_edges["first_seen"]).dt.to_period("Q")
 quarterly_new_edges = new_edges.pivot_table(index="quarter", columns="predicate_group", values="predicate",
                                             aggfunc="count", fill_value=0)
 
-mentions = pd.read_csv(WP2_INPUT_DIR / "entity_mentions.csv", usecols=["doc_id", "quarter"])
+mentions = pd.read_csv(WP2_INPUT_DIR / "entity_mentions.csv", usecols=["entity_id", "doc_id", "quarter"])
 documents_per_quarter = mentions.drop_duplicates("doc_id")["quarter"].value_counts().sort_index()
 families = nodes_kg[nodes_kg["is_open_model_family"]].set_index("entity_id")["canonical_name"]
-family_quarterly = nodes_quarterly.assign(entity_id=nodes_quarterly["entity_id"].map(id_map))
-family_quarterly = (family_quarterly[family_quarterly["entity_id"].isin(families.index)]
-                    .groupby(["entity_id", "quarter"])["n_docs"].sum().unstack(fill_value=0))
+family_mentions = mentions.assign(entity_id=mentions["entity_id"].map(id_map))
+family_quarterly = (family_mentions[family_mentions["entity_id"].isin(families.index)]
+                    .drop_duplicates(["entity_id", "doc_id"])  # 병합된 여러 이름이 한 기사에 나와도 한 번만 센다
+                    .groupby(["entity_id", "quarter"]).size().unstack(fill_value=0))
 family_share = family_quarterly.div(documents_per_quarter.reindex(family_quarterly.columns), axis=1)
 top_families = family_quarterly.sum(axis=1).nlargest(10).index
 family_share = family_share.loc[top_families].rename(index=families)
@@ -1116,13 +1146,6 @@ display(documents_per_quarter.rename("기사 수").to_frame().T)
         code(
             """
 labels = node_index["canonical_name"]
-emerging = collapsed_analysis[(collapsed_analysis["first_seen"].fillna("") >= "2026-01-01")
-                              & (collapsed_analysis["document_count"] >= 2)].copy()
-emerging["edge"] = emerging["subject_id"].map(labels) + " -> " + emerging["predicate"] + " -> " + emerging["object_id"].map(labels)
-print(f"2026년에 처음 관찰되고 2개 이상 기사로 뒷받침되는 triple: {len(emerging)}개")
-display(emerging.sort_values(["document_count", "first_seen"], ascending=[False, True])
-        .head(15)[["edge", "predicate_group", "document_count", "first_seen", "last_seen"]])
-
 dated_analysis = dated[~dated["predicate_group"].isin(ANALYSIS_EXCLUDED_GROUPS)]
 
 def period_share(start, end):
@@ -1140,6 +1163,17 @@ shares["entity_type_compact"] = shares.index.map(node_index["entity_type_compact
 print("relation 근거 기사 비중 변화 (P2 - P1, %p)")
 display(pd.concat([shares.nlargest(10, "change_pp"), shares.nsmallest(5, "change_pp")])
         [["canonical_name", "entity_type_compact", p1, p2, "change_pp"]].round(3))
+
+# 2026년에 처음 관찰된 relation: 개수는 전체로 보고하고, 예시는 사람이 근거 문장을 확인한 relation에서만 고른다
+VERIFIED_STATUS = ["reviewed_true", "checked_true_human"]
+first_seen_2026 = collapsed_analysis[(collapsed_analysis["first_seen"].fillna("") >= "2026-01-01")
+                                     & (collapsed_analysis["document_count"] >= 2)].copy()
+first_seen_2026["edge"] = (first_seen_2026["subject_id"].map(labels) + " -> " + first_seen_2026["predicate"]
+                           + " -> " + first_seen_2026["object_id"].map(labels))
+verified_2026 = first_seen_2026[first_seen_2026["review_status"].isin(VERIFIED_STATUS)]
+print(f"2026년에 처음 관찰되고 2개 이상 기사로 뒷받침되는 triple {len(first_seen_2026)}개 "
+      f"(사람이 근거 문장을 확인한 것 {len(verified_2026)}개)")
+display(verified_2026.nlargest(10, "document_count")[["edge", "predicate_group", "document_count", "first_seen", "review_status"]])
 """
         ),
         code(
@@ -1150,7 +1184,6 @@ first_q = next(q for q in fs.columns if documents_per_quarter[q] >= 50)  # 기�
 last_q = fs.columns[-1]
 quarter_totals = quarterly_assertions.sum(axis=1)
 risers, fallers = shares.nlargest(5, "change_pp"), shares.nsmallest(3, "change_pp")
-emerging_groups = emerging["predicate_group"].value_counts()
 display(Markdown(f'''
 **해석 (검토 전 초안)**
 
@@ -1164,10 +1197,10 @@ display(Markdown(f'''
   {fs.loc["Nemotron"].max():.0%}로 가장 높았다.
 - **relation 근거 비중 변화 (P1 → P2)**: {", ".join(f"{r.canonical_name} {r.change_pp:+.1f}%p" for r in risers.itertuples())}가 늘었고,
   {", ".join(f"{r.canonical_name} {r.change_pp:+.1f}%p" for r in fallers.itertuples())}가 줄었다.
-- **2026년에 처음 관찰된 relation** (속성 제외): {len(emerging)}개({", ".join(f"{g} {n}" for g, n in emerging_groups.items())}).
-  출처(PROVENANCE) 예시는
-  {", ".join(emerging[emerging["predicate_group"] == "PROVENANCE"].nlargest(4, "document_count")["edge"])}이다.
-  검수 전 relation에는 오류가 남아 있으므로 개별 relation을 사실로 인용하기 전에 근거 문장을 확인한다.
+- **2026년에 기사에서 처음 관찰된 relation**: 2개 이상 기사로 뒷받침되는 것이 {len(first_seen_2026)}개이고, 그중
+  {", ".join(f"{g} {n}" for g, n in first_seen_2026["predicate_group"].value_counts().head(3).items())} 순으로 많다. 사람이 근거 문장을 확인한
+  relation의 예: {"; ".join(f"{r.edge} ({r.first_seen})" for r in verified_2026.nlargest(3, "document_count").itertuples())}.
+  "처음 관찰"은 이 데이터셋의 기사에 처음 등장한 날짜라는 뜻이며, 관계가 그때 생겼다는 뜻은 아니다.
 - 2024Q3은 9월, 2026Q3은 7~8월만 포함한다. 날짜는 모두 기사 발행일이다.
 '''))
 """
@@ -1301,10 +1334,6 @@ for predicate in ["competes with", "outperforms"]:
                          "metric": "supporting articles", "documents": int(row.document_count),
                          "detail": f"{row.first_seen} ~ {row.last_seen}",
                          "evidence": evidence_examples(row.subject_id, predicate, row.object_id)})
-for row in emerging.nlargest(5, "document_count").itertuples(index=False):
-    findings.append({"finding_type": "emerging_2026", "entity_or_edge": row.edge, "metric": "first seen",
-                     "documents": int(row.document_count), "detail": row.first_seen,
-                     "evidence": evidence_examples(row.subject_id, row.predicate, row.object_id)})
 for row in shares.nlargest(3, "change_pp").itertuples():
     findings.append({"finding_type": "rising_entity", "entity_or_edge": row.canonical_name,
                      "metric": f"relation evidence share {row.change_pp:+.1f}pp (P2 - P1)", "documents": None,
@@ -1316,35 +1345,54 @@ with pd.option_context("display.max_colwidth", 160):
         ),
         code(
             r"""
-hub = finding_candidates[finding_candidates["finding_type"] == "developer_hub"].iloc[0]
+developer_mix = {labels[org]: developed[developed["object_id"] == org]["product_type"].value_counts().head(3).to_dict()
+                 for org in developers["entity_id"]}
 rivals = finding_candidates[finding_candidates["finding_type"] == "strong_competes_with"].head(3)
 deepseek = shares.loc["org:deepseek"] if "org:deepseek" in shares.index else None
-sizes = nodes_kg.set_index("canonical_name")["parameter_sizes_b"]
-size_text = "; ".join(f"{name} {', '.join(f'{v:g}B' for v in json.loads(sizes[name]))}"
-                      for name in ["Llama", "Qwen", "Gemma", "gpt-oss"] if name in sizes and sizes[name])
+SIZE_BINS, SIZE_LABELS = [0, 10, 40, 100, np.inf], ["<=10B", "10-40B", "40-100B", ">100B"]
+sized = (model_mentions.drop_duplicates(["head_id", "doc_id"])  # 모델·기사 쌍 단위
+         .assign(period=lambda d: np.where(d["date"] <= PERIODS[p1][1], p1, p2),
+                 size_bin=lambda d: pd.cut(d["parameter_size_b"], SIZE_BINS, labels=SIZE_LABELS)))
+size_share = pd.crosstab(sized["period"], sized["size_bin"], normalize="index")
+size_docs = sized.groupby("period")["doc_id"].nunique()
+family_size_mentions = sized.groupby(["tail", "period"]).size().unstack(fill_value=0)
+mid_examples = (sized[(sized["period"] == p2) & (sized["size_bin"] == "10-40B")]["head"].value_counts().head(4).index)
 display(Markdown(f'''
 ### 핵심 insight 초안 (검토 전)
 
 각 항목은 관찰 → 사용한 graph·지표 → 근거 → 한계 순서로 적었다. 위 후보 표의 근거 문장을 원문과 대조한 뒤 확정한다.
 
 **1. 오픈 모델 담론의 중심이 Llama에서 중국 family와 Nemotron으로 분산되었다.**
-10절 family 기사 비율({first_q} → {last_q}): Llama {fs.loc["Llama", first_q]:.0%} → {fs.loc["Llama", last_q]:.0%}, Qwen {fs.loc["Qwen", last_q]:.0%},
-Kimi {fs.loc["Kimi", last_q]:.0%}, GLM {fs.loc["GLM", last_q]:.0%}({last_q}).
+10절 family 기사 비율({first_q} → {last_q}): Llama {fs.loc["Llama", first_q]:.0%} → {fs.loc["Llama", last_q]:.0%},
+Qwen {fs.loc["Qwen", first_q]:.0%} → {fs.loc["Qwen", last_q]:.0%}, Kimi {fs.loc["Kimi", first_q]:.0%} → {fs.loc["Kimi", last_q]:.0%},
+GLM {fs.loc["GLM", first_q]:.0%} → {fs.loc["GLM", last_q]:.0%}, Nemotron {fs.loc["Nemotron", first_q]:.0%} → {fs.loc["Nemotron", last_q]:.0%}
+({fs.loc["Nemotron"].idxmax()} 최고 {fs.loc["Nemotron"].max():.0%}).
 한계: 언급 비율은 실제 사용량이나 성능이 아니라 기사 노출이다.
 
-**2. {hub["entity_or_edge"]}는 typed graph에서 가장 많은 개발 산출물과 연결된다** ({hub["metric"]}; 예: {hub["detail"]}).
-하드웨어·모델·agent 소프트웨어에 걸쳐 있고, 2026년에 처음 관찰된 relation에도 이 회사의 제품이 많다.
+**2. 개발사마다 기사에 등장하는 산출물의 성격이 다르다.** `developed by` 산출물의 compact type 구성:
+{"; ".join(f"{name} {', '.join(f'{t} {n}' for t, n in mix.items())}" for name, mix in developer_mix.items())}.
+{labels[dev["entity_id"]]}는 인프라(GPU·시스템·소프트웨어) 중심이고, OpenAI·Anthropic·Meta는 모델 중심이다.
+한계: 같은 제품이 여러 이름으로 나뉜 경우가 있어(8절) 개수는 제품 수가 아니라 기사에서 이름 붙은 산출물 수다.
 
 **3. 경쟁 관계는 소수의 frontier 기업을 중심으로 형성된다**:
 {"; ".join(f"{r['entity_or_edge']} ({int(r['documents'])}개 기사)" for _, r in rivals.iterrows())}.
-한계: 여러 회사를 나열한 문장에서 추출된 경쟁 관계가 섞여 있다.
+한계: 상위 경쟁 relation은 근거 문장과 대조했지만(4절), 경쟁의 강도가 아니라 경쟁 구도로 함께 보도된 기사 수다.
 
 **4. {peak_quarter} 보도 집중이 전체 graph 구조에 큰 영향을 준다.**
 {f"DeepSeek의 relation 근거 기사 비중은 P1 {deepseek[p1]:.0%} → P2 {deepseek[p2]:.0%}이다. " if deepseek is not None else ""}전체 기간을 합친
 centrality는 이 분기의 영향을 크게 받으므로 기간별 지표와 함께 해석해야 한다.
 
-**5. 기사에서 관찰된 모델 규모** (3-1절 모델명 정제, 서로 다른 문장 2개 이상에 나온 모델명): {size_text}.
-family에 속한 모델 node들의 크기를 모은 값이다. 어느 모델의 크기인지는 `member of family`로 연결된 모델 node에서 확인한다.
+**5. 크기가 이름에 적힌 오픈 모델 언급에서 10–40B 중형 모델의 비중이 늘었다.**
+3-1절 모델명 정제로 크기를 알 수 있는 모델 언급(모델·기사 쌍)을 기간별로 나누면, 10–40B 비중은
+{size_share.loc[p1, "10-40B"]:.0%} → {size_share.loc[p2, "10-40B"]:.0%}로 늘고 40–100B는 {size_share.loc[p1, "40-100B"]:.0%} →
+{size_share.loc[p2, "40-100B"]:.0%}로 줄었다(10B 이하 {size_share.loc[p1, "<=10B"]:.0%} → {size_share.loc[p2, "<=10B"]:.0%}, 100B 초과
+{size_share.loc[p1, ">100B"]:.0%} → {size_share.loc[p2, ">100B"]:.0%}). P2에서 많이 언급된 10–40B 모델은 {", ".join(mid_examples)}이다.
+family별 언급은 Llama {family_size_mentions.loc["Llama", p1]} → {family_size_mentions.loc["Llama", p2]},
+Gemma {family_size_mentions.loc["Gemma", p1]} → {family_size_mentions.loc["Gemma", p2]},
+Qwen {family_size_mentions.loc["Qwen", p1]} → {family_size_mentions.loc["Qwen", p2]}로, Llama 70B급 언급 감소와 Qwen·Gemma 중형 모델
+언급 증가가 함께 나타난다.
+한계: 이름에 크기가 적힌 모델만 대상이라 표본이 작고(기사 {size_docs[p1]}개 → {size_docs[p2]}개), 출시·사용량이 아니라 기사 언급의
+구성 변화다. 특정 family의 보도량 변화가 크기 분포를 좌우할 수 있으므로 "중형 모델로의 이동을 시사한다" 정도로만 쓴다.
 
 **insight로 쓰지 않는 것**: `outperforms` relation은 "it outperforms Qwen 2.5, Gemma 3 and Llama 3"처럼 제3의 모델이
 둘 다를 능가한다는 서술에서 잘못 추출된 경우가 많아, 사람 검수 전까지 insight에서 제외한다.
@@ -1356,14 +1404,9 @@ family에 속한 모델 node들의 크기를 모은 값이다. 어느 모델의 
 ## 13. 한계와 타당성 위협
 
 - **Tier B precision이 목표에 못 미침**: 4절 사람 검수에서 Tier B 표본 precision이 목표 0.80보다 낮았고, 오류는 대부분
-  여러 이름을 나열한 문장에서 엔티티를 잘못 짚은 경우였다. 오류가 가장 많은 `competes with`에는 근거 3문장 규칙을
-  추가했지만, 이 기준은 같은 검수 라벨을 보고 정했으므로 아직 검수하지 않은 표본으로 다시 확인해야 한다. 그 전까지
-  graph 상태는 `candidate_pending_human_review`다.
-- **insight relation 대조의 TRUE는 AI 판정이다**: insight에 쓰는 relation 327개 중 AI가 FALSE로 본 64개는 사람이 확인해
-  59개를 제외했다(`insight_relation_check.csv`, 사유 포함). 대부분 나열 문장에서 다른 회사의 제품을 잘못 연결한 경우다
-  (예: OpenClaw → developed by → NVIDIA). AI가 TRUE로 본 262개(`checked_true_ai`)는 사람이 보지 않았다.
-- **node type 오류**: `Claude Sonnet 4.5`, `C2S-Scale`, `GTC 2026`이 BENCHMARK로, `AI Overviews`가 DATASET으로
-  분류되어 있다. relation은 맞으므로 graph에 두었지만 compact type별 집계에서는 잘못된 그룹에 들어간다.
+  여러 이름을 나열한 문장에서 엔티티를 잘못 짚은 경우였다. `competes with` 근거 3문장 규칙과 insight relation 대조로
+  확인된 오류는 제외했지만, 검수하지 않은 relation에는 같은 유형의 오류가 남아 있을 수 있다. 또 `competes with` 규칙은
+  같은 검수 라벨을 보고 정했으므로, 남은 표본 30개의 검수 결과로 다시 확인한다.
 - **Tier A는 기사 근거가 없다**: WP1 lexicon의 curated relation이다. Stage 3에서 기사 근거가 필요한
   답변에는 Tier B assertion만 인용한다.
 - **날짜 의미**: 모든 날짜는 기사 발행일이다. 출시일이나 사건 발생일로 표현하지 않는다.
@@ -1376,7 +1419,7 @@ family에 속한 모델 node들의 크기를 모은 값이다. 어느 모델의 
 - **중심성 ≠ 산업 영향력**: 1,210개 Open Models 기사에서의 언급·관계 구조다. 보정 전 graph의 민감도
   분석에서 score와 threshold에 따라 순위가 크게 바뀌었다.
 - **일반명사 규칙과 별칭 표의 한계**: 규칙이 놓친 일반명사(예: `Fox`, `Nari`)와 등록되지 않은 별칭이
-  남아 있을 수 있다. `outputs/stage1_wp3_relation_correction_20261008/corrections/`를 검토해 보완한다.
+  남아 있을 수 있다.
 - **family 단위 축약**: `MedGemma` → `Gemma`, `Mixtral` → `Mistral`처럼 WP1 lexicon이 family 단위로
   묶으므로 같은 family 안의 버전 간 계보(`Llama 4 Behemoth` → `Llama 4 Maverick`)는 표현할 수 없다. 3-1절 모델명
   정제로 이름에 크기가 적힌 모델(`Qwen3 1.7B`)만 별도 node가 되었고, 이름에 크기가 없는 모델(`Llama 4 Scout`)의 크기와
@@ -1431,7 +1474,6 @@ tables = {
     "quarterly_relation_assertions": quarterly_assertions.reset_index(),
     "quarterly_new_typed_edges": quarterly_new_edges.reset_index(),
     "family_quarterly_share": family_share.reset_index(names="family"),
-    "emerging_relations_2026": emerging,
     "entity_period_share": shares.reset_index(names="entity_id"),
     "graph_finding_candidates": finding_candidates,
     "model_name_mentions": model_mentions.drop(columns=["sentence_key"]),
@@ -1539,7 +1581,7 @@ Schema: `{graph_schema["schema_version"]}` · 상태: `{GRAPH_STATUS}` · Track:
 ## 분석 표
 `node_metrics`, `relation_type_metrics`, `relation_type_summary`, `node_communities`, `community_summary`,
 `quarterly_relation_assertions`, `quarterly_new_typed_edges`, `family_quarterly_share`,
-`emerging_relations_2026`, `entity_period_share`, `graph_finding_candidates`(검토 전 후보),
+`entity_period_share`, `graph_finding_candidates`(검토 전 후보),
 `model_name_mentions`(모델 node의 근거 문장 전체: family, 모델 node, 크기, 원문 표현 `surface`)
 
 ## Stage 3 provenance
@@ -1617,12 +1659,13 @@ checklist = pd.DataFrame(
         ("모든 edge endpoint가 node table에 존재", "PASS" if graph_node_ids <= set(nodes_out["entity_id"]) else "FAIL", "nodes.parquet"),
         ("centrality 분석", "PASS", "weighted degree, PageRank, betweenness, relation별 in/out degree"),
         ("clustering·community 분석", "PASS", f"{len(community_summary)} communities, modularity {modularity:.3f}"),
-        ("시간 분석 (emerging relationship)", "PASS", f"분기별 relation, family 추이, 2026년 신규 triple {len(emerging)}개"),
+        ("시간 분석 (emerging relationship)", "PASS", f"분기별 relation·신규 triple 수, family 추이, P1→P2 근거 비중 변화, 2026년 첫 관찰 triple {len(first_seen_2026)}개"),
         ("NetworkX 시각화와 legend", "PASS", f"{len(figure_files)}개 그림"),
         ("graph와 schema 저장·재로딩", "PASS" if reload_check["일치"].all() else "FAIL", "GraphML, node-link JSON, Parquet"),
         ("short schema / data dictionary", "PASS", "DATA_DICTIONARY_KO.md"),
         ("Stage 3 provenance smoke test", "PASS" if len(smoke_test) else "FAIL", f"{len(smoke_test)}개 근거 반환"),
-        ("Tier B relation 사람 검수 90개, precision >= 0.80", "PASS" if GRAPH_STATUS == "human_validated_sample" else "PENDING",
+        ("Tier B relation 사람 검수 90개, precision >= 0.80",
+         {"human_validated_sample": "PASS", "pending_human_review": "PENDING"}.get(GRAPH_STATUS, "BELOW TARGET"),
          f"검수 {int(review_labels.notna().sum())}/90"),
         ("insight를 원문 근거와 대조해 확정", "PENDING", "graph_finding_candidates 원문 대조"),
         ("그림 label·legend·threshold 사람 승인", "PENDING", ", ".join(figure_files)),
