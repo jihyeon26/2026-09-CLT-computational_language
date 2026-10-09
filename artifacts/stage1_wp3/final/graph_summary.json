@@ -1,7 +1,7 @@
 {
   "schema_version": "stage1-wp3-open-models-kg-v1.0",
-  "status": "candidate_pending_human_review",
-  "created_at_utc": "2026-10-08T18:50:05+00:00",
+  "status": "pending_human_review",
+  "created_at_utc": "2026-10-08T20:54:30+00:00",
   "graphs": {
     "assertion": {
       "nodes": 775,
@@ -34,10 +34,13 @@
     "A": 33
   },
   "review": {
-    "reviewed_rows": 0,
+    "labelled_rows": 0,
+    "true": 0,
+    "false": 0,
+    "ambiguous": 0,
     "precision": null
   },
-  "cooccurrence_minimum_documents": 2,
+  "cooccurrence_minimum_articles": 2,
   "communities": 192,
   "modularity": 0.2364
 }

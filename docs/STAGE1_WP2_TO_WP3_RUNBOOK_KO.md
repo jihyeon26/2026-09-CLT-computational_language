@@ -54,7 +54,7 @@
 - `config/wp3_open_models_contract.json`
 - `src/wp3_knowledge_graph/`
 - `scripts/run_stage1_wp3.py`
-- `notebooks/stage1_wp3_open_models_contract.ipynb`
+- `notebooks/stage1_wp3_knowledge_graph.ipynb`
 
 ### Stage 3 인계 기반
 
@@ -231,7 +231,7 @@ WP2에 FAIL이 하나라도 있으면 다음 단계로 가지 않고 upstream �
 
 ### Step 8. WP3 notebook을 공식 경로로 실행한다
 
-`notebooks/stage1_wp3_open_models_contract.ipynb`의 설정 셀에서 다음을 공식 경로로 바꾼다.
+`notebooks/stage1_wp3_knowledge_graph.ipynb`의 설정 셀에서 다음을 공식 경로로 바꾼다.
 
 - `WP2_INPUT_DIR`
 - `WP3_OUTPUT_DIR`

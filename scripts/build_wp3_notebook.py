@@ -8,7 +8,7 @@ from wp3_notebook_cells import notebook_cells
 
 
 ROOT = Path(__file__).resolve().parents[1]
-OUTPUT = ROOT / "notebooks" / "stage1_wp3_open_models_contract.ipynb"
+OUTPUT = ROOT / "notebooks" / "stage1_wp3_knowledge_graph.ipynb"
 
 
 def main() -> None:

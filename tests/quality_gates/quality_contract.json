@@ -59,7 +59,7 @@
   "wp3": {
     "output_dir": "outputs/stage1_wp3_open_models_pilot",
     "upstream_wp2_dir": "outputs/stage1_wp2_open_models_pilot",
-    "notebook": "notebooks/stage1_wp3_open_models_contract.ipynb",
+    "notebook": "notebooks/stage1_wp3_knowledge_graph.ipynb",
     "required_files": [
       "nodes.parquet",
       "typed_edges_assertions.parquet",

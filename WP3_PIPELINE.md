@@ -18,7 +18,7 @@ The graph analysis code always receives the same canonical internal fields after
 .\.venv\Scripts\python.exe scripts\run_stage1_wp3.py
 ```
 
-The executed analysis notebook is `notebooks/stage1_wp3_open_models_contract.ipynb`. Its first configuration
+The executed analysis notebook is `notebooks/stage1_wp3_knowledge_graph.ipynb`. Its first configuration
 cell contains the upstream input directory, output directory, contract path, and `RUN_PIPELINE` switch.
 
 ## Run with a future WP2 delivery

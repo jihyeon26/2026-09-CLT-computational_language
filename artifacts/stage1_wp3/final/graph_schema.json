@@ -1,6 +1,6 @@
 {
   "schema_version": "stage1-wp3-open-models-kg-v1.0",
-  "status": "candidate_pending_human_review",
+  "status": "pending_human_review",
   "track": "Open Models",
   "node_key": "entity_id",
   "node_attributes": [
@@ -349,21 +349,21 @@
   },
   "edge_quality_tiers": {
     "A": "curated WP1 lexicon model family -> developer (no article sentence)",
-    "B": "GLiREL relation passing all WP3 correction checks with >= 2 distinct evidence sentences"
+    "B": "GLiREL relation passing all WP3 checks with >= 2 distinct evidence sentences"
   },
   "review_status_values": [
     "curated_lexicon",
-    "unreviewed",
     "reviewed_true",
-    "reviewed_ambiguous"
+    "reviewed_ambiguous",
+    "unreviewed"
   ],
   "graph_views": {
     "assertion": "directed multigraph, one edge per evidence sentence (edge key = relation_id)",
     "typed": "directed multigraph, one edge per unique (head, relation, tail); competes with is symmetric",
-    "cooccurrence": "undirected weighted graph of same-sentence co-mentions in >= 2 documents"
+    "cooccurrence": "undirected weighted graph of same-sentence co-mentions in >= 2 articles"
   },
   "edge_weight": "document_count = number of distinct articles supporting the edge",
-  "date_semantics": "published_at / first_seen / last_seen are article publication dates, not release or event dates",
+  "date_semantics": "published_at, first_seen and last_seen are article publication dates",
   "provenance_chain": [
     "entity_id",
     "relation_id",
