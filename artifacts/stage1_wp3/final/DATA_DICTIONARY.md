@@ -1,6 +1,6 @@
 # Stage 1 WP3 knowledge graph: data dictionary
 
-Schema `stage1-wp3-open-models-kg-v1.0`, review status `pending_human_review`, track Open Models.
+Schema `stage1-wp3-open-models-kg-v1.0`, review status `human_reviewed_sample`, track Open Models.
 All dates (`published_at`, `first_seen`, `last_seen`) are article publication dates.
 
 ## Nodes (`nodes.*`)

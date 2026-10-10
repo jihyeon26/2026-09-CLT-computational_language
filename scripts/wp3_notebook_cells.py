@@ -700,11 +700,16 @@ for doc_id, sentence_id, text in zip(sentences["doc_id"], sentences["sentence_id
         if fid not in family_node.index:
             continue
         for m in rx.finditer(view):
+            if fid == "llama" and re.match(r"Llama[\w.\- ]{0,15}?Nemotron", view[m.start():m.start() + 40]):
+                continue  # Llama Nemotron models are NVIDIA models, not Llama versions
             size = SIZE_AFTER_NAME.match(view[m.end():m.end() + 30])
-            if size and not re.search(r"\d\s?x\s?$", size["prefix"]):  # skip mixture-of-experts notation (8x22B)
-                value = float(size["num"]) * (1000 if size["unit"] in "Tt" else 1)
-                surface = (m.group() + view[m.end():m.end() + size.end()]).strip()
-                model_rows.append((fid, value, surface, doc_id, sentence_id, text))
+            if not size:
+                continue
+            surface = (m.group() + view[m.end():m.end() + size.end()]).strip()
+            if re.search(r"\d\s?[x×]\s?\d", surface) or re.search(r"(?<![A-Za-z])E$", size["prefix"]):
+                continue  # MoE notation (8x22B) and effective sizes (Gemma 4 E2B) are not total parameter counts
+            value = float(size["num"]) * (1000 if size["unit"] in "Tt" else 1)
+            model_rows.append((fid, value, surface, doc_id, sentence_id, text))
 
 # Normalise model names: "Qwen 2.5 7B" and "Qwen2.5-7B" are the same model
 family_label = nodes_corrected.set_index("entity_id")["entity"]
@@ -712,7 +717,9 @@ def model_label(text):
     name = re.sub(r"\s+", " ", str(text)).strip()
     return re.sub(r"(\d+(?:\.\d+)?)\s?([BbTt])$", lambda m: m.group(1) + m.group(2).upper(), name)
 def model_key(label):
-    return re.sub(r"[^0-9a-z.]", "", label.lower())
+    # version and size stay separate: "Gemma 3 1B" -> gemma3_1b, "Gemma 31B" -> gemma_31b
+    base, size = re.match(r"^(.*?)[\s\-]*(\d+(?:\.\d+)?[BT])$", label).groups()
+    return re.sub(r"[^0-9a-z.]", "", base.lower()) + "_" + size.lower()
 
 doc_dates = (pd.read_csv(WP2_INPUT_DIR / "entity_mentions.csv", usecols=["doc_id", "date"])
              .drop_duplicates("doc_id").set_index("doc_id")["date"])
@@ -841,7 +848,7 @@ supplement_review = pd.read_excel(SUPPLEMENT_REVIEW_PATH, sheet_name="Review")
 supplement_review["review_label"] = supplement_review["review_correct"].astype("string").str.strip().str.upper()
 supplement_review["group"] = np.select(
     [supplement_review["added_by"].eq("role_typed_tier_B"),
-     supplement_review["added_by"].eq("rule_attribute") & supplement_review["head_id"].isin(new_nodes["entity_id"])],
+     supplement_review["added_by"].eq("rule_attribute") & supplement_review["head_id"].str.match(r"model:variant_.*\d[bt]$")],
     ["role-based typing (in the graph)", "size from model name (node attribute)"],
     default="sentence-level attributes and single-sentence layer (not used)",
 )
