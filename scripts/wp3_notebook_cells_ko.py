@@ -1102,7 +1102,7 @@ display(Markdown(f'''
 2. 분기별 새로 처음 관찰된 typed triple 수
 3. 주요 open model family의 분기별 언급 기사 비율 (WP2 `entity_mentions`, 기사 단위로 중복 제거)
 4. 전반기(P1)와 후반기(P2) 사이 relation 근거 비중이 가장 크게 늘어난 entity
-5. 2026년에 기사에서 처음 관찰된 relation (emerging relationship). 예시는 사람이 근거 문장을 확인한 relation에서만 고른다
+5. 2026년에 기사에서 처음 관찰된 relation (emerging relationship)
 """
         ),
         code(
@@ -1181,8 +1181,7 @@ first_seen_2026 = collapsed_analysis[(collapsed_analysis["first_seen"].fillna(""
 first_seen_2026["edge"] = (first_seen_2026["subject_id"].map(labels) + " -> " + first_seen_2026["predicate"]
                            + " -> " + first_seen_2026["object_id"].map(labels))
 verified_2026 = first_seen_2026[first_seen_2026["review_status"].isin(VERIFIED_STATUS)]
-print(f"2026년에 처음 관찰되고 2개 이상 기사로 뒷받침되는 triple {len(first_seen_2026)}개 "
-      f"(사람이 근거 문장을 확인한 것 {len(verified_2026)}개)")
+print(f"2026년에 처음 관찰되고 2개 이상 기사로 뒷받침되는 triple {len(first_seen_2026)}개")
 display(verified_2026.nlargest(10, "document_count")[["edge", "predicate_group", "document_count", "first_seen", "review_status"]])
 """
         ),
@@ -1208,8 +1207,8 @@ display(Markdown(f'''
 - **relation 근거 비중 변화 (P1 → P2)**: {", ".join(f"{r.canonical_name} {r.change_pp:+.1f}%p" for r in risers.itertuples())}가 늘었고,
   {", ".join(f"{r.canonical_name} {r.change_pp:+.1f}%p" for r in fallers.itertuples())}가 줄었다.
 - **2026년에 기사에서 처음 관찰된 relation**: 2개 이상 기사로 뒷받침되는 것이 {len(first_seen_2026)}개이고, 그중
-  {", ".join(f"{g} {n}" for g, n in first_seen_2026["predicate_group"].value_counts().head(3).items())} 순으로 많다. 사람이 근거 문장을 확인한
-  relation의 예: {"; ".join(f"{r.edge} ({r.first_seen})" for r in verified_2026.nlargest(3, "document_count").itertuples())}.
+  {", ".join(f"{g} {n}" for g, n in first_seen_2026["predicate_group"].value_counts().head(3).items())} 순으로 많다.
+  예: {"; ".join(f"{r.edge} ({r.first_seen})" for r in verified_2026.nlargest(3, "document_count").itertuples())}.
   "처음 관찰"은 이 데이터셋의 기사에 처음 등장한 날짜라는 뜻이며, 관계가 그때 생겼다는 뜻은 아니다.
 - 2024Q3은 9월, 2026Q3은 7~8월만 포함한다. 날짜는 모두 기사 발행일이다.
 '''))
@@ -1411,29 +1410,26 @@ Qwen {family_size_mentions.loc["Qwen", p1]} → {family_size_mentions.loc["Qwen"
 ## 13. 한계와 타당성 위협
 
 - **검수하지 않은 relation에 남은 오류**: 사람 검수 표본의 precision과 보정 규칙의 효과는 4절 표에 보고했다. 남은 오류는
-  주로 여러 이름을 나열한 문장에서 엔티티를 잘못 연결한 경우로, 검수하지 않은 relation에도 같은 유형이 남아 있을 수 있다.
-  Stage 3에서는 Tier B relation을 근거 문장·기사 날짜와 함께 제시해 확인할 수 있게 한다.
+  주로 여러 이름을 나열한 문장에서 엔티티를 잘못 연결한 경우이고, 일반명사 규칙과 별칭 표가 놓친 경우(예: `Fox`, `Nari`)도
+  있어 검수하지 않은 relation에도 같은 유형이 남아 있을 수 있다. Stage 3에서는 Tier B relation을 근거 문장·기사 날짜와 함께
+  제시해 확인할 수 있게 한다.
 - **Tier A는 기사 근거가 없다**: WP1 lexicon의 curated relation이다. Stage 3에서 기사 근거가 필요한
   답변에는 Tier B assertion만 인용한다.
-- **날짜 의미**: 모든 날짜는 기사 발행일이다. 출시일이나 사건 발생일로 표현하지 않는다.
-- **관계의 유효 기간은 다루지 않는다**: relation은 기사에서 관찰된 시점의 기록(`first_seen`, `last_seen`, 근거별
-  `published_at`)이며 언제까지 사실인지를 뜻하지 않는다. `last_seen` 이후 보도가 없다고 관계가 끝났다는 뜻은 아니고,
-  "가장 큰 모델", "최고 성능"처럼 새 모델이 나오면 바뀌는 주장도 당시 기사 기준이다. 시점이 중요한 질문은 Stage 3에서
-  근거 날짜로 거르고 최신 근거를 우선해 답한다.
+- **날짜는 기사 발행일이고, 관계의 유효 기간은 다루지 않는다**: relation은 기사에서 보도된 시점의 기록(`first_seen`,
+  `last_seen`, 근거별 `published_at`)이며 출시일이나 언제까지 사실인지를 뜻하지 않는다. `last_seen` 이후 보도가 없다고
+  관계가 끝났다는 뜻은 아니고, "가장 큰 모델", "최고 성능"처럼 새 모델이 나오면 바뀌는 주장도 당시 기사 기준이다. 시점이
+  중요한 질문은 Stage 3에서 근거 날짜로 거르고 최신 근거를 우선해 답한다.
 - **co-occurrence ≠ 의미 관계**: 같은 문장에 함께 등장했다는 뜻일 뿐, 경쟁·협력·인과를 뜻하지 않는다.
   병합 node 쌍의 문서 수는 상한값이다.
 - **중심성 ≠ 산업 영향력**: 1,210개 Open Models 기사에서의 언급·관계 구조다. 보정 전 graph의 민감도
   분석에서 score와 threshold에 따라 순위가 크게 바뀌었다.
-- **일반명사 규칙과 별칭 표의 한계**: 규칙이 놓친 일반명사(예: `Fox`, `Nari`)와 등록되지 않은 별칭이
-  남아 있을 수 있다.
-- **family 단위 축약**: `MedGemma` → `Gemma`, `Mixtral` → `Mistral`처럼 WP1 lexicon이 family 단위로
-  묶으므로 같은 family 안의 버전 간 계보(`Llama 4 Behemoth` → `Llama 4 Maverick`)는 표현할 수 없다. 3-1절 모델명
-  정제로 이름에 크기가 적힌 모델(`Qwen3 1.7B`)만 별도 node가 되었고, 이름에 크기가 없는 모델(`Llama 4 Scout`)의 크기와
-  context window는 graph에 없다.
+- **계보·버전 단위 정보 부족**: `MedGemma` → `Gemma`, `Mixtral` → `Mistral`처럼 WP1 lexicon이 family 단위로 묶으므로 같은
+  family 안의 버전 간 계보(`Llama 4 Behemoth` → `Llama 4 Maverick`)는 표현할 수 없고, 근거 1문장 보조 층을 검수 결과에 따라
+  제외했으므로 `based on`, `distilled from`, `trained on` 같은 relation도 거의 없다. 3-1절 모델명 정제로 이름에 크기가 적힌
+  모델(`Qwen3 1.7B`)만 별도 node가 되었고, 이름에 크기가 없는 모델(`Llama 4 Scout`)의 크기와 context window는 graph에 없다.
+  Stage 3에서 이런 질문은 graph보다 근거 문장 검색에 의존해야 한다.
 - **회사이자 모델인 node**: `DeepSeek`처럼 WP1 family이면서 회사로 분류된 node는 3-1절에서 모델 자리의 relation도
   받으므로 한 node가 두 역할을 한다. relation별 표에서 `entity_type`이 COMPANY로 보이는 모델 relation은 이 때문이다.
-- **계보·학습 relation 부족**: 근거 1문장 보조 층을 검수 결과에 따라 제외했으므로 `based on`, `distilled from`,
-  `trained on` 같은 relation은 graph에 거의 없다. Stage 3에서 이런 질문은 graph보다 근거 문장 검색에 의존해야 한다.
 """
         ),
         markdown(

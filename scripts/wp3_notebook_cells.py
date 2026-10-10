@@ -1423,8 +1423,7 @@ All dates are article publication dates, so the results describe when relations 
 3. share of Open Models articles mentioning each top model family per quarter (WP2 `entity_mentions`, one count
    per article);
 4. entities whose share of relation evidence changed most between the first and second year;
-5. relations first observed in 2026 (emerging relationships). Examples are taken only from relations whose
-   evidence sentences were checked by a person.
+5. relations first observed in 2026 (emerging relationships).
 
 The first quarter (2024Q3) only contains September and the last (2026Q3) only July and August.
 """
@@ -1501,8 +1500,7 @@ first_seen_2026 = collapsed_analysis[(collapsed_analysis["first_seen"].fillna(""
 first_seen_2026["edge"] = (first_seen_2026["subject_id"].map(labels) + " -> " + first_seen_2026["predicate"]
                            + " -> " + first_seen_2026["object_id"].map(labels))
 verified_2026 = first_seen_2026[first_seen_2026["review_status"].isin(VERIFIED_STATUS)]
-print(f"Relations first observed in 2026 with >= 2 articles: {len(first_seen_2026)} "
-      f"({len(verified_2026)} with evidence checked by a person)")
+print(f"Relations first observed in 2026 with >= 2 articles: {len(first_seen_2026)}")
 display(verified_2026.nlargest(10, "document_count")[["edge", "predicate_group", "document_count", "first_seen", "review_status"]])
 """
         ),
@@ -1529,8 +1527,8 @@ display(Markdown(f'''
   {", ".join(f"{r.canonical_name} ({r.change_pp:+.1f} pp)" for r in risers.itertuples())};
   largest decreases for {", ".join(f"{r.canonical_name} ({r.change_pp:+.1f} pp)" for r in fallers.itertuples())}.
 - **Relations first observed in 2026**: {len(first_seen_2026)} relations with at least 2 supporting articles, mostly
-  {", ".join(f"{g} ({n})" for g, n in first_seen_2026["predicate_group"].value_counts().head(3).items())}. Examples
-  whose evidence was checked by a person: {"; ".join(f"{r.edge} ({r.first_seen})" for r in verified_2026.nlargest(3, "document_count").itertuples())}.
+  {", ".join(f"{g} ({n})" for g, n in first_seen_2026["predicate_group"].value_counts().head(3).items())}. Examples:
+  {"; ".join(f"{r.edge} ({r.first_seen})" for r in verified_2026.nlargest(3, "document_count").itertuples())}.
   "First observed" is the first publication date in this corpus, not the date the relation began.
 '''))
 """
@@ -1724,30 +1722,29 @@ display(Markdown(f'''
 
 - **Errors can remain in unreviewed relations.** Precision of the reviewed sample and the effect of the refinement
   rules are reported in Section 6. Remaining errors are mostly wrong entity links in sentences that list several
-  names, and the same kind of error can occur in relations outside the sample. In Stage 3, Tier B relations are
-  shown together with their evidence sentences and article dates.
+  names, and the generic-node rule and the alias table can miss cases (e.g. `Fox`, `Nari`), so the same kinds of
+  error can occur in relations outside the sample. In Stage 3, Tier B relations are shown together with their
+  evidence sentences and article dates.
 - **Tier A relations have no article sentence.** They come from the curated WP1 lexicon; article-based answers in
   Stage 3 cite Tier B assertions only.
-- **Dates are publication dates.** They show when a relation was reported, not when a model was released.
-- **Validity over time is not modelled.** A relation records when it was observed (`first_seen`, `last_seen`,
-  `published_at` per evidence sentence), not until when it holds. No reporting after `last_seen` does not mean the
-  relation ended, and claims such as "largest model" or "best performance" refer to the time of the article. In
-  Stage 3, time-sensitive questions filter evidence by date and prefer recent evidence.
+- **Dates are publication dates, and validity over time is not modelled.** A relation records when it was reported
+  (`first_seen`, `last_seen`, `published_at` per evidence sentence), not when a model was released or until when the
+  relation holds. No reporting after `last_seen` does not mean the relation ended, and claims such as "largest
+  model" or "best performance" refer to the time of the article. In Stage 3, time-sensitive questions filter
+  evidence by date and prefer recent evidence.
 - **Co-occurrence is not a semantic relation.** Being mentioned in the same sentence does not imply competition,
   cooperation or causality. Article counts of merged node pairs are upper bounds.
 - **Centrality is not industry influence.** The graph describes 1,210 Open Models articles; ranks depend on the
   graph view, weights and thresholds.
-- **Rule coverage.** The generic-node rule and the alias table can miss cases (e.g. `Fox`, `Nari`).
-- **Family-level grouping.** The WP1 lexicon groups versions into families (`MedGemma` -> `Gemma`, `Mixtral` ->
-  `Mistral`), so lineage between versions (`Llama 4 Behemoth` -> `Llama 4 Maverick`) is not represented. Only models
-  named with a size (`Qwen3 1.7B`) became separate nodes in Section 5; sizes of other models (`Llama 4 Scout`) and
-  context windows are not in the graph.
+- **Few lineage and version-level facts.** The WP1 lexicon groups versions into families (`MedGemma` -> `Gemma`,
+  `Mixtral` -> `Mistral`), so lineage between versions (`Llama 4 Behemoth` -> `Llama 4 Maverick`) is not
+  represented, and the single-sentence layer was not used after the review, so relations such as `based on`,
+  `distilled from` or `trained on` are rare. Only models named with a size (`Qwen3 1.7B`) became separate nodes in
+  Section 5; sizes of other models (`Llama 4 Scout`) and context windows are not in the graph. Stage 3 answers such
+  questions mainly from retrieved evidence sentences.
 - **Nodes that are both a company and a model.** WP1 families such as `DeepSeek` that share a name with a company
   receive model relations through role-based typing (Section 5), so one node plays both roles; model relations
   whose endpoint shows `entity_type` COMPANY come from this.
-- **Few lineage and training relations.** The single-sentence layer was not used after the review, so relations
-  such as `based on`, `distilled from` or `trained on` are rare. Stage 3 answers such questions mainly from
-  retrieved evidence sentences.
 """
         ),
         markdown(
