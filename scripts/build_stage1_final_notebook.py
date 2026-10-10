@@ -5,7 +5,7 @@ of the extraction notebook are copied from the team repository together with the
 needs a GPU and runs on Colab). The knowledge-graph cells come from `wp3_notebook_cells.py`; they are executed
 here and their outputs are written into the integrated notebook.
 
-    python scripts/build_stage1_final_notebook.py [--no-execute]
+    python scripts/build_stage1_final_notebook.py [--team] [--no-execute]
 """
 from __future__ import annotations
 
@@ -22,7 +22,9 @@ ROOT = Path(__file__).resolve().parents[1]
 TEAM_REPO = ROOT.parents[1] / "CLT" / "computational-language-technology-hs26"
 DATA_NOTEBOOK = TEAM_REPO / "stage1" / "work_packages" / "stage1_wp1_data_topic_analysis.ipynb"
 EXTRACTION_NOTEBOOK = TEAM_REPO / "stage1" / "work_packages" / "stage1_wp2_entity_relation_extraction.ipynb"
-OUTPUT = ROOT / "notebooks" / "stage1_final.ipynb"
+OUTPUT = ROOT / "notebooks" / "stage1_final.ipynb"   # --team writes TEAM_REPO / "stage1" / "stage1_final.ipynb"
+REPO_URL = "https://github.com/jihyeon26/computational-language-technology-hs26"
+RAW_SHA256 = "82dcea5ee2b15faf805994043fa7e8afb37b82fe8df7ab4fba8873db386f05b9"
 
 DATA_LEAD = "Daliasny Gonzalez Guzman"
 EXTRACTION_LEAD = "Jennifer Spieser"
@@ -38,6 +40,14 @@ def code(text: str, tag: str | None = None):
     cell = nbf.v4.new_code_cell(text.strip())
     if tag:
         cell.metadata["tags"] = [tag]
+    return cell
+
+
+def hide(cell, title: str):
+    """Collapse the code of a plumbing cell (Colab form view); its output stays visible."""
+    cell = copy.deepcopy(cell)
+    cell.source = f"#@title {title}\n" + cell.source
+    cell.metadata.update({"cellView": "form", "jupyter": {"source_hidden": True}})
     return cell
 
 
@@ -110,7 +120,7 @@ def data_cells() -> dict:
               "### 7.1 A gazetteer of open-model families": "#### 3.2.1 A gazetteer of open-model families"}),
         34: ([], {"### 7.2 Matching and relevance score": "#### 3.2.2 Matching and relevance score"}),
         37: ([], {"### 7.3 Validation of the relevance tiers": "#### 3.2.3 Validation of the relevance tiers"}),
-        40: ([], {"## 8. Exploratory analysis of the open-models track": "## 4. Exploratory Data Analysis",
+        40: ([], {"## 8. Exploratory analysis of the open-models track": f"## 4. Exploratory Data Analysis\n\n*Contributor: {DATA_LEAD}*\n",
                   "### 8.1 How much of the AI discourse is about open models? (Q1)":
                       "### 4.1 How much of the AI discourse is about open models? (Q1)"}),
         43: ([], {"### 8.2 Which model families get attention? (Q2)": "### 4.2 Which model families get attention? (Q2)"}),
@@ -128,7 +138,7 @@ def data_cells() -> dict:
         58: ([("and WP2 can re-segment with a parser if needed.",
                "and the entity extraction (Section 5.1) re-segments the texts with a parser.")],
              {"## 10. Sentiment and framing (Q5)": "### 4.6 Sentiment and Framing (Q5)"}),
-        64: ([], {"## 11. Topic modelling (Q4)": "## 7. Topic Modelling (Q4)"}),
+        64: ([], {"## 11. Topic modelling (Q4)": f"## 7. Topic Modelling (Q4)\n\n*Contributor: {DATA_LEAD}*\n"}),
         69: ([], {"### 11.1 Topic dynamics": "### 7.1 Topic Dynamics"}),
         73: ([], {"## 13. Outputs and hand-over": "### 7.2 Saved Corpus, Lexicon and Topic Outputs"}),
     }
@@ -311,6 +321,15 @@ GRAPH_REPLACEMENTS = [
     ("model family from the WP1 lexicon", "model family from the lexicon"),
     ("(original WP2 pairs combined", "(original pairs combined"),
     ("joined from the WP1 table", "joined from the core article table"),
+    # the saved core article table is written only in Section 7.2: use the in-memory table of Section 3.2
+    ('if CORE_ARTICLES_PATH.exists():\n    wp1_doc_ids = set(pd.read_parquet(CORE_ARTICLES_PATH, columns=["doc_id"])["doc_id"])',
+     '# core articles of Section 3.2 (in memory; the saved table is only written in Section 7.2)\n'
+     'core_articles = (core[["doc_id", "title", "url"]] if "core" in globals() else\n'
+     '                 pd.read_parquet(CORE_ARTICLES_PATH, columns=["doc_id", "title", "url"]) if CORE_ARTICLES_PATH.exists() else None)\n'
+     'if core_articles is not None:\n    wp1_doc_ids = set(core_articles["doc_id"])'),
+    ('if CORE_ARTICLES_PATH.exists():\n    documents = documents.merge(pd.read_parquet(CORE_ARTICLES_PATH, columns=["doc_id", "title", "url"])\n'
+     '                                .rename(columns={"doc_id": "document_id"}), on="document_id", how="left")',
+     'if core_articles is not None:\n    documents = documents.merge(core_articles.rename(columns={"doc_id": "document_id"}), on="document_id", how="left")'),
 ]
 
 
@@ -386,10 +405,10 @@ The work was split into three consecutive parts, each building on the previous o
 
 | Team member | Sections | Contribution |
 |---|---|---|
-| {DATA_LEAD} | 1–4, 7, 8.1 | data cleaning and preprocessing, Open Models lexicon, exploratory analysis, sentiment and framing, topic modelling |
+| {DATA_LEAD} | 1–4, 7 | data cleaning and preprocessing, Open Models lexicon, exploratory analysis, sentiment and framing, topic modelling |
 | {EXTRACTION_LEAD} | 5.1–5.8 | entity extraction (spaCy, GLiNER), entity linking and evaluation, relation extraction (GLiREL), co-occurrence matrix |
-| {GRAPH_LEAD} | 5.9–5.10, 6, 8.2–8.3 | relation refinement, knowledge graph construction, analysis, visualisation and storage |
-| All members | 5.10 | human review of 90 relations |
+| {GRAPH_LEAD} | 5.9–5.10, 6 | relation refinement, knowledge graph construction, analysis, visualisation and storage |
+| All members | 5.10, 8, 9 | human review of relations, key insights, limitation |
 
 The extraction models (spaCy `en_core_web_lg`, GLiNER, GLiREL) were run in Google Colab on an NVIDIA L4 GPU; their
 cells show the outputs of that run, and intermediate results are re-used from `data/stage1_wp2/` when present.
@@ -397,12 +416,78 @@ cells show the outputs of that run, and intermediate results are re-used from `d
     )
     return [
         header,
-        d[1],
-        markdown("## 2. Data Collection and Cleaning"),
-        *[d[i] for i in range(2, 30)],
         markdown(
-            """
+            f"""
+### How to run
+
+[Open in Colab](https://colab.research.google.com/github/jihyeon26/computational-language-technology-hs26/blob/main/stage1/stage1_final.ipynb)
+· [Repository]({REPO_URL})
+
+Run all cells from top to bottom. In Colab, the first cell clones the repository, installs the packages and mounts
+Google Drive. On the first run it restarts the runtime once
+to load the pinned numpy and pandas versions (the topic models depend on them); then run all cells again. A GPU runtime is not required: the GLiNER and
+GLiREL results are read from `artifacts/stage1_cache/`, which also makes the run reproduce the reviewed relations.
+The raw dataset is read from `data/raw/`, from Google Drive or downloaded from Kaggle (Section 2.1).
+"""
+        ),
+        hide(code(
+            f"""
+# Colab: clone the repository, install the packages and mount Google Drive (skipped when run from a local clone)
+import os, shutil, subprocess, sys
+from pathlib import Path
+
+if "google.colab" in sys.modules:
+    from google.colab import drive
+    drive.mount("/content/drive")
+    clone = Path("/content/computational-language-technology-hs26")
+    if not clone.exists():
+        subprocess.run(["git", "clone", "-q", "{REPO_URL}.git", str(clone)], check=True)
+    os.chdir(clone / "stage1")
+    subprocess.run([sys.executable, "-m", "pip", "install", "-q", "-r", "../requirements.txt"], check=True)
+    # numpy and pandas are pinned (topic models depend on them); a new version needs a restart of the runtime
+    import numpy, pandas
+    if (numpy.__version__, pandas.__version__) != ("2.4.2", "3.0.1"):
+        print("Pinned numpy/pandas installed. The runtime restarts now: run all cells again.")
+        os.kill(os.getpid(), 9)
+
+# Restore the cached results that the notebook reads instead of recomputing them (artifacts/stage1_cache/README.md)
+REPO = next(p for p in [Path.cwd(), *Path.cwd().parents] if (p / ".git").exists())
+CACHE_FILES = {{"extraction/gliner_entities.csv": "data/stage1_wp2/gliner_entities.csv",
+               "extraction/relations.csv": "data/stage1_wp2/relations.csv",
+               "preprocessing/lemma_cache.parquet": "data/processed/lemma_cache.parquet",
+               "preprocessing/track_scan_cache.parquet": "data/processed/track_scan_cache.parquet"}}
+for cached, target in CACHE_FILES.items():
+    if not (REPO / target).exists():
+        (REPO / target).parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy(REPO / "artifacts" / "stage1_cache" / cached, REPO / target)
+
+# Raw dataset in the shared Drive folder CLT/data/raw (added as a shortcut anywhere in My Drive);
+# otherwise data/raw/ or the Kaggle download in Section 2.1
+drive_root = Path("/content/drive/MyDrive")
+for pattern in ["CLT/data/raw", "*/CLT/data/raw", "*/*/CLT/data/raw", "CLT", "*/CLT"]:
+    found = sorted(drive_root.glob(f"{{pattern}}/ai_media_dataset_20260911.csv")) if drive_root.exists() else []
+    if found and "AI_MEDIA_CSV" not in os.environ:
+        os.environ["AI_MEDIA_CSV"] = str(found[0])
+print(f"Repository: {{REPO}} | raw dataset: {{os.environ.get('AI_MEDIA_CSV', 'data/raw/ or Kaggle')}}")
+"""
+        ), "Colab setup: repository, packages, cached results and raw dataset"),
+        d[1],
+        markdown(f"## 2. Data Collection and Cleaning\n\n*Contributor: {DATA_LEAD}*"),
+        *[d[i] for i in range(2, 7)],
+        code(
+            f"""
+# The submitted run used the snapshot ai_media_dataset_20260911.csv; another snapshot gives different results
+EXPECTED_RAW_SHA = "{RAW_SHA256}"
+if RAW_SHA != EXPECTED_RAW_SHA:
+    print(f"Warning: {{RAW_CSV.name}} is not the 2026-09-11 snapshot used in the submitted run; results will differ.")
+"""
+        ),
+        *[d[i] for i in range(7, 30)],
+        markdown(
+            f"""
 ## 3. Text Preprocessing
+
+*Contributor: {DATA_LEAD}*
 
 The fidelity text keeps case and punctuation for entity extraction, while the analysis view is tokenised,
 lemmatised and stripped of stop words for topic modelling. Acronyms and abbreviations relevant to open models
@@ -430,7 +515,7 @@ for graph use and measure their quality with a human review.
 not have to be recomputed.
 """
         ),
-        code(
+        hide(code(
             """
 # Keep the full cleaned corpus: the extraction cells below use `df` for the core subset
 corpus_df, corpus_version_patterns = df, VERSION_PATTERNS
@@ -441,8 +526,10 @@ os.makedirs(OUT_DIR, exist_ok=True)
 print(f"{len(WP1_LEXICON['families'])} model families, {len(WP1_LEXICON['concepts'])} openness concepts, "
       f"{len(WP1_LEXICON['ecosystem'])} ecosystem tools | {len(df)} core articles")
 """
-        ),
-        *[x[i] for i in range(5, 53)],
+        ), "Inputs: core articles and lexicon"),
+        *[x[i] for i in range(5, 51)],
+        hide(x[51], "Save the tables for the knowledge graph (nodes, relations, mentions)"),
+        hide(x[52], "Save the schema, data dictionary and evaluation results"),
         markdown(
             """
 ### 5.9 Relation Refinement
@@ -452,8 +539,10 @@ extraction output, check that it is complete and consistent, describe the issues
 refine entities and relations with explicit rules.
 """
         ),
-        *g["setup"],
-        *g["refinement"],
+        hide(g["setup"][0], "Setup: libraries, input paths and parameters"),
+        g["refinement"][0],
+        hide(g["refinement"][1], "Load and validate the extraction output"),
+        *g["refinement"][2:],
         *g["review"],
         markdown(
             f"""
@@ -468,17 +557,19 @@ temporal analysis (6.6), visualisations (6.7) and storage for Stage 3 (6.8–6.9
         ),
         *g["graph"],
         *g["storage"],
-        code(
+        hide(code(
             """
 # Restore the full cleaned corpus for topic modelling (Section 5 used `df` for the core subset)
 df, VERSION_PATTERNS = corpus_df, corpus_version_patterns
 """
-        ),
+        ), "Restore the full cleaned corpus"),
         *[d[i] for i in range(64, 72)],
         d[73], d[74],
         markdown(
-            """
+            f"""
 ## 8. Key Insights
+
+*Contributors: All members*
 
 This section brings together the trends, framing and topics of the corpus (8.1), the findings of the knowledge
 graph (8.2), a consistency check between the two (8.3) and a summary (8.4).
@@ -565,23 +656,24 @@ differ because the two measures use different article sets.
             f"""
 ## 10. AI Tool Disclosure
 
-**Data and topic analysis (Sections 1–4, 7).** The relevance labels of the track validation sample were assigned
-with AI assistance from titles and opening text (Section 3.2.3).
+The team used **Claude Code (Anthropic)** as a coding and technical assistant throughout Stage 1:
 
-> **TODO ({DATA_LEAD}):** add the tool name and any other use.
+- Reviewing and optimising code, including the reduction of processing time and the preparation of the
+  saved outputs;
+- reviewing and challenging pipeline design choices;
+- drafting explanations and documentation in the notebook;
+- assisting with labels: the relevance labels of the track validation sample (Section 3.2.3), a first screening
+  of the extracted relations (Section 5.9.2) and a first pass over the relations behind the findings (Section 5.10).
+  Every `FALSE` verdict of the latter was checked by a person, and precision is measured on the human review only.
 
-**Entity and relation extraction (Sections 5.1–5.8).** {x["disclosure"]}
-
-**Relation refinement and knowledge graph (Sections 5.9–6, 8.2–8.3).** Claude Code (Anthropic) was used for a
-first screening of the extracted relations and a first pass over the relations behind the findings (every `FALSE`
-verdict was checked by a person; precision is measured on the human review only), and for drafting code and
-explanations. All numbers come from running the notebook; methods and interpretations were reviewed by the team.
+All methodological choices, analyses and interpretations were made and checked by the team, and all numbers come
+from running this notebook.
 """
         ),
     ]
 
 
-def execute_graph_cells(nb) -> None:
+def execute_graph_cells(nb, path: Path) -> None:
     """Run the knowledge-graph cells in a separate kernel and copy their outputs into the notebook."""
     from nbclient import NotebookClient
 
@@ -589,7 +681,7 @@ def execute_graph_cells(nb) -> None:
     run = nbf.v4.new_notebook(metadata=copy.deepcopy(nb.metadata))
     run.cells = [copy.deepcopy(cell) for cell in tagged]
     NotebookClient(run, timeout=1800, kernel_name="python3",
-                   resources={"metadata": {"path": str(ROOT / "notebooks")}}).execute()
+                   resources={"metadata": {"path": str(path)}}).execute()
     for cell, executed in zip(tagged, run.cells):
         cell.outputs = executed.outputs
         for output in cell.outputs:
@@ -609,11 +701,12 @@ def main() -> None:
             assert not match, (match.group(), cell.source[:100])
     for number, cell in enumerate(nb.cells):
         cell["id"] = f"cell-{number:03d}"
+    output = TEAM_REPO / "stage1" / "stage1_final.ipynb" if "--team" in sys.argv else OUTPUT
     if "--no-execute" not in sys.argv:
-        execute_graph_cells(nb)
-    OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    nbf.write(nb, OUTPUT)
-    print(OUTPUT)
+        execute_graph_cells(nb, output.parent)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    nbf.write(nb, output)
+    print(output)
 
 
 if __name__ == "__main__":
