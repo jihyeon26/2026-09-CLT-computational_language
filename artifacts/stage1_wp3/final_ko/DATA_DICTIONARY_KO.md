@@ -1,6 +1,6 @@
 # Stage 1 WP3 최종 지식그래프 데이터 사전
 
-Schema: `stage1-wp3-open-models-kg-v1.0` · 상태: `pending_human_review` · Track: Open Models
+Schema: `stage1-wp3-open-models-kg-v1.0` · 상태: `human_reviewed_sample` · Track: Open Models
 날짜(`published_at`, `first_seen`, `last_seen`)는 모두 **기사 발행일**이다.
 
 ## Node (`nodes.*`)

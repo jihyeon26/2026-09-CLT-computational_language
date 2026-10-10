@@ -1,6 +1,6 @@
 {
   "schema_version": "stage1-wp3-open-models-kg-v1.0",
-  "status": "pending_human_review",
+  "status": "human_reviewed_sample",
   "track": "Open Models",
   "node_key": "entity_id",
   "node_attributes": [
