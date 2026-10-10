@@ -517,6 +517,14 @@ not have to be recomputed.
         ),
         hide(code(
             """
+# Free intermediate results of Sections 2-4 that are not used again, and return the freed memory to the system
+import ctypes, gc
+for name in ["mention_docs", "scan", "core_docs", "F_total", "F_title", "F_lead", "cache", "done"]:
+    globals().pop(name, None)
+gc.collect()
+if sys.platform.startswith("linux"):
+    ctypes.CDLL("libc.so.6").malloc_trim(0)
+
 # Keep the full cleaned corpus: the extraction cells below use `df` for the core subset
 corpus_df, corpus_version_patterns = df, VERSION_PATTERNS
 WP1_LEXICON = json.loads((LEXDIR / "open_models_lexicon.json").read_text(encoding="utf-8"))
@@ -526,7 +534,7 @@ os.makedirs(OUT_DIR, exist_ok=True)
 print(f"{len(WP1_LEXICON['families'])} model families, {len(WP1_LEXICON['concepts'])} openness concepts, "
       f"{len(WP1_LEXICON['ecosystem'])} ecosystem tools | {len(df)} core articles")
 """
-        ), "Inputs: core articles and lexicon"),
+        ), "Inputs: core articles and lexicon (and free memory)"),
         *[x[i] for i in range(5, 51)],
         hide(x[51], "Save the tables for the knowledge graph (nodes, relations, mentions)"),
         hide(x[52], "Save the schema, data dictionary and evaluation results"),
