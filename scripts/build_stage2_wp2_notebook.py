@@ -41,7 +41,7 @@ Only small low-rank adapters (LoRA) and the classification head are trained; the
 # ---------------------------------------------------------------- 2.1 Setup
 md("""
 ## 2.1 Setup
-A GPU runtime is required (Colab: *Runtime → Change runtime type → GPU*). The notebook was written for a T4 (16 GB) and runs faster on an L4 or A100.
+A GPU runtime is required (Colab: *Runtime → Change runtime type → GPU*). An **L4 or A100** is recommended: they support bf16, while a T4 (16 GB) runs the models in fp16, which is slower and can overflow with Qwen3. Start with the main model only (`MODELS`) for a first full run.
 
 Inputs:
 - `corpus_clean.parquet` and `open_models_core.parquet`: the cleaned corpus and the 1,210 core articles with their Stage 1 topic
@@ -371,7 +371,7 @@ from datasets import Dataset
 
 LORA = dict(r=16, lora_alpha=32, lora_dropout=0.05, target_modules=["q_proj", "k_proj", "v_proj", "o_proj"])
 TRAIN = dict(learning_rate=2e-4, num_train_epochs=3, per_device_train_batch_size=4,
-             gradient_accumulation_steps=4, per_device_eval_batch_size=8, warmup_ratio=0.05,
+             gradient_accumulation_steps=4, per_device_eval_batch_size=8, warmup_steps=5,
              lr_scheduler_type="cosine", weight_decay=0.01)
 
 def load_classifier(repo, tok):
@@ -408,7 +408,8 @@ def finetune(name, repo):
 
     args = TrainingArguments(output_dir=str(RUN_DIR / name), eval_strategy="epoch", save_strategy="epoch",
                              load_best_model_at_end=True, metric_for_best_model="macro_f1", save_total_limit=1,
-                             logging_steps=10, bf16=BF16, fp16=not BF16, seed=SEED, report_to="none", **TRAIN)
+                             logging_steps=10, bf16=BF16, fp16=not BF16, seed=SEED, report_to="none",
+                             label_names=["labels"], **TRAIN)   # PeftModel hides the label argument from Trainer
     trainer = Trainer(model=model, args=args, train_dataset=to_dataset(sets["train"], tok),
                       eval_dataset=to_dataset(sets["dev"], tok), compute_metrics=dev_metrics,
                       data_collator=DataCollatorWithPadding(tok))
@@ -616,11 +617,6 @@ for name in MODELS:
                  "val_predict_s": r.get("predict_validation", {}).get("seconds"),
                  "val_macro_f1": results["macro_f1"].get(f"{name} QLoRA")})
 display(pd.DataFrame(rows).round(2))
-""")
-
-md("""
-### AI Disclosure
-TODO: name the AI coding tools used for this work package and how they were used (project requirement 6).
 """)
 
 nb = {"cells": cells,
