@@ -775,6 +775,10 @@ All outputs are saved in `OUT_DIR` on Google Drive:
 | `figures/` | visualisations |
 """)
 
+md("""
+The times depend on the GPU each step ran on (`train_gpu`, `val_predict_gpu`): they are compared between models only when the GPU is the same.
+""")
+
 code("""
 # Trade-off summary for Part 3
 rows = []
@@ -782,8 +786,10 @@ for name in MODELS:
     r = RESOURCES.get(name, {})
     rows.append({"model": name, "total_params_M": r.get("total_params", np.nan) / 1e6,
                  "trainable_pct": r.get("trainable_pct"), "adapter_mb": r.get("adapter_mb"),
+                 "train_gpu": r.get("finetune", {}).get("gpu"),
                  "train_min": r.get("finetune", {}).get("seconds", np.nan) / 60,
                  "train_peak_vram_gb": r.get("finetune", {}).get("peak_vram_gb"),
+                 "val_predict_gpu": r.get("predict_validation", {}).get("gpu"),
                  "val_predict_s": r.get("predict_validation", {}).get("seconds"),
                  "val_macro_f1": results["macro_f1"].get(f"{name} QLoRA")})
 display(pd.DataFrame(rows).round(2))
