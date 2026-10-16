@@ -50,7 +50,7 @@ Inputs:
 """)
 
 code("""
-!pip install -q -U transformers peft bitsandbytes accelerate datasets
+!pip install -q -U transformers peft bitsandbytes accelerate datasets gensim
 """)
 
 code("""
@@ -84,7 +84,7 @@ RUN_DIR = Path("/content/wp2_runs")
 
 code("""
 # Libraries
-import gc, json, time
+import gc, json, re, time
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -192,7 +192,7 @@ display(pd.crosstab(task["theme"], task["set"], margins=True)[["train", "dev", "
 
 md("""
 ### 2.2.2 Model input
-The input of the language models is the **title followed by the article text, cut to the first `MAX_LEN` tokens**. The articles have 1,464 tokens on average (Part 1), so most of them are cut. The beginning of a news article (title and lead) usually states its subject, but themes that appear only later in the text are missed. TODO: report the share of articles that are cut.
+The input of the language models is the **title followed by the article text, cut to the first `MAX_LEN` tokens**. The articles have 1,464 tokens on average (Part 1), so most of them are cut. The beginning of a news article (title and lead) usually states its subject, but themes that appear only later in the text are missed. The share of articles that are cut is reported in Section 2.6.4, which also tests whether the cut explains the scores.
 """)
 
 code("""
@@ -283,6 +283,15 @@ def in_input_order(positions, parts):
     out = np.vstack(parts)
     out[np.concatenate(positions)] = out.copy()
     return out
+
+@torch.no_grad()
+def run(fn, batch_iter):
+    \"\"\"Apply fn to every batch and return one output row per input, in input order.\"\"\"
+    positions, parts = [], []
+    for idx, batch in batch_iter:
+        positions.append(idx)
+        parts.append(fn(batch))
+    return in_input_order(positions, parts)
 """)
 
 # ---------------------------------------------------------------- 2.5 Baselines
@@ -327,17 +336,15 @@ record("Doc2Vec + LogReg", linear_probe(X(fit_part), fit_part["label"], X(sets["
 md("### 2.5.2 Frozen compact model + logistic regression")
 
 code("""
-@torch.no_grad()
+def mean_pooled(model, batch):
+    \"\"\"Mean of the last hidden states over the tokens of every text (padding left out).\"\"\"
+    hidden = model(**batch, output_hidden_states=True).hidden_states[-1]
+    mask = batch["attention_mask"].unsqueeze(-1).to(hidden.dtype)
+    return ((hidden * mask).sum(1) / mask.sum(1)).float().cpu().numpy()
+
 def embed(model, tok, texts, batch_size=16):
-    \"\"\"Mean-pooled last hidden state of every text.\"\"\"
     model.eval()
-    positions, parts = [], []
-    for idx, batch in batches(texts, tok, batch_size):
-        hidden = model(**batch, output_hidden_states=True).hidden_states[-1]
-        mask = batch["attention_mask"].unsqueeze(-1).to(hidden.dtype)
-        positions.append(idx)
-        parts.append(((hidden * mask).sum(1) / mask.sum(1)).float().cpu().numpy())
-    return in_input_order(positions, parts)
+    return run(lambda b: mean_pooled(model, b), batches(texts, tok, batch_size))
 
 def embed_cached(name, model, tok, df, tag):
     path = OUT_DIR / f"emb_{name}_{tag}.npy"
@@ -442,14 +449,12 @@ def finetune(name, repo):
 md("### 2.6.2 Training and evaluation on validation")
 
 code("""
-@torch.no_grad()
+def class_proba(model, batch):
+    return torch.softmax(model(**batch).logits.float(), -1).cpu().numpy()
+
 def predict_proba(model, tok, texts, batch_size=16):
     model.eval()
-    positions, parts = [], []
-    for idx, batch in batches(texts, tok, batch_size):
-        positions.append(idx)
-        parts.append(torch.softmax(model(**batch).logits.float(), -1).cpu().numpy())
-    return in_input_order(positions, parts)
+    return run(lambda b: class_proba(model, b), batches(texts, tok, batch_size))
 
 val_proba = {}
 for name, repo in MODELS.items():
@@ -500,6 +505,156 @@ else:
     if len(done):
         print(f"Checked: {len(done)} | silver label correct: {done['label_ok'].astype(str).str.lower().isin(['1', 'true', 'yes', 'y']).mean():.1%}")
 """)
+
+# ---------------------------------------------------------------- 2.6.4 Input length
+md("""
+### 2.6.4 Input length: why does Doc2Vec score higher?
+Doc2Vec and the compact models do not read the same input. Doc2Vec reads the **whole article**, while the compact models read only its **first `MAX_LEN` tokens** (Section 2.2.2). The labels also favour whole-article representations: the Stage 1 topic of an article was computed from all of its words.
+
+To separate the effect of the representation from the effect of the input length, every representation is evaluated on both inputs:
+
+| Representation | First `MAX_LEN` tokens | Whole article |
+|---|---|---|
+| Doc2Vec | vector inferred from the first `MAX_LEN` tokens | vector inferred from the whole article (+ Part 1 vectors) |
+| Frozen compact model | Section 2.5.2 | mean of the vectors of consecutive windows of `MAX_LEN` tokens |
+| Fine-tuned compact model | Section 2.6.2 | mean of the predicted probabilities of the windows (no re-training) |
+
+An article is split into at most `MAX_WINDOWS` windows; longer articles are cut after the last window. The Doc2Vec vectors are all inferred here (also for the training articles), so that both Doc2Vec inputs are built the same way; the Part 1 vectors of the training articles were learned during training instead.
+
+If the gap to Doc2Vec closes when the compact models read the whole article, and Doc2Vec drops when it reads only the beginning, the gap is caused by the input length rather than by the representation.
+""")
+
+code("""
+MAX_WINDOWS = 4   # up to 4 x 512 = 2,048 tokens per article
+
+def windows(texts, tok, max_windows=MAX_WINDOWS):
+    \"\"\"Token ids of consecutive windows of MAX_LEN tokens, and the position of the text of every window.\"\"\"
+    ids, owner = [], []
+    for i, text_ids in enumerate(tok(texts, add_special_tokens=False)["input_ids"]):
+        for start in range(0, min(len(text_ids), max_windows * MAX_LEN), MAX_LEN):
+            ids.append(text_ids[start:start + MAX_LEN])
+            owner.append(i)
+    return ids, np.array(owner)
+
+def window_batches(ids, tok, batch_size=16):
+    order = np.argsort([-len(x) for x in ids], kind="stable")
+    for i in range(0, len(order), batch_size):
+        idx = order[i:i + batch_size]
+        yield idx, tok.pad({"input_ids": [ids[j] for j in idx]}, return_tensors="pt").to("cuda")
+
+def per_text(values, owner):
+    \"\"\"Mean of the window values of every text.\"\"\"
+    return np.vstack([values[owner == i].mean(0) for i in range(owner.max() + 1)])
+
+# Length of the articles of the task, in tokens of the main model
+tok = load_tokenizer(next(iter(MODELS.values())))
+n_tokens = pd.Series([len(x) for x in tok(model_input(task), add_special_tokens=False)["input_ids"]])
+print(f"Articles longer than {MAX_LEN} tokens: {(n_tokens > MAX_LEN).mean():.1%} | "
+      f"longer than {MAX_WINDOWS * MAX_LEN}: {(n_tokens > MAX_WINDOWS * MAX_LEN).mean():.1%} | "
+      f"median {n_tokens.median():.0f} tokens")
+""")
+
+md("""
+#### Doc2Vec on both inputs
+The Doc2Vec model of Part 1 infers a vector for any text. The text is normalised and tokenised with the functions of Part 1 (Sections 1.1.2 and 1.1.3), which are taken from the WP1 notebook so that both parts use exactly the same preprocessing. The "first tokens" input is the text of the first `MAX_LEN` tokens of the compact model, so that both models read the same beginning of the article.
+""")
+
+code("""
+from gensim.models.doc2vec import Doc2Vec
+
+d2v = Doc2Vec.load(str(WP1_DIR / "doc2vec.model"))
+
+# Normalisation and tokenisation of Part 1, run from the WP1 notebook (they use the WP1 lexicon)
+lexicon = json.loads((REPO / "artifacts/stage1_wp1/lexicon/open_models_lexicon.json").read_text(encoding="utf-8"))
+wp1_nb = json.loads((REPO / "stage2/work_packages/stage2_wp1_embeddings.ipynb").read_text(encoding="utf-8"))
+for marker in ("def normalise(", "def doc_sentences("):
+    exec(next("".join(c["source"]) for c in wp1_nb["cells"]
+              if c["cell_type"] == "code" and marker in "".join(c["source"])))
+
+def d2v_infer(texts):
+    return np.vstack([d2v.infer_vector([t for s in doc_sentences(normalise(x)) for t in s], epochs=d2v.epochs)
+                      for x in texts])
+
+def first_tokens(texts, tok):
+    \"\"\"Text of the first MAX_LEN tokens of every text, as read by the compact models.\"\"\"
+    return tok.batch_decode([x[:MAX_LEN] for x in tok(texts, add_special_tokens=False)["input_ids"]])
+
+D2V_LEN_PATH = OUT_DIR / "d2v_length.npz"
+if D2V_LEN_PATH.exists():
+    d2v_len = dict(np.load(D2V_LEN_PATH))
+else:
+    d2v_len = {f"{split}_{inp}": d2v_infer(texts) for split, df in [("fit", fit_part), ("val", sets["validation"])]
+               for inp, texts in [("first", first_tokens(model_input(df), tok)), ("whole", model_input(df))]}
+    np.savez(D2V_LEN_PATH, **d2v_len)
+
+for inp in ["first", "whole"]:
+    record(f"Doc2Vec (inferred, {inp}) + LogReg",
+           linear_probe(d2v_len[f"fit_{inp}"], fit_part["label"], d2v_len[f"val_{inp}"]))
+""")
+
+md("#### Compact models on the whole article")
+
+code("""
+for name, repo in MODELS.items():
+    tok = load_tokenizer(repo)
+
+    # Frozen model: mean of the window vectors
+    path = OUT_DIR / f"emb_{name}_base_windows.npz"
+    if path.exists():
+        E = dict(np.load(path))
+    else:
+        base = AutoModel.from_pretrained(repo, quantization_config=BNB, device_map="auto")
+        base.eval()
+        E = {}
+        with track(name, "embed_base_windows"):
+            for tag, df in [("fit", fit_part), ("val", sets["validation"])]:
+                ids, owner = windows(model_input(df), tok)
+                E[tag] = per_text(run(lambda b: mean_pooled(base, b), window_batches(ids, tok)), owner)
+        np.savez(path, **E)
+        del base; free_memory()
+    record(f"{name} frozen (whole) + LogReg", linear_probe(E["fit"], fit_part["label"], E["val"]))
+
+    # Fine-tuned model: mean of the window probabilities
+    path = OUT_DIR / f"proba_{name}_ft_windows_val.npy"
+    if path.exists():
+        P = np.load(path)
+    else:
+        ft, tok = finetune(name, repo)
+        ft.eval()
+        ids, owner = windows(model_input(sets["validation"]), tok)
+        with track(name, "predict_validation_windows"):
+            P = per_text(run(lambda b: class_proba(ft, b), window_batches(ids, tok)), owner)
+        np.save(path, P)
+        del ft; free_memory()
+    record(f"{name} fine-tuned (whole)", P.argmax(1))
+""")
+
+code("""
+# Representation x input
+def describe(method):
+    if method.startswith("Doc2Vec"):
+        rep = "Doc2Vec"
+        inp = "first tokens" if "first" in method else "whole article"
+        inp += " (Part 1 vectors)" if method == "Doc2Vec + LogReg" else ""
+    else:
+        model = method.split(" ")[0]
+        rep = f"{model} {'frozen' if 'frozen' in method else 'fine-tuned'}"
+        inp = "whole article" if "(whole)" in method else "first tokens"
+    return rep, inp
+
+length = pd.DataFrame(RESULTS).drop_duplicates("method", keep="last")
+length[["representation", "input"]] = length["method"].apply(lambda m: pd.Series(describe(m)))
+length.to_csv(OUT_DIR / "results_input_length.csv", index=False)
+display(length.pivot_table(index="representation", columns="input", values="macro_f1").round(3))
+
+fig, ax = plt.subplots(figsize=(10, 4.5))
+sns.barplot(data=length, x="representation", y="macro_f1", hue="input", ax=ax)
+ax.set(title="Macro-F1 on validation by representation and input length", xlabel="", ylabel="macro-F1", ylim=(0, 1))
+ax.legend(bbox_to_anchor=(1.01, 1), loc="upper left")
+save_fig(fig, "input_length")
+""")
+
+md("TODO: interpretation — does the gap to Doc2Vec close with the whole article?")
 
 # ---------------------------------------------------------------- 2.7 Handover vectors
 md("""
