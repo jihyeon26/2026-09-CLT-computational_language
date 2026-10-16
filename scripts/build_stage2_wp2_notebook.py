@@ -71,15 +71,21 @@ drive.mount("/content/drive")
 DATA_DIR = Path("/content/drive/MyDrive/HSLU/CLT/data/processed")
 WP1_DIR = Path("/content/drive/MyDrive/HSLU/CLT/extraction_outputs/stage2/wp1")
 
-# Outputs of this notebook (also used as cache), with sub-folders for figures and adapters
+# Labels used for training: "silver" (Stage 1 topics, Section 2.2) or "checked" (Section 2.2.3)
+TRAIN_LABELS = "checked"
+LABELS_FILE = REPO / "artifacts/stage2_wp2/labels_checked.csv"
+
+# Outputs of this notebook (also used as cache). The outputs that do not depend on the labels (frozen-model embeddings,
+# Doc2Vec) are shared in OUT_DIR; the outputs that do (adapters, predictions, results) go to RUN_DIR, one per label version
 OUT_DIR = Path("/content/drive/MyDrive/HSLU/CLT/extraction_outputs/stage2/wp2")
-FIG = OUT_DIR / "figures"
-ADAPTERS = OUT_DIR / "adapters"
+RUN_DIR = OUT_DIR if TRAIN_LABELS == "silver" else OUT_DIR / TRAIN_LABELS
+FIG = RUN_DIR / "figures"
+ADAPTERS = RUN_DIR / "adapters"
 for d in (FIG, ADAPTERS):
     d.mkdir(parents=True, exist_ok=True)
 
 # Trainer checkpoints stay on the local disk (only the final adapter is copied to Drive)
-RUN_DIR = Path("/content/wp2_runs")
+CKPT_DIR = Path("/content/wp2_runs")
 """)
 
 code("""
@@ -149,7 +155,7 @@ Instead, the 16 Stage 1 topics of the core articles are grouped into **5 themes*
 | `developer_tools` | T04 Claude / agents / coding · T10 API / Python |
 | `business_compute` | T03 Blackwell / GPU · T12 stock / investors · T14 enterprise / innovation |
 
-**Limitation**: the labels come from a topic model (the dominant topic of each article), not from human annotation. They are silver labels: an article can mix several themes, and its dominant topic can be wrong. TODO: a sample of the validation articles is checked by hand (Section 2.6.3) to estimate the label noise.
+**Limitation**: these labels come from a topic model (the dominant topic of each article), not from human annotation. They are silver labels: an article can mix several themes, and its dominant topic can be wrong. A hand check of validation articles (Section 2.6.3) found 64% of them correct. Section 2.2.3 therefore builds **checked labels**, which are used for evaluation and, with `TRAIN_LABELS = "checked"`, for training.
 """)
 
 code("""
@@ -170,7 +176,6 @@ task["topic"] = task["dominant_topic_label"].str[:3]
 task["theme"] = task["topic"].map(TOPIC_TO_THEME)
 print(f"Left out (T16): {task['theme'].isna().sum()} articles")
 task = task.dropna(subset=["theme"]).reset_index(drop=True)
-task["label"] = task["theme"].map(LABEL_ID)
 """)
 
 md("""
@@ -185,9 +190,65 @@ fit_ids, dev_ids = train_test_split(task.loc[task["split"] == "train", "doc_id"]
                                     stratify=task.loc[task["split"] == "train", "theme"])
 task["set"] = np.select([task["doc_id"].isin(set(fit_ids)), task["doc_id"].isin(set(dev_ids))],
                         ["train", "dev"], "validation")
-task.drop(columns="text").to_parquet(OUT_DIR / "task_labels.parquet", index=False)
 
 display(pd.crosstab(task["theme"], task["set"], margins=True)[["train", "dev", "validation", "All"]])
+""")
+
+md("""
+### 2.2.3 Checked labels
+The silver labels inherit the errors of the topic model, and evaluating against them rewards the representations that resemble the topic model (Section 2.6.5). Every article of the task is therefore labelled again with a written rubric. The sets above are not changed (they are stratified by the silver theme), so that both label versions are compared on the same articles.
+
+Rubric: an article belongs to the theme of its **main subject**, not to every theme it mentions.
+
+| theme | main subject |
+|---|---|
+| `model_families` | a specific model or model family of any vendor: release, versions, model card, benchmarks, capabilities, licence |
+| `china_geopolitics` | China–US competition, export controls, AI policy and regulation, national AI race; Chinese AI framed as a geopolitical or market shock |
+| `research_techniques` | methods: training (RL, reasoning, data), architecture and efficiency, multimodal techniques, safety research |
+| `developer_tools` | using models: agents and agent frameworks, coding tools, APIs, SDKs, platforms, tutorials, deployment |
+| `business_compute` | hardware and infrastructure, stocks and investment, funding and acquisitions, enterprise adoption, markets |
+| `none` | none of the five themes |
+
+How the labels were made (`label_source`):
+
+| set | source | articles |
+|---|---|---|
+| train, dev | `ai`: annotated by an LLM (Claude Opus 5.5) with the rubric, reading the title and the first 6,000 characters, without seeing the silver label | 848 |
+| validation | `human`: checked by hand (sample of Section 2.6.3) | 100 |
+| validation | `human_after_ai`: LLM label checked by hand, for every article where the LLM disagreed with the silver label or was not highly confident | 68 |
+| validation | `ai_agrees_silver_high`: LLM and silver label agree, with high LLM confidence | 44 |
+
+The validation labels are the reference for every evaluation of this part. The agreement of the LLM with the hand check below shows how far the LLM training labels can be trusted. Articles labelled `none` stay in the data (the cached embeddings keep their order) but are left out of training and evaluation (label −1).
+""")
+
+code("""
+from sklearn.metrics import cohen_kappa_score
+
+task["silver_theme"] = task["theme"]
+if LABELS_FILE.exists():
+    checked_labels = pd.read_csv(LABELS_FILE)
+    task = task.merge(checked_labels[["doc_id", "checked_theme", "label_source", "ai_theme"]], on="doc_id", how="left")
+    hand = task[task["label_source"] == "human"]
+    print(f"LLM vs hand check ({len(hand)} articles): agreement {(hand['ai_theme'] == hand['checked_theme']).mean():.1%}, "
+          f"kappa {cohen_kappa_score(hand['checked_theme'], hand['ai_theme']):.2f} | "
+          f"silver vs hand check: agreement {(hand['silver_theme'] == hand['checked_theme']).mean():.1%}, "
+          f"kappa {cohen_kappa_score(hand['checked_theme'], hand['silver_theme']):.2f}")
+    print(f"Silver label = checked label: {(task['silver_theme'] == task['checked_theme']).mean():.1%} of all articles\\n")
+    display(pd.crosstab(task["label_source"], task["set"], margins=True))
+    display(pd.crosstab(task["silver_theme"], task["checked_theme"], margins=True)
+              .rename_axis(index="silver theme", columns="checked theme"))
+else:
+    print("No checked labels: training and evaluation use the silver labels")
+    task["checked_theme"] = task["silver_theme"]
+
+to_label = lambda themes: themes.map(LABEL_ID).fillna(-1).astype(int)   # -1: none
+task["theme"] = task[f"{TRAIN_LABELS}_theme"]        # training labels
+task["label"] = to_label(task["theme"])
+task["eval_label"] = to_label(task["checked_theme"])  # evaluation labels
+task["silver_label"] = to_label(task["silver_theme"])
+task.drop(columns="text").to_parquet(RUN_DIR / "task_labels.parquet", index=False)
+print(f"Training labels: {TRAIN_LABELS} | left out as none: {(task.loc[task['set'] != 'validation', 'label'] < 0).sum()} (training), "
+      f"{(task.loc[task['set'] == 'validation', 'eval_label'] < 0).sum()} (validation)")
 """)
 
 md("""
@@ -234,7 +295,7 @@ Every long step (embedding extraction, fine-tuning, prediction) is measured with
 """)
 
 code("""
-RES_PATH = OUT_DIR / "resources.json"
+RES_PATH = RUN_DIR / "resources.json"
 RESOURCES = json.loads(RES_PATH.read_text()) if RES_PATH.exists() else {}
 
 class track:
@@ -302,23 +363,37 @@ Two baselines show what fine-tuning adds:
 2. **Frozen pre-trained model + logistic regression**: the compact model without fine-tuning; the article vector is the mean of its last hidden states (mean pooling over the tokens)
 
 Both use the same linear classifier, trained on train + dev (no model selection is needed) and evaluated on validation.
+
+Every method is scored on the checked validation labels (`macro_f1`, main score, with a 95% bootstrap interval) and on the silver labels (`macro_f1_silver`). With 212 validation articles, the interval is about ±6 points wide: differences smaller than that are not reliable.
 """)
 
 code("""
 def linear_probe(X_fit, y_fit, X_eval):
+    y_fit = np.asarray(y_fit)
+    keep = y_fit >= 0   # articles labelled none are left out
     clf = LogisticRegression(max_iter=2000, class_weight="balanced", random_state=SEED)
-    clf.fit(unit(X_fit), y_fit)
+    clf.fit(unit(X_fit[keep]), y_fit[keep])
     return clf.predict(unit(X_eval))
 
 RESULTS = []      # one row per method: validation scores
 PREDICTIONS = {}  # method -> predicted labels on validation
 
+def bootstrap_ci(y_true, y_pred, n=1000):
+    \"\"\"95% interval of the macro-F1 over n resamples of the validation articles.\"\"\"
+    idx = np.random.default_rng(SEED).integers(0, len(y_true), (n, len(y_true)))
+    return np.percentile([f1_score(y_true[i], y_pred[i], average="macro") for i in idx], [2.5, 97.5])
+
 def record(method, y_pred):
-    y_true = sets["validation"]["label"].to_numpy()
-    RESULTS.append({"method": method, "accuracy": accuracy_score(y_true, y_pred),
-                    "macro_f1": f1_score(y_true, y_pred, average="macro")})
-    PREDICTIONS[method] = np.asarray(y_pred)
-    print(f"{method:32} accuracy {RESULTS[-1]['accuracy']:.3f} | macro-F1 {RESULTS[-1]['macro_f1']:.3f}")
+    y_pred = np.asarray(y_pred)
+    y_true = sets["validation"]["eval_label"].to_numpy()
+    keep = y_true >= 0
+    low, high = bootstrap_ci(y_true[keep], y_pred[keep])
+    RESULTS.append({"method": method, "accuracy": accuracy_score(y_true[keep], y_pred[keep]),
+                    "macro_f1": f1_score(y_true[keep], y_pred[keep], average="macro"), "f1_low": low, "f1_high": high,
+                    "macro_f1_silver": f1_score(sets["validation"]["silver_label"], y_pred, average="macro")})
+    PREDICTIONS[method] = y_pred
+    r = RESULTS[-1]
+    print(f"{method:34} macro-F1 {r['macro_f1']:.3f} [{low:.3f}, {high:.3f}] | on silver labels {r['macro_f1_silver']:.3f}")
 
 fit_part = pd.concat([sets["train"], sets["dev"]], ignore_index=True)
 """)
@@ -347,7 +422,7 @@ def embed(model, tok, texts, batch_size=16):
     return run(lambda b: mean_pooled(model, b), batches(texts, tok, batch_size))
 
 def embed_cached(name, model, tok, df, tag):
-    path = OUT_DIR / f"emb_{name}_{tag}.npy"
+    path = (RUN_DIR if tag.startswith("ft") else OUT_DIR) / f"emb_{name}_{tag}.npy"   # fine-tuned vectors depend on the labels
     if path.exists():
         return np.load(path)
     with track(name, f"embed_{tag}"):
@@ -401,6 +476,7 @@ def load_classifier(repo, tok):
     return model
 
 def to_dataset(df, tok):
+    df = df[df["label"] >= 0]
     ds = Dataset.from_dict({"text": model_input(df), "labels": df["label"].tolist()})
     return ds.map(lambda b: tok(b["text"], truncation=True, max_length=MAX_LEN), batched=True, remove_columns=["text"])
 
@@ -425,7 +501,7 @@ def finetune(name, repo):
     trainable, total = model.get_nb_trainable_parameters()
     print(f"{name}: trainable {trainable:,} / {total:,} parameters ({100 * trainable / total:.2f}%)")
 
-    args = TrainingArguments(output_dir=str(RUN_DIR / name), eval_strategy="epoch", save_strategy="epoch",
+    args = TrainingArguments(output_dir=str(CKPT_DIR / name), eval_strategy="epoch", save_strategy="epoch",
                              load_best_model_at_end=True, metric_for_best_model="macro_f1", save_total_limit=1,
                              logging_steps=10, bf16=BF16, fp16=not BF16, seed=SEED, report_to="none",
                              label_names=["labels"], **TRAIN)   # PeftModel hides the label argument from Trainer
@@ -437,7 +513,7 @@ def finetune(name, repo):
     model.save_pretrained(adapter_dir)
 
     # Training log and size facts for Part 3
-    pd.DataFrame(trainer.state.log_history).to_csv(OUT_DIR / f"train_log_{name}.csv", index=False)
+    pd.DataFrame(trainer.state.log_history).to_csv(RUN_DIR / f"train_log_{name}.csv", index=False)
     adapter_mb = sum(f.stat().st_size for f in adapter_dir.rglob("*") if f.is_file()) / 2**20
     RESOURCES[name].update({"total_params": total, "trainable_params": trainable,
                             "trainable_pct": round(100 * trainable / total, 3), "adapter_mb": round(adapter_mb, 1),
@@ -467,19 +543,20 @@ for name, repo in MODELS.items():
 
 code("""
 results = pd.DataFrame(RESULTS).drop_duplicates("method", keep="last").set_index("method")
-results.to_csv(OUT_DIR / "results_validation.csv")
+results.to_csv(RUN_DIR / "results_validation.csv")
 display(results.round(3))
 
 # Per-theme scores and confusion matrix of the best method
 best = results["macro_f1"].idxmax()
-y_true = sets["validation"]["label"]
+y_true = sets["validation"]["eval_label"].to_numpy()
+keep = y_true >= 0
 print(f"Best: {best}\\n")
-print(classification_report(y_true, PREDICTIONS[best], target_names=LABELS, digits=3))
+print(classification_report(y_true[keep], PREDICTIONS[best][keep], target_names=LABELS, digits=3))
 
 fig, ax = plt.subplots(figsize=(7, 6))
-sns.heatmap(confusion_matrix(y_true, PREDICTIONS[best], normalize="true"), annot=True, fmt=".2f", cmap="Blues",
-            xticklabels=LABELS, yticklabels=LABELS, ax=ax)
-ax.set(title=f"{best}: confusion matrix on validation (row-normalised)", xlabel="predicted", ylabel="Stage 1 theme")
+sns.heatmap(confusion_matrix(y_true[keep], PREDICTIONS[best][keep], normalize="true"), annot=True, fmt=".2f",
+            cmap="Blues", xticklabels=LABELS, yticklabels=LABELS, ax=ax)
+ax.set(title=f"{best}: confusion matrix on validation (row-normalised)", xlabel="predicted", ylabel="checked theme")
 save_fig(fig, "confusion_best")
 """)
 
@@ -489,26 +566,17 @@ TODO: interpretation — which themes are confused, does fine-tuning help more t
 
 md("""
 ### 2.6.3 Manual check of the silver labels
-The validation labels come from the Stage 1 topic model. To estimate how much of the error is label noise rather than model error, a stratified sample of validation articles (20 per theme) is checked by hand: for each article, `label_ok` says whether the silver theme is correct and, if not, `correct_theme` gives the correct theme (`none` if no theme fits). The check reads the title and the first 600 characters.
+The validation labels come from the Stage 1 topic model. To estimate how much of the error is label noise rather than model error, a stratified sample of validation articles (20 per theme) is checked by hand: for each article, `label_ok` says whether the silver theme is correct and, if not, `correct_theme` gives the correct theme (`none` if no theme fits). The check reads the title and the first 600 characters and uses the rubric of Section 2.2.3. If two themes weigh the same and the silver theme is one of them, the silver label counts as correct.
 
-Rubric: an article belongs to the theme of its **main subject**, not to every theme it mentions.
-
-| theme | main subject |
-|---|---|
-| `model_families` | a specific model or model family: release, versions, benchmarks, capabilities, licence |
-| `china_geopolitics` | China–US competition, export controls, AI policy, national AI race |
-| `research_techniques` | methods: training (RL, reasoning), architecture and efficiency, multimodal techniques |
-| `developer_tools` | using models: agents, coding tools, APIs, SDKs, tutorials, deployment |
-| `business_compute` | hardware and infrastructure, stocks and investment, enterprise adoption, markets |
-
-If two themes weigh the same and the silver theme is one of them, the silver label counts as correct.
+These hand-checked labels are part of the checked validation labels (Section 2.2.3, `label_source = human`).
 """)
 
 code("""
 CHECK_PATH = OUT_DIR / "label_check_validation.csv"
 if not CHECK_PATH.exists():
-    sample = sets["validation"].groupby("theme", group_keys=False).sample(n=20, random_state=SEED)
+    sample = sets["validation"].groupby("silver_theme", group_keys=False).sample(n=20, random_state=SEED)
     sample = sample.assign(text=sample["text"].str[:600], label_ok="", correct_theme="")
+    sample = sample.assign(theme=sample["silver_theme"])
     sample[["doc_id", "title", "theme", "text", "label_ok", "correct_theme"]].to_csv(CHECK_PATH, index=False)
     print("Sample written to", CHECK_PATH.name, "- fill in label_ok / correct_theme, then re-run this cell")
     check = pd.DataFrame()
@@ -631,7 +699,7 @@ for name, repo in MODELS.items():
     record(f"{name} frozen (whole) + LogReg", linear_probe(E["fit"], fit_part["label"], E["val"]))
 
     # Fine-tuned model: mean of the window probabilities
-    path = OUT_DIR / f"proba_{name}_ft_windows_val.npy"
+    path = RUN_DIR / f"proba_{name}_ft_windows_val.npy"
     if path.exists():
         P = np.load(path)
     else:
@@ -660,7 +728,7 @@ def describe(method):
 
 length = pd.DataFrame(RESULTS).drop_duplicates("method", keep="last")
 length[["representation", "input"]] = length["method"].apply(lambda m: pd.Series(describe(m)))
-length.to_csv(OUT_DIR / "results_input_length.csv", index=False)
+length.to_csv(RUN_DIR / "results_input_length.csv", index=False)
 display(length.pivot_table(index="representation", columns="input", values="macro_f1").round(3))
 
 fig, ax = plt.subplots(figsize=(10, 4.5))
@@ -673,23 +741,32 @@ save_fig(fig, "input_length")
 md("TODO: interpretation — does the gap to Doc2Vec close with the whole article?")
 
 md("""
-### 2.6.5 Scores on the checked labels
-Every method is scored again on the checked sample of Section 2.6.3, once against the silver labels and once against the checked labels. Articles that fit none of the themes are left out. No model is re-trained: only the validation labels change.
+### 2.6.5 Silver or checked labels
+Two questions, answered on the same validation articles:
+1. **Evaluation labels**: does the ranking of the methods change when they are scored on the checked labels instead of the silver labels? (`macro_f1` vs `macro_f1_silver` of each run)
+2. **Training labels**: do the methods improve when they are trained on the checked labels? (run with `TRAIN_LABELS = "silver"` vs `"checked"`)
+
+The table needs both runs: run the notebook once with each value of `TRAIN_LABELS`. All caches are kept, so the second run only trains what depends on the labels.
 """)
 
 code("""
-if "checked_theme" in check:
-    sample = check[check["checked_theme"].isin(LABELS)]
-    pos = pd.Series(np.arange(len(sets["validation"])), index=sets["validation"]["doc_id"])[sample["doc_id"]].to_numpy()
-    y_silver, y_checked = (sample[c].map(LABELS.index).to_numpy() for c in ["theme", "checked_theme"])
-    checked = pd.DataFrame([{"method": m, "macro_f1_silver": f1_score(y_silver, p[pos], average="macro"),
-                             "macro_f1_checked": f1_score(y_checked, p[pos], average="macro")}
-                            for m, p in PREDICTIONS.items()]).set_index("method")
-    checked["change"] = checked["macro_f1_checked"] - checked["macro_f1_silver"]
-    checked.to_csv(OUT_DIR / "results_checked_labels.csv")
-    print(f"{len(sample)} articles")
-    display(checked.round(3))
+runs = {version: OUT_DIR / ("" if version == "silver" else version) / "results_input_length.csv"
+        for version in ["silver", "checked"]}
+runs = {version: pd.read_csv(path, index_col="method") for version, path in runs.items() if path.exists()}
+runs = {version: r for version, r in runs.items() if "macro_f1_silver" in r}   # results of the current notebook only
+
+if len(runs) == 2:
+    comparison = pd.concat({f"trained on {version}": r[["macro_f1", "f1_low", "f1_high", "macro_f1_silver"]]
+                            for version, r in runs.items()}, axis=1)
+    comparison[("gain", "macro_f1")] = (comparison[("trained on checked", "macro_f1")]
+                                        - comparison[("trained on silver", "macro_f1")])
+    comparison.to_csv(OUT_DIR / "results_label_versions.csv")
+    display(comparison.round(3))
+else:
+    print("Run the notebook with TRAIN_LABELS =", " and ".join(f'"{v}"' for v in ["silver", "checked"] if v not in runs))
 """)
+
+md("TODO: interpretation.")
 
 # ---------------------------------------------------------------- 2.7 Handover vectors
 md("""
@@ -716,7 +793,7 @@ print(f"{len(vec_docs):,} articles to embed")
 code("""
 def save_vectors(name, tag, E):
     vec_docs[["doc_id", "split", "om_tier", "track"]].assign(vector=list(E)).to_parquet(
-        OUT_DIR / f"llm_doc_vectors_{name}_{tag}.parquet", index=False)
+        (OUT_DIR if tag == "base" else RUN_DIR) / f"llm_doc_vectors_{name}_{tag}.parquet", index=False)
 
 for name, repo in MODELS.items():
     tok = load_tokenizer(repo)
@@ -724,7 +801,7 @@ for name, repo in MODELS.items():
         base = AutoModel.from_pretrained(repo, quantization_config=BNB, device_map="auto")
         save_vectors(name, "base", embed_cached(name, base, tok, vec_docs, "base_sample"))
         del base; free_memory()
-    if not (OUT_DIR / f"llm_doc_vectors_{name}_ft.parquet").exists():
+    if not (RUN_DIR / f"llm_doc_vectors_{name}_ft.parquet").exists():
         ft, tok = finetune(name, repo)
         save_vectors(name, "ft", embed_cached(name, ft, tok, vec_docs, "ft_sample"))
         del ft; free_memory()
@@ -765,7 +842,7 @@ As the classifier was trained on core articles, its predictions on mention artic
 
 code("""
 best_name = results.filter(like="QLoRA", axis=0)["macro_f1"].idxmax().replace(" QLoRA", "")
-PRED_PATH = OUT_DIR / f"predictions_track_{best_name}.parquet"   # one file per model, so a new best model is not read from an old cache
+PRED_PATH = RUN_DIR / f"predictions_track_{best_name}.parquet"   # one file per model, so a new best model is not read from an old cache
 
 if PRED_PATH.exists():
     preds = pd.read_parquet(PRED_PATH)
@@ -795,19 +872,20 @@ md("TODO: interpretation.")
 # ---------------------------------------------------------------- Outputs
 md("""
 ## 2.9 Outputs and Handover to Part 3
-All outputs are saved in `OUT_DIR` on Google Drive:
+All outputs are saved on Google Drive. The outputs that depend on the training labels are in `RUN_DIR`: `OUT_DIR` for the silver labels, `OUT_DIR/checked` for the checked labels.
 
 | file | content |
 |---|---|
-| `task_labels.parquet` | articles of the task with Stage 1 topic, theme, label and set (train / dev / validation) |
-| `results_validation.csv` | accuracy and macro-F1 of every method on the shared validation split |
+| `task_labels.parquet` | articles of the task with Stage 1 topic, silver and checked theme, label source and set (train / dev / validation) |
+| `results_validation.csv` | macro-F1 (checked labels, with bootstrap interval, and silver labels) of every method on the shared validation split |
+| `results_input_length.csv` | the same for every representation and input length (Section 2.6.4) |
+| `results_label_versions.csv` (`OUT_DIR`) | silver vs checked training labels (Section 2.6.5) |
 | `resources.json` | per model: time and peak GPU memory of every step, parameters, trainable share, adapter size, settings |
 | `train_log_<model>.csv` | training and dev metrics per step / epoch |
 | `adapters/<model>/` | LoRA adapters and classification head |
 | `llm_doc_vectors_<model>_{base,ft}.parquet` | article vectors, same format and same articles as the t-SNE map of Part 1 |
 | `predictions_track_<model>.parquet` | theme probabilities of all open-models articles (best fine-tuned model) |
-| `label_check_validation.csv` | review of the silver labels on a validation sample |
-| `results_checked_labels.csv` | macro-F1 of every method on that sample, silver vs checked labels |
+| `label_check_validation.csv` (`OUT_DIR`) | hand check of the silver labels on a validation sample |
 | `figures/` | visualisations |
 """)
 
