@@ -223,7 +223,7 @@ TODO: justify the final choice after the first runs.
 code("""
 MODELS = {
     "qwen3-1.7b": "Qwen/Qwen3-1.7B",
-    # "qwen3-4b":   "Qwen/Qwen3-4B",   # enable on an L4 or A100: about 2-3x slower than the 1.7B model
+    "qwen3-4b":   "Qwen/Qwen3-4B",     # needs an L4 or A100: about 2-3x slower than the 1.7B model
 }
 """)
 
@@ -489,7 +489,7 @@ TODO: interpretation — which themes are confused, does fine-tuning help more t
 
 md("""
 ### 2.6.3 Manual check of the silver labels
-The validation labels come from the Stage 1 topic model. To estimate how much of the error is label noise rather than model error, a stratified sample of validation articles (20 per theme) is reviewed: for each article, `label_ok` says whether the silver theme is correct and, if not, `correct_theme` gives the correct theme (`none` if no theme fits). The review reads the title and the first 600 characters.
+The validation labels come from the Stage 1 topic model. To estimate how much of the error is label noise rather than model error, a stratified sample of validation articles (20 per theme) is checked by hand: for each article, `label_ok` says whether the silver theme is correct and, if not, `correct_theme` gives the correct theme (`none` if no theme fits). The check reads the title and the first 600 characters.
 
 Rubric: an article belongs to the theme of its **main subject**, not to every theme it mentions.
 
