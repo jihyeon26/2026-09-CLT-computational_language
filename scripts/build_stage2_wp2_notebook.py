@@ -278,7 +278,7 @@ The models are chosen among the compact open models suggested in the project bri
 
 Comparing two sizes of **the same family** isolates the effect of model size; the trade-off between size, performance, training time and GPU memory is analysed in Part 3.
 
-TODO: justify the final choice after the first runs.
+**Final choice**: both sizes are kept in the comparison, and **Qwen3-1.7B is the recommended model**. On the hand-checked validation labels it scores as well as Qwen3-4B (macro-F1 0.80 vs 0.79, Section 2.6.6), with 2.3× shorter training, 2.2× faster prediction and 1.7× less GPU memory (Section 2.9). Qwen3-4B scores higher only on the validation labels made with the LLM annotator, which is no evidence that it classifies the themes better.
 """)
 
 code("""
@@ -455,7 +455,7 @@ The pre-trained model is loaded in 4-bit and frozen. LoRA adds two small matrice
 | Epochs | 3 | best epoch selected on dev (macro-F1) |
 | Effective batch | 16 (4 × 4 gradient accumulation) | fits on a T4 with `MAX_LEN` = 512 |
 
-TODO: if time allows, compare r = 8 / 16 / 32 on dev.
+The LoRA rank and the number of epochs were not tuned: the dev macro-F1 of the first runs changed little after the second epoch, and with 85 dev articles small differences between settings could not be measured.
 """)
 
 code("""
@@ -561,7 +561,11 @@ save_fig(fig, "confusion_best")
 """)
 
 md("""
-TODO: interpretation — which themes are confused, does fine-tuning help more than size, how far are the baselines.
+**Interpretation** (training on the checked labels):
+- **Fine-tuning helps.** The QLoRA models score highest (macro-F1 0.80 for Qwen3-1.7B, 0.84 for Qwen3-4B), 7 to 9 points above the same frozen models with a linear classifier. As the classifier is the same, the gain comes from adapting the representation to the task.
+- **Pre-training alone does not.** The frozen compact models (0.74 and 0.75) score no better than Doc2Vec (0.75), which was trained on this corpus only.
+- **Per theme**, `china_geopolitics` is the easiest theme (F1 0.90): its vocabulary (China, export controls, policy) is distinctive. `research_techniques` is the hardest: its precision is 1.00 but its recall only 0.64. Missed research articles are predicted as `model_families` or `developer_tools` (18% each): research is often reported through a model release or a tool, and it is the smallest theme (97 training articles).
+- The differences between methods are tested in Section 2.6.6, and the effect of the labels in Section 2.6.5.
 """)
 
 md("""
@@ -592,7 +596,7 @@ else:
 
 # ---------------------------------------------------------------- 2.6.4 Input length
 md("""
-### 2.6.4 Input length: why does Doc2Vec score higher?
+### 2.6.4 Input length
 Doc2Vec and the compact models do not read the same input. Doc2Vec reads the **whole article**, while the compact models read only its **first `MAX_LEN` tokens** (Section 2.2.2). The labels also favour whole-article representations: the Stage 1 topic of an article was computed from all of its words.
 
 To separate the effect of the representation from the effect of the input length, every representation is evaluated on both inputs:
@@ -738,7 +742,14 @@ ax.legend(bbox_to_anchor=(1.01, 1), loc="upper left")
 save_fig(fig, "input_length")
 """)
 
-md("TODO: interpretation — does the gap to Doc2Vec close with the whole article?")
+md("""
+**Interpretation**: the effect of the input length depends on the labels.
+- With the **silver labels** (first run of this notebook, scored on the silver labels), Doc2Vec scored highest (0.74), and the gap closed when the compact models read the whole article (QLoRA Qwen3-1.7B: 0.69 → 0.72), while Doc2Vec dropped on the first tokens (0.66). The silver labels were computed by the topic model from all the words of an article, so they favour whole-article inputs.
+- With the **checked labels**, reading the whole article does not help: the fine-tuned models drop (Qwen3-4B 0.84 → 0.79, Qwen3-1.7B 0.80 → 0.77), the frozen models drop by 2 to 4 points, and Doc2Vec changes by less than 2 points. The main subject of a news article is stated in its title and lead; averaging the windows gives the later parts, which often digress, the same weight as the beginning.
+- Limitation: the checked labels were made from the beginning of the articles (600 characters by hand, 6,000 by the LLM), which can favour the first-tokens input.
+
+For this task, the first 512 tokens are therefore enough, and a long-context setting is not needed.
+""")
 
 md("""
 ### 2.6.5 Silver or checked labels
@@ -766,7 +777,15 @@ else:
     print("Run the notebook with TRAIN_LABELS =", " and ".join(f'"{v}"' for v in ["silver", "checked"] if v not in runs))
 """)
 
-md("TODO: interpretation.")
+md("""
+**Interpretation**:
+- **The silver labels are noisy**: 64% of them are correct on the hand-checked sample, and they agree with the checked labels on 60% of all articles.
+- **Evaluation labels**: scored on the silver labels, the models trained on them ranked Doc2Vec first (0.74 vs 0.68–0.69 for QLoRA). Scored on the checked labels, the same models reach only 0.61–0.68 and Doc2Vec comes last (0.61). The silver evaluation rewarded the representation closest to the topic model that made the labels (both are built on word counts).
+- **Training labels**: training on the checked labels raises every method, by 8 to 18 points (5 to 15 for the whole-article inputs of Section 2.6.4). The fine-tuned models gain most (+17 and +18), the frozen models least (+8 and +10): noisy labels mainly limited the models that can learn finer distinctions.
+- Trained on the checked labels, every method scores only 0.53–0.56 on the silver labels: the models no longer reproduce the topic model.
+
+The quality of the labels had a larger effect than the choice of the model or its size.
+""")
 
 md("""
 ### 2.6.6 Robustness of the comparison
@@ -808,7 +827,14 @@ paired.to_csv(RUN_DIR / "results_paired.csv", index=False)
 display(paired.set_index(["comparison", "labels"]).round(3))
 """)
 
-md("TODO: interpretation.")
+md("""
+**Interpretation**:
+- **Fine-tuning versus the baselines**: on all 206 validation articles, QLoRA is better than the frozen model of the same size (Qwen3-1.7B +7 points, p = 0.02; Qwen3-4B +9, p = 0.002) and than Doc2Vec (+6, p = 0.04; +9, p = 0.001). On the 98 hand-checked articles, the differences keep the same sign (+3 to +8), but with so few articles only the gain of Qwen3-1.7B over its frozen model stays significant (p = 0.04).
+- **Model size**: Qwen3-4B is not better than Qwen3-1.7B (+4 points on all articles, p = 0.06; −1 on the hand-checked articles). Its advantage comes from the validation labels made with the LLM (0.89 vs 0.80), not from the hand-checked ones (0.79 vs 0.80). The larger model may follow the judgement of the LLM annotator more closely, which is the main risk of LLM labels: part of a score on LLM-made labels measures the agreement with the LLM. The two subsets also differ in difficulty (Section 2.2.3), so this comparison is only indicative.
+- The scores of the QLoRA models vary by up to 1 point between runs (4-bit GPU kernels are not deterministic); smaller differences are not meaningful.
+
+**Robust conclusions**: (1) checked training labels improve every method; (2) fine-tuning adds 5 to 9 points over the frozen model and Doc2Vec, significant on the full validation set; (3) the data do not show a benefit of the larger model.
+""")
 
 # ---------------------------------------------------------------- 2.7 Handover vectors
 md("""
@@ -873,7 +899,9 @@ display(sims.round(3).style.background_gradient(axis=1, cmap="Blues"))
 del ft; free_memory()
 """)
 
-md("TODO: interpretation compared with Word2Vec / FastText (Part 1, Section 1.2.2).")
+md("""
+**Interpretation**: unlike Word2Vec, the compact model has a vector for every invented name: it splits the name into known sub-words (`q`, `wen`, `9`, ...), as FastText does with character n-grams. But the comparison of the sentence vectors is weak: every similarity lies between 0.93 and 0.97, because the mean-pooled vector of a sentence is dominated by the shared template, and mean-pooled vectors of language models are all close to each other. Only `llama-999` is closest to its own family (Llama, 0.971); `qwen999-max` is as close to GPT-4o (0.964) as to Qwen (0.962), and `deepseek-r999` as close to Llama as to DeepSeek (0.961 / 0.960). The model can read unseen names, but this test does not show that it places them next to their family; a test on the vectors of the name tokens alone, without the template, would be needed.
+""")
 
 md("""
 ### 2.8.2 Theme trends beyond the labelled articles
@@ -909,7 +937,15 @@ ax.legend(bbox_to_anchor=(1.01, 1), loc="upper left")
 save_fig(fig, "theme_share_mention")
 """)
 
-md("TODO: interpretation.")
+md("""
+**Interpretation** (shares read from the figure; the classifier was trained on core articles, so the predictions on mention articles are less reliable):
+- `developer_tools` grows the most: from about 23% of the mention articles in 2024Q3 to about 49% in 2026Q2 (42% in 2026Q3). Open models are increasingly mentioned as building blocks of agents, coding tools and platforms.
+- `business_compute` is the largest theme until 2025Q4 (about 40–47%) and falls to about 27–33% in 2026.
+- `research_techniques` shrinks from about 17% to 6–9%, and `china_geopolitics` peaks in 2025Q3 (about 26%).
+- `model_families` stays small (4–7%), as expected: mention articles name open models without being about them.
+
+Part 3 can restrict these trends to confident predictions (`confidence` column) and compare them with the topic trends of Stage 1.
+""")
 
 # ---------------------------------------------------------------- Outputs
 md("""
