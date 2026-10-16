@@ -879,28 +879,83 @@ for name, repo in MODELS.items():
 md("""
 ## 2.8 Open-Models Track: Unseen Model Names and Theme Trends
 ### 2.8.1 Unseen model names
-Part 1 showed that Word2Vec has no vector for model names that never appeared in training, and that FastText finds neighbours by spelling. A compact model splits any word into sub-word tokens and reads it in context. The same invented names are placed in one sentence and compared with known model families (cosine similarity of the mean-pooled vectors, frozen and fine-tuned).
+Part 1 showed that Word2Vec has no vector for model names that never appeared in training, and that FastText gives them one from their character n-grams, so that its neighbours follow the spelling. The invented names of Part 1 (`qwen999-max`, `llama-999`, `deepseek-r999`) contain the name of their family: a model that splits words into sub-words will find the family from the spelling alone. They are kept for the comparison with Part 1, but they cannot show whether a model places a new name by its **meaning**.
+
+The test therefore asks whether the compact model links an unseen name to its family **from the context**. Each name is placed in a sentence whose beginning names a company, and the vector of the **name tokens only** is compared with the vectors of five known family names:
+
+| condition | example | expected nearest family |
+|---|---|---|
+| spelling | "A company has released its newest open-weight language model, qwen999-max." | the family in the name (Qwen) |
+| context | "Meta has released its newest open-weight language model, Velora-7B." | the family of the company (Llama) |
+| conflict | "Meta has released its newest open-weight language model, qwen999-max." | context (Llama) or spelling (Qwen)? |
+| control | "A company has released its newest open-weight language model, Velora-7B." | no family: about 20% per family |
+
+The company comes before the name because the model reads from left to right: the vector of a token depends only on the tokens before it. The family names are embedded in the neutral sentence, so that their vectors reflect what the model knows about them. All vectors are centred before the cosine similarity, because the vectors of a language model share a common direction that makes every similarity high. FastText, which does not read the context, follows the spelling in every conflict sentence by construction.
 """)
 
 code("""
-UNSEEN = ["qwen999-max", "llama-999", "deepseek-r999"]
-KNOWN = ["Qwen", "Llama", "DeepSeek", "Gemma", "Mistral", "Nemotron", "GPT-4o", "Claude"]
-TEMPLATE = "The company released {} as a new language model."
+FAMILIES = ["Qwen", "Llama", "DeepSeek", "Gemma", "Nemotron"]
+COMPANY = {"Qwen": "Alibaba Cloud", "Llama": "Meta", "DeepSeek": "The Chinese lab behind the R1 reasoning model",
+           "Gemma": "Google DeepMind", "Nemotron": "NVIDIA"}
+NEUTRAL = "A company"
+FRAME = "{} has released its newest open-weight language model, {}."   # company first: the model reads left to right
+SPELLED = {"qwen999-max": "Qwen", "llama-999": "Llama", "deepseek-r999": "DeepSeek"}   # invented names of Part 1
+INVENTED = ["Velora-7B", "Kestrix-2", "Orvane-9B", "Tamsin-3", "Brivo-14B"]          # no family in the name
+
+rows = []
+for word in INVENTED:
+    rows += [("control", word, None, None)] + [("context", word, f, None) for f in FAMILIES]
+for word, family in SPELLED.items():
+    rows += [("spelling", word, None, family)] + [("conflict", word, f, family) for f in FAMILIES if f != family]
+tests = pd.DataFrame(rows, columns=["condition", "name", "context_family", "spelling_family"])
+tests["sentence"] = [FRAME.format(COMPANY[f] if f else NEUTRAL, w) for w, f in zip(tests["name"], tests["context_family"])]
+
+@torch.no_grad()
+def name_vectors(model, tok, sentences, names):
+    \"\"\"Mean of the last hidden states of the tokens of the name, not of the whole sentence.\"\"\"
+    model.eval()
+    out = []
+    for sentence, word in zip(sentences, names):
+        enc = tok(sentence, return_offsets_mapping=True, return_tensors="pt")
+        start = sentence.rindex(word)
+        in_name = torch.tensor([a < start + len(word) and b > start for a, b in enc.pop("offset_mapping")[0].tolist()])
+        hidden = model(**enc.to("cuda"), output_hidden_states=True).hidden_states[-1][0]
+        out.append(hidden[in_name.to(hidden.device)].float().mean(0).cpu().numpy())
+    return np.vstack(out)
+
+def nearest_family(model, tok):
+    V = name_vectors(model, tok, list(tests["sentence"]) + [FRAME.format(NEUTRAL, f) for f in FAMILIES],
+                     list(tests["name"]) + FAMILIES)
+    V = unit(V - V.mean(0))   # centre: remove the direction shared by all vectors
+    return np.array(FAMILIES)[(V[:len(tests)] @ V[len(tests):].T).argmax(1)]
 
 name, repo = next(iter(MODELS.items()))   # main model
 tok = load_tokenizer(repo)
-for word in UNSEEN:
+for word in list(SPELLED) + INVENTED:
     print(f"{word:15} -> {tok.tokenize(' ' + word)}")
 
+base = AutoModel.from_pretrained(repo, quantization_config=BNB, device_map="auto")
+tests["frozen"] = nearest_family(base, tok)
+del base; free_memory()
 ft, tok = finetune(name, repo)
-E = unit(embed(ft, tok, [TEMPLATE.format(w) for w in UNSEEN + KNOWN]))
-sims = pd.DataFrame(E[:len(UNSEEN)] @ E[len(UNSEEN):].T, index=UNSEEN, columns=KNOWN)
-display(sims.round(3).style.background_gradient(axis=1, cmap="Blues"))
+tests["fine-tuned"] = nearest_family(ft, tok)
 del ft; free_memory()
+tests.to_csv(RUN_DIR / "unseen_names.csv", index=False)
+
+def share(condition, target):
+    d = tests[tests["condition"] == condition]
+    return {"sentences": len(d), **{m: (d[m] == d[target]).mean() for m in ["frozen", "fine-tuned"]}}
+
+display(pd.DataFrame({"spelling: nearest = family in the name": share("spelling", "spelling_family"),
+                      "context: nearest = family of the company": share("context", "context_family"),
+                      "conflict: follows the company": share("conflict", "context_family"),
+                      "conflict: follows the spelling": share("conflict", "spelling_family")}).T.round(2))
+print("Control sentences (no family), nearest family:")
+display(tests[tests["condition"] == "control"].set_index("name")[["frozen", "fine-tuned"]])
 """)
 
 md("""
-**Interpretation**: unlike Word2Vec, the compact model has a vector for every invented name: it splits the name into known sub-words (`q`, `wen`, `9`, ...), as FastText does with character n-grams. But the comparison of the sentence vectors is weak: every similarity lies between 0.93 and 0.97, because the mean-pooled vector of a sentence is dominated by the shared template, and mean-pooled vectors of language models are all close to each other. Only `llama-999` is closest to its own family (Llama, 0.971); `qwen999-max` is as close to GPT-4o (0.964) as to Qwen (0.962), and `deepseek-r999` as close to Llama as to DeepSeek (0.961 / 0.960). The model can read unseen names, but this test does not show that it places them next to their family; a test on the vectors of the name tokens alone, without the template, would be needed.
+TODO: interpretation after the run. Questions: does the model find the family from the context alone (context, compared with the 20% of chance), and does the context or the spelling win in the conflict sentences (FastText: spelling in every case)?
 """)
 
 md("""
