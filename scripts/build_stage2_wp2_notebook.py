@@ -115,7 +115,8 @@ def free_memory():
         torch.cuda.empty_cache()
 
 GPU = torch.cuda.get_device_name(0) if torch.cuda.is_available() else "none"
-BF16 = torch.cuda.is_available() and torch.cuda.is_bf16_supported()
+# Native bf16 needs an Ampere GPU or newer (L4, A100); is_bf16_supported() is also True on a T4, where bf16 is emulated and slow
+BF16 = torch.cuda.is_available() and torch.cuda.get_device_capability()[0] >= 8
 print(f"GPU: {GPU} | bf16: {BF16}")
 """)
 
@@ -222,7 +223,7 @@ TODO: justify the final choice after the first runs.
 code("""
 MODELS = {
     "qwen3-1.7b": "Qwen/Qwen3-1.7B",
-    "qwen3-4b":   "Qwen/Qwen3-4B",
+    # "qwen3-4b":   "Qwen/Qwen3-4B",   # enable on an L4 or A100: about 2-3x slower than the 1.7B model
 }
 """)
 
@@ -269,9 +270,19 @@ def load_tokenizer(repo):
     return tok
 
 def batches(texts, tok, batch_size):
-    for i in range(0, len(texts), batch_size):
-        yield tok(texts[i:i + batch_size], truncation=True, max_length=MAX_LEN, padding=True,
-                  return_tensors="pt").to("cuda")
+    \"\"\"Tokenised batches, longest texts first so that a batch holds texts of similar length (less padding).
+    Yields the positions of the texts in the batch, then the batch.\"\"\"
+    order = np.argsort([-len(t) for t in texts], kind="stable")
+    for i in range(0, len(order), batch_size):
+        idx = order[i:i + batch_size]
+        yield idx, tok([texts[j] for j in idx], truncation=True, max_length=MAX_LEN, padding=True,
+                       return_tensors="pt").to("cuda")
+
+def in_input_order(positions, parts):
+    \"\"\"Put the batch outputs back in the order of the input texts.\"\"\"
+    out = np.vstack(parts)
+    out[np.concatenate(positions)] = out.copy()
+    return out
 """)
 
 # ---------------------------------------------------------------- 2.5 Baselines
@@ -317,15 +328,16 @@ md("### 2.5.2 Frozen compact model + logistic regression")
 
 code("""
 @torch.no_grad()
-def embed(model, tok, texts, batch_size=8):
+def embed(model, tok, texts, batch_size=16):
     \"\"\"Mean-pooled last hidden state of every text.\"\"\"
     model.eval()
-    out = []
-    for batch in batches(texts, tok, batch_size):
+    positions, parts = [], []
+    for idx, batch in batches(texts, tok, batch_size):
         hidden = model(**batch, output_hidden_states=True).hidden_states[-1]
         mask = batch["attention_mask"].unsqueeze(-1).to(hidden.dtype)
-        out.append(((hidden * mask).sum(1) / mask.sum(1)).float().cpu().numpy())
-    return np.vstack(out)
+        positions.append(idx)
+        parts.append(((hidden * mask).sum(1) / mask.sum(1)).float().cpu().numpy())
+    return in_input_order(positions, parts)
 
 def embed_cached(name, model, tok, df, tag):
     path = OUT_DIR / f"emb_{name}_{tag}.npy"
@@ -431,10 +443,13 @@ md("### 2.6.2 Training and evaluation on validation")
 
 code("""
 @torch.no_grad()
-def predict_proba(model, tok, texts, batch_size=8):
+def predict_proba(model, tok, texts, batch_size=16):
     model.eval()
-    return np.vstack([torch.softmax(model(**b).logits.float(), -1).cpu().numpy()
-                      for b in batches(texts, tok, batch_size)])
+    positions, parts = [], []
+    for idx, batch in batches(texts, tok, batch_size):
+        positions.append(idx)
+        parts.append(torch.softmax(model(**batch).logits.float(), -1).cpu().numpy())
+    return in_input_order(positions, parts)
 
 val_proba = {}
 for name, repo in MODELS.items():
