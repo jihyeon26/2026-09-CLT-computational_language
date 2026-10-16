@@ -729,8 +729,8 @@ As the classifier was trained on core articles, its predictions on mention artic
 """)
 
 code("""
-PRED_PATH = OUT_DIR / "predictions_track.parquet"
 best_name = results.filter(like="QLoRA", axis=0)["macro_f1"].idxmax().replace(" QLoRA", "")
+PRED_PATH = OUT_DIR / f"predictions_track_{best_name}.parquet"   # one file per model, so a new best model is not read from an old cache
 
 if PRED_PATH.exists():
     preds = pd.read_parquet(PRED_PATH)
@@ -770,7 +770,7 @@ All outputs are saved in `OUT_DIR` on Google Drive:
 | `train_log_<model>.csv` | training and dev metrics per step / epoch |
 | `adapters/<model>/` | LoRA adapters and classification head |
 | `llm_doc_vectors_<model>_{base,ft}.parquet` | article vectors, same format and same articles as the t-SNE map of Part 1 |
-| `predictions_track.parquet` | theme probabilities of all open-models articles (best fine-tuned model) |
+| `predictions_track_<model>.parquet` | theme probabilities of all open-models articles (best fine-tuned model) |
 | `label_check_validation.csv` | manual check of the silver labels |
 | `figures/` | visualisations |
 """)
