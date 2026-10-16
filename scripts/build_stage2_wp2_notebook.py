@@ -768,6 +768,48 @@ else:
 
 md("TODO: interpretation.")
 
+md("""
+### 2.6.6 Robustness of the comparison
+Two checks of the scores on the checked labels:
+1. **Hand-checked labels only**: the training labels come from an LLM, and 112 of the validation labels were made with its help (Section 2.2.3). If the scores only measured the agreement with the LLM, they would drop on the articles checked by hand without the LLM (`label_source = human`).
+2. **Paired differences**: the bootstrap intervals of Section 2.6.2 are computed per method. Two methods are compared on the same resampled articles; `p` is the share of resamples where the first method is not better (one-sided).
+""")
+
+code("""
+val = sets["validation"]
+y = val["eval_label"].to_numpy()
+subsets = {"all": y >= 0}
+if "label_source" in val:
+    subsets["hand-checked"] = (y >= 0) & (val["label_source"] == "human").to_numpy()
+    subsets["made with the LLM"] = (y >= 0) & (val["label_source"] != "human").to_numpy()
+
+robust = pd.DataFrame({f"{name} (n={mask.sum()})": {m: f1_score(y[mask], p[mask], average="macro") for m, p in PREDICTIONS.items()}
+                       for name, mask in subsets.items()})
+robust.to_csv(RUN_DIR / "results_robustness.csv")
+display(robust.round(3))
+""")
+
+code("""
+def paired_bootstrap(a, b, mask, n=1000):
+    \"\"\"Macro-F1 of method a minus method b on the same resamples of the articles in mask.\"\"\"
+    yt, pa, pb = y[mask], PREDICTIONS[a][mask], PREDICTIONS[b][mask]
+    idx = np.random.default_rng(SEED).integers(0, len(yt), (n, len(yt)))
+    d = np.array([f1_score(yt[i], pa[i], average="macro") - f1_score(yt[i], pb[i], average="macro") for i in idx])
+    return {"difference": f1_score(yt, pa, average="macro") - f1_score(yt, pb, average="macro"),
+            "low": np.percentile(d, 2.5), "high": np.percentile(d, 97.5), "p": (d <= 0).mean()}
+
+names = list(MODELS)
+PAIRS = ([(f"{m} QLoRA", "Doc2Vec + LogReg") for m in names] + [(f"{m} QLoRA", f"{m} frozen + LogReg") for m in names]
+         + [(f"{b} QLoRA", f"{a} QLoRA") for i, a in enumerate(names) for b in names[i + 1:]])
+paired = pd.DataFrame([{"comparison": f"{a} vs {b}", "labels": name, **paired_bootstrap(a, b, mask)}
+                       for a, b in PAIRS if a in PREDICTIONS and b in PREDICTIONS
+                       for name, mask in subsets.items() if name != "made with the LLM"])
+paired.to_csv(RUN_DIR / "results_paired.csv", index=False)
+display(paired.set_index(["comparison", "labels"]).round(3))
+""")
+
+md("TODO: interpretation.")
+
 # ---------------------------------------------------------------- 2.7 Handover vectors
 md("""
 ## 2.7 Article Vectors for the Comparative Evaluation
@@ -880,6 +922,7 @@ All outputs are saved on Google Drive. The outputs that depend on the training l
 | `results_validation.csv` | macro-F1 (checked labels, with bootstrap interval, and silver labels) of every method on the shared validation split |
 | `results_input_length.csv` | the same for every representation and input length (Section 2.6.4) |
 | `results_label_versions.csv` (`OUT_DIR`) | silver vs checked training labels (Section 2.6.5) |
+| `results_robustness.csv`, `results_paired.csv` | scores on the hand-checked labels and paired bootstrap differences (Section 2.6.6) |
 | `resources.json` | per model: time and peak GPU memory of every step, parameters, trainable share, adapter size, settings |
 | `train_log_<model>.csv` | training and dev metrics per step / epoch |
 | `adapters/<model>/` | LoRA adapters and classification head |
