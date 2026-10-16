@@ -489,7 +489,19 @@ TODO: interpretation — which themes are confused, does fine-tuning help more t
 
 md("""
 ### 2.6.3 Manual check of the silver labels
-The validation labels come from the Stage 1 topic model. To estimate how much of the error is label noise rather than model error, a stratified sample of validation articles is read by hand: TODO the team marks for each article whether the theme is correct (`label_ok`) and, if not, the correct theme.
+The validation labels come from the Stage 1 topic model. To estimate how much of the error is label noise rather than model error, a stratified sample of validation articles (20 per theme) is reviewed: for each article, `label_ok` says whether the silver theme is correct and, if not, `correct_theme` gives the correct theme (`none` if no theme fits). The review reads the title and the first 600 characters.
+
+Rubric: an article belongs to the theme of its **main subject**, not to every theme it mentions.
+
+| theme | main subject |
+|---|---|
+| `model_families` | a specific model or model family: release, versions, benchmarks, capabilities, licence |
+| `china_geopolitics` | China–US competition, export controls, AI policy, national AI race |
+| `research_techniques` | methods: training (RL, reasoning), architecture and efficiency, multimodal techniques |
+| `developer_tools` | using models: agents, coding tools, APIs, SDKs, tutorials, deployment |
+| `business_compute` | hardware and infrastructure, stocks and investment, enterprise adoption, markets |
+
+If two themes weigh the same and the silver theme is one of them, the silver label counts as correct.
 """)
 
 code("""
@@ -499,11 +511,15 @@ if not CHECK_PATH.exists():
     sample = sample.assign(text=sample["text"].str[:600], label_ok="", correct_theme="")
     sample[["doc_id", "title", "theme", "text", "label_ok", "correct_theme"]].to_csv(CHECK_PATH, index=False)
     print("Sample written to", CHECK_PATH.name, "- fill in label_ok / correct_theme, then re-run this cell")
+    check = pd.DataFrame()
 else:
     check = pd.read_csv(CHECK_PATH)
-    done = check[check["label_ok"].notna() & (check["label_ok"].astype(str) != "")]
-    if len(done):
-        print(f"Checked: {len(done)} | silver label correct: {done['label_ok'].astype(str).str.lower().isin(['1', 'true', 'yes', 'y']).mean():.1%}")
+    check = check[check["label_ok"].notna()]
+    ok = check["label_ok"].astype(str).str.lower().isin(["1", "1.0", "true", "yes", "y"])
+    check["checked_theme"] = check["theme"].where(ok, check["correct_theme"])
+    print(f"Checked: {len(check)} | silver label correct: {ok.mean():.1%}\\n")
+    display(pd.crosstab(check["theme"], check["checked_theme"], margins=True)
+              .rename_axis(index="silver theme", columns="checked theme"))
 """)
 
 # ---------------------------------------------------------------- 2.6.4 Input length
@@ -656,6 +672,25 @@ save_fig(fig, "input_length")
 
 md("TODO: interpretation — does the gap to Doc2Vec close with the whole article?")
 
+md("""
+### 2.6.5 Scores on the checked labels
+Every method is scored again on the checked sample of Section 2.6.3, once against the silver labels and once against the checked labels. Articles that fit none of the themes are left out. No model is re-trained: only the validation labels change.
+""")
+
+code("""
+if "checked_theme" in check:
+    sample = check[check["checked_theme"].isin(LABELS)]
+    pos = pd.Series(np.arange(len(sets["validation"])), index=sets["validation"]["doc_id"])[sample["doc_id"]].to_numpy()
+    y_silver, y_checked = (sample[c].map(LABELS.index).to_numpy() for c in ["theme", "checked_theme"])
+    checked = pd.DataFrame([{"method": m, "macro_f1_silver": f1_score(y_silver, p[pos], average="macro"),
+                             "macro_f1_checked": f1_score(y_checked, p[pos], average="macro")}
+                            for m, p in PREDICTIONS.items()]).set_index("method")
+    checked["change"] = checked["macro_f1_checked"] - checked["macro_f1_silver"]
+    checked.to_csv(OUT_DIR / "results_checked_labels.csv")
+    print(f"{len(sample)} articles")
+    display(checked.round(3))
+""")
+
 # ---------------------------------------------------------------- 2.7 Handover vectors
 md("""
 ## 2.7 Article Vectors for the Comparative Evaluation
@@ -771,7 +806,8 @@ All outputs are saved in `OUT_DIR` on Google Drive:
 | `adapters/<model>/` | LoRA adapters and classification head |
 | `llm_doc_vectors_<model>_{base,ft}.parquet` | article vectors, same format and same articles as the t-SNE map of Part 1 |
 | `predictions_track_<model>.parquet` | theme probabilities of all open-models articles (best fine-tuned model) |
-| `label_check_validation.csv` | manual check of the silver labels |
+| `label_check_validation.csv` | review of the silver labels on a validation sample |
+| `results_checked_labels.csv` | macro-F1 of every method on that sample, silver vs checked labels |
 | `figures/` | visualisations |
 """)
 
