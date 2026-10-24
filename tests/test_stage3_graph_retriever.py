@@ -76,3 +76,43 @@ def test_explicit_unknown_entity_id_is_rejected() -> None:
         assert "Unknown entity_ids" in str(exc)
     else:
         raise AssertionError("Expected unknown entity ID to be rejected")
+
+
+def test_min_support_filters_and_ranks_passages() -> None:
+    base = retriever()
+    assertions = base.assertions.assign(support_score=[0.2, 0.9])
+    supported = GraphEvidenceRetriever(base.nodes, assertions, base.text_units, base.documents)
+    ranked = supported.retrieve("Llama 3", top_k=5)
+    assert [item["relation_id"] for item in ranked["evidence"]] == ["r2", "r1"]
+    filtered = supported.retrieve("Llama 3", top_k=5, min_support=0.5)
+    assert [item["relation_id"] for item in filtered["evidence"]] == ["r2"]
+    assert filtered["evidence"][0]["support_score"] == 0.9
+    unchecked = GraphEvidenceRetriever(base.nodes, base.assertions.assign(support_score=[None, 0.2]), base.text_units,
+                                       base.documents)
+    kept = unchecked.retrieve("Llama 3", top_k=5, min_support=0.5)
+    assert [item["relation_id"] for item in kept["evidence"]] == ["r1"]
+    assert kept["evidence"][0]["support_score"] is None
+
+
+def test_min_support_requires_support_scores() -> None:
+    try:
+        retriever().retrieve("Llama 3", min_support=0.5)
+    except ValueError as exc:
+        assert "support_score" in str(exc)
+    else:
+        raise AssertionError("Expected min_support without support scores to be rejected")
+
+
+def test_background_facts_are_kept_apart_from_evidence() -> None:
+    base = retriever()
+    background = pd.DataFrame(
+        [{"subject_id": "model:llama3", "predicate": "DEVELOPED_BY", "object_id": "org:meta",
+          "knowledge_source": "curated_lexicon"}]
+    )
+    with_background = GraphEvidenceRetriever(base.nodes, base.assertions, base.text_units, base.documents, background)
+    result = with_background.retrieve("Who developed Llama 3?", predicates=["DEVELOPED_BY"])
+    assert result["background"] == [
+        {"subject": {"entity_id": "model:llama3", "name": "Llama 3"}, "predicate": "DEVELOPED_BY",
+         "object": {"entity_id": "org:meta", "name": "Meta"}, "knowledge_source": "curated_lexicon"}
+    ]
+    assert all(item["knowledge_source"] == "article_claim" for item in result["evidence"])
