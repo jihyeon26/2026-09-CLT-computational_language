@@ -1,0 +1,436 @@
+﻿subject_id,predicate,object_id,head,tail,n_distinct_sentences,n_docs,exclusion_reason,only_reason,subject,object,support_max,support_mean,scored_sentences,supported_sentences,support_status
+org:deepseek,developed by,org:nvidia,DeepSeek,NVIDIA,27.0,19.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,NVIDIA,0.9828460812568665,0.28627985124018906,28,8,supported
+org:deepseek,developed by,org:openai,DeepSeek,OpenAI,22.0,22.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,OpenAI,0.997166097164154,0.4942987729393115,22,11,supported
+org:deepseek,developed by,org:company,DeepSeek,company,13.0,12.0,type_invalid;generic_node;conflicts_lexicon_developer,False,DeepSeek,company,0.9901736974716187,0.7680339912095895,13,10,supported
+model:llama,developed by,org:nvidia,Llama,NVIDIA,12.0,11.0,conflicts_lexicon_developer,True,Llama,NVIDIA,0.9861178994178772,0.48650061057317845,12,7,supported
+model:mistral,developed by,org:company,Mistral,company,10.0,7.0,generic_node;conflicts_lexicon_developer,False,Mistral,company,0.9984343647956848,0.849715975637082,10,9,supported
+org:deepseek,developed by,org:microsoft,DeepSeek,Microsoft,8.0,7.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Microsoft,0.8842853903770447,0.16179617987654638,8,1,supported
+org:deepseek,developed by,org:team,DeepSeek,team,8.0,8.0,type_invalid;generic_node;conflicts_lexicon_developer,False,DeepSeek,team,0.9945353269577026,0.9674748703837395,8,8,supported
+model:gpt_oss,developed by,org:nvidia,gpt-oss,NVIDIA,7.0,5.0,conflicts_lexicon_developer,True,gpt-oss,NVIDIA,0.9850265383720398,0.48061901530517,7,4,supported
+model:llama,developed by,org:deepseek,Llama,DeepSeek,7.0,8.0,conflicts_lexicon_developer,True,Llama,DeepSeek,0.9719602465629578,0.22129433353984496,8,2,supported
+model:llama,developed by,org:company,Llama,company,6.0,6.0,generic_node;conflicts_lexicon_developer,False,Llama,company,0.9976071119308472,0.8425535957018534,6,5,supported
+model:qwen,developed by,org:openai,Qwen,OpenAI,5.0,5.0,conflicts_lexicon_developer,True,Qwen,OpenAI,0.9964973330497742,0.5917488938895985,5,3,supported
+org:deepseek,developed by,org:apple,DeepSeek,Apple,5.0,5.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Apple,0.7414747476577759,0.15340772481868042,5,1,supported
+org:deepseek,developed by,org:meta,DeepSeek,Meta,5.0,5.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Meta,0.9876411557197571,0.40285583306103945,5,2,supported
+model:llama,developed by,org:microsoft,Llama,Microsoft,5.0,5.0,conflicts_lexicon_developer,True,Llama,Microsoft,0.06659246236085892,0.01613759701140225,5,0,not_supported
+model:qwen,developed by,org:microsoft,Qwen,Microsoft,4.0,4.0,conflicts_lexicon_developer,True,Qwen,Microsoft,0.9877540469169617,0.4535083250666503,4,2,supported
+model:llama,developed by,org:google,Llama,Google,4.0,4.0,conflicts_lexicon_developer,True,Llama,Google,0.0017696857685223222,0.0009673806926002726,4,0,not_supported
+model:qwen,developed by,org:deepseek,Qwen,DeepSeek,4.0,3.0,conflicts_lexicon_developer,True,Qwen,DeepSeek,0.9819308519363403,0.47845486526057357,4,2,supported
+model:mistral,developed by,org:nvidia,Mistral,NVIDIA,3.0,3.0,conflicts_lexicon_developer,True,Mistral,NVIDIA,0.01985250785946846,0.009782707939545313,3,0,not_supported
+org:deepseek,developed by,org:alibaba,DeepSeek,Alibaba,3.0,3.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Alibaba,0.9963500499725342,0.9902996023495992,3,3,supported
+org:deepseek,developed by,person:developer,DeepSeek,developer,3.0,3.0,type_invalid;generic_node;conflicts_lexicon_developer,False,DeepSeek,developer,0.9939159750938416,0.9512473940849304,3,3,supported
+model:gemma,developed by,org:nvidia,Gemma,NVIDIA,3.0,2.0,conflicts_lexicon_developer,True,Gemma,NVIDIA,0.9877457022666931,0.35352787530670565,3,1,supported
+org:deepseek,developed by,person:flo_crivello,DeepSeek,Flo Crivello,3.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Flo Crivello,0.0013150429585948586,0.0011341166294490297,3,0,not_supported
+model:glm,developed by,org:company,GLM,company,3.0,2.0,generic_node;conflicts_lexicon_developer,False,GLM,company,0.9978947043418884,0.9840348164240519,3,3,supported
+model:nemotron,developed by,org:crowdstrike,Nemotron,CrowdStrike,3.0,2.0,conflicts_lexicon_developer,True,Nemotron,CrowdStrike,0.016248319298028946,0.009506898776938518,3,0,not_supported
+model:qwen,developed by,org:team,Qwen,team,3.0,3.0,generic_node;conflicts_lexicon_developer,False,Qwen,team,0.9895361661911011,0.9129788279533386,3,3,supported
+model:llama,developed by,org:openai,Llama,OpenAI,3.0,3.0,conflicts_lexicon_developer,True,Llama,OpenAI,0.009554610587656498,0.004581305877460788,3,0,not_supported
+org:deepseek,developed by,org:google,DeepSeek,Google,3.0,3.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Google,0.8584864735603333,0.2893518090325718,3,1,supported
+model:qwen,developed by,person:developers,Qwen,developers,3.0,3.0,generic_node;conflicts_lexicon_developer,False,Qwen,developers,0.9988419413566589,0.9957801500956217,3,3,supported
+model:qwen,developed by,person:davidau,Qwen,DavidAU,3.0,1.0,conflicts_lexicon_developer,True,Qwen,DavidAU,0.9949387311935425,0.69329967101415,3,2,supported
+model:llama,developed by,model:mistral,Llama,Mistral,3.0,3.0,type_invalid;conflicts_lexicon_developer,False,Llama,Mistral,0.8082034587860107,0.27101065893657506,3,1,supported
+model:qwen,developed by,org:nvidia,Qwen,NVIDIA,2.0,2.0,conflicts_lexicon_developer,True,Qwen,NVIDIA,0.006709364242851734,0.004937750869430602,2,0,not_supported
+model:qwen,developed by,person:authors,Qwen,authors,2.0,2.0,generic_node;conflicts_lexicon_developer,False,Qwen,authors,0.9596304893493652,0.6132847517728806,2,1,supported
+org:deepseek,developed by,org:high_flyer_2,DeepSeek,High-Flyer,2.0,2.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,High-Flyer,0.9956977367401123,0.9908290505409241,2,2,supported
+model:hermes,developed by,org:nvidia,Hermes,NVIDIA,2.0,2.0,conflicts_lexicon_developer,True,Hermes,NVIDIA,0.004941323772072792,0.0030537695856764913,2,0,not_supported
+model:qwen,developed by,org:meta,Qwen,Meta,2.0,2.0,conflicts_lexicon_developer,True,Qwen,Meta,0.9881630539894104,0.4944272157154046,2,1,supported
+org:deepseek,developed by,org:enkrypt_ai,DeepSeek,Enkrypt AI,2.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Enkrypt AI,0.9649130702018738,0.5181858688592911,2,1,supported
+model:kimi,developed by,model:glm,Kimi,GLM,2.0,2.0,type_invalid;conflicts_lexicon_developer,False,Kimi,GLM,0.001165095716714859,0.0009376217785757035,2,0,not_supported
+org:deepseek,developed by,org:perplexity,DeepSeek,Perplexity,2.0,2.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Perplexity,0.09971243888139725,0.05008784611709416,2,0,not_supported
+org:deepseek,developed by,org:high_flyer_capital_management,DeepSeek,High-Flyer Capital Management,2.0,2.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,High-Flyer Capital Management,0.9970439076423645,0.9408040046691895,2,2,supported
+model:llama,developed by,org:truefoundry,Llama,TrueFoundry,2.0,2.0,conflicts_lexicon_developer,True,Llama,TrueFoundry,0.012311292812228203,0.008955368073657155,2,0,not_supported
+model:gpt_oss,developed by,org:company,gpt-oss,company,2.0,2.0,generic_node;conflicts_lexicon_developer,False,gpt-oss,company,0.8954975008964539,0.6073304712772369,2,1,supported
+org:deepseek,developed by,org:multiverse_computing,DeepSeek,Multiverse Computing,2.0,2.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Multiverse Computing,0.9971864819526672,0.9960954785346985,2,2,supported
+org:deepseek,developed by,org:coreweave,DeepSeek,CoreWeave,2.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,CoreWeave,0.9859878420829773,0.5114384442567825,2,1,supported
+model:stable_diffusion,developed by,org:amd,Stable Diffusion / StableLM,AMD,2.0,1.0,conflicts_lexicon_developer,True,Stable Diffusion / StableLM,AMD,0.952987551689148,0.4793540502432734,2,1,supported
+model:nemotron,developed by,org:vl,Nemotron,VL,2.0,1.0,generic_node;conflicts_lexicon_developer;reverse_duplicate,False,Nemotron,VL,0.03684072941541672,0.021964952815324068,2,0,not_supported
+model:flux,developed by,org:nvidia,FLUX,NVIDIA,2.0,2.0,conflicts_lexicon_developer,True,FLUX,NVIDIA,0.2807982563972473,0.26629798114299774,2,0,not_supported
+model:flux,developed by,org:lab,FLUX,lab,2.0,1.0,generic_node;conflicts_lexicon_developer,False,FLUX,lab,0.9892136454582214,0.9877008199691772,2,2,supported
+model:stable_diffusion,developed by,org:getty,Stable Diffusion / StableLM,Getty,2.0,2.0,conflicts_lexicon_developer,True,Stable Diffusion / StableLM,Getty,0.001402919297106564,0.0009553912677802145,2,0,not_supported
+model:flux,developed by,org:company,FLUX,company,2.0,2.0,generic_node;conflicts_lexicon_developer,False,FLUX,company,0.9718038439750671,0.9419674873352051,2,2,supported
+model:llama,developed by,org:team,Llama,team,2.0,2.0,generic_node;conflicts_lexicon_developer,False,Llama,team,0.9663804173469543,0.9079285264015198,2,2,supported
+model:gemma,developed by,org:company,Gemma,company,2.0,2.0,generic_node;conflicts_lexicon_developer,False,Gemma,company,0.9887081384658813,0.9875293076038361,2,2,supported
+org:deepseek,developed by,person:xeophon,DeepSeek,Xeophon,2.0,2.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Xeophon,0.021765580400824547,0.01703136833384633,2,0,not_supported
+model:llama,developed by,org:msl,Llama,MSL,2.0,1.0,conflicts_lexicon_developer,True,Llama,MSL,0.9956921935081482,0.5061725405976176,2,1,supported
+model:falcon,developed by,org:nvidia,Falcon,NVIDIA,2.0,1.0,conflicts_lexicon_developer,True,Falcon,NVIDIA,0.03722701594233513,0.02858768869191408,2,0,not_supported
+model:gemma,developed by,org:microsoft,Gemma,Microsoft,2.0,2.0,conflicts_lexicon_developer,True,Gemma,Microsoft,0.005573157221078873,0.0035070011508651078,2,0,not_supported
+model:stable_diffusion,developed by,org:nvidia,Stable Diffusion / StableLM,NVIDIA,2.0,2.0,conflicts_lexicon_developer,True,Stable Diffusion / StableLM,NVIDIA,0.9778153896331787,0.492330166278407,2,1,supported
+model:stable_diffusion,developed by,org:openai,Stable Diffusion / StableLM,OpenAI,2.0,2.0,conflicts_lexicon_developer,True,Stable Diffusion / StableLM,OpenAI,0.09042410552501678,0.046241309493780136,2,0,not_supported
+org:deepseek,developed by,org:anthropic,DeepSeek,Anthropic,2.0,2.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Anthropic,0.9951321482658386,0.986760824918747,2,2,supported
+org:deepseek,developed by,org:baidu,DeepSeek,Baidu,2.0,2.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Baidu,0.015956224873661995,0.01147252507507801,2,0,not_supported
+model:nemotron,developed by,org:company,Nemotron,company,2.0,2.0,generic_node;conflicts_lexicon_developer,False,Nemotron,company,0.9951230883598328,0.9766024649143219,2,2,supported
+model:gemma,developed by,org:wild_dolphin_project,Gemma,Wild Dolphin Project,2.0,1.0,conflicts_lexicon_developer,True,Gemma,Wild Dolphin Project,0.9948107004165649,0.9902234077453613,2,2,supported
+org:deepseek,developed by,org:bytedance,DeepSeek,ByteDance,2.0,2.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,ByteDance,0.9313494563102722,0.4693371031899005,2,1,supported
+model:olmo_2,developed by,org:organization,OLMo / Molmo / Tülu,organization,2.0,3.0,generic_node;conflicts_lexicon_developer,False,OLMo / Molmo / Tülu,organization,0.934485912322998,0.921308716138204,3,3,supported
+org:deepseek,developed by,technology:hugging_face,DeepSeek,Hugging Face,2.0,2.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Hugging Face,0.7450724840164185,0.4877442941069603,2,1,supported
+model:stable_diffusion,developed by,org:runway_ml,Stable Diffusion / StableLM,Runway ML,1.0,1.0,conflicts_lexicon_developer,True,Stable Diffusion / StableLM,Runway ML,0.045325156301259995,0.045325156301259995,1,0,not_supported
+model:qwen,developed by,platform:gpt_proto,Qwen,GPT Proto,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,Qwen,GPT Proto,0.9960429668426514,0.9960429668426514,1,1,supported
+model:stable_diffusion,developed by,org:lmu_munich,Stable Diffusion / StableLM,LMU Munich,1.0,1.0,conflicts_lexicon_developer,True,Stable Diffusion / StableLM,LMU Munich,0.18519464135169983,0.18519464135169983,1,0,not_supported
+model:qwen,developed by,platform:chat,Qwen,chat,1.0,1.0,type_invalid;generic_node;conflicts_lexicon_developer,False,Qwen,chat,0.0031983095686882734,0.0031983095686882734,6,0,not_supported
+model:stable_diffusion,developed by,org:stability_ai_team,Stable Diffusion / StableLM,Stability AI team,1.0,1.0,conflicts_lexicon_developer,True,Stable Diffusion / StableLM,Stability AI team,0.9862568974494934,0.9862568974494934,1,1,supported
+model:qwen,developed by,person:yujian_qin,Qwen,Yujian Qin,1.0,1.0,conflicts_lexicon_developer,True,Qwen,Yujian Qin,0.01620778813958168,0.01620778813958168,1,0,not_supported
+model:qwen,developed by,person:sid_sheth,Qwen,Sid Sheth,1.0,1.0,conflicts_lexicon_developer,True,Qwen,Sid Sheth,0.006388548761606216,0.006388548761606216,1,0,not_supported
+model:stable_diffusion,developed by,org:inception_labs,Stable Diffusion / StableLM,Inception Labs,1.0,1.0,conflicts_lexicon_developer,True,Stable Diffusion / StableLM,Inception Labs,0.004052767995744944,0.004052767995744944,1,0,not_supported
+model:stable_diffusion,developed by,org:google,Stable Diffusion / StableLM,Google,1.0,1.0,conflicts_lexicon_developer,True,Stable Diffusion / StableLM,Google,0.9857271313667297,0.9857271313667297,1,1,supported
+model:qwen,developed by,product:runpod,Qwen,Runpod,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,Qwen,Runpod,0.0032319463789463043,0.0032319463789463043,1,0,not_supported
+model:stable_diffusion,developed by,org:dify,Stable Diffusion / StableLM,Dify,1.0,1.0,conflicts_lexicon_developer,True,Stable Diffusion / StableLM,Dify,0.04663771018385887,0.04663771018385887,1,0,not_supported
+model:stable_diffusion,developed by,org:compvis,Stable Diffusion / StableLM,CompVis,1.0,1.0,conflicts_lexicon_developer,True,Stable Diffusion / StableLM,CompVis,0.25042250752449036,0.25042250752449036,1,0,not_supported
+model:stable_diffusion,developed by,org:carnegie_mellon_university,Stable Diffusion / StableLM,Carnegie Mellon University,1.0,1.0,conflicts_lexicon_developer,True,Stable Diffusion / StableLM,Carnegie Mellon University,0.009559850208461285,0.009559850208461285,1,0,not_supported
+model:qwen,developed by,technology:ai,Qwen,AI,1.0,1.0,type_invalid;generic_node;conflicts_lexicon_developer;reverse_duplicate,False,Qwen,AI,0.006487386766821146,0.006487386766821146,1,0,not_supported
+model:stable_diffusion,developed by,org:bytedance,Stable Diffusion / StableLM,ByteDance,1.0,1.0,conflicts_lexicon_developer,True,Stable Diffusion / StableLM,ByteDance,0.0010441485792398453,0.0010441485792398453,1,0,not_supported
+model:stable_diffusion,developed by,org:bfl,Stable Diffusion / StableLM,BFL,1.0,1.0,conflicts_lexicon_developer,True,Stable Diffusion / StableLM,BFL,0.9984812140464783,0.9984812140464783,1,1,supported
+model:smollm,developed by,org:human2humanoid,SmolLM,Human2Humanoid,1.0,1.0,conflicts_lexicon_developer,True,SmolLM,Human2Humanoid,0.0013421570183709264,0.0013421570183709264,1,0,not_supported
+model:smollm,developed by,person:loubna,SmolLM,Loubna,1.0,1.0,conflicts_lexicon_developer,True,SmolLM,Loubna,0.9974802136421204,0.9974802136421204,1,1,supported
+model:stable_diffusion,developed by,model:flux,Stable Diffusion / StableLM,FLUX,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,Stable Diffusion / StableLM,FLUX,0.002403720049187541,0.002403720049187541,1,0,not_supported
+model:stable_diffusion,developed by,model:qwen,Stable Diffusion / StableLM,Qwen,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,Stable Diffusion / StableLM,Qwen,0.2002817690372467,0.2002817690372467,1,0,not_supported
+model:stable_diffusion,developed by,org:automatic1111,Stable Diffusion / StableLM,Automatic1111,1.0,1.0,conflicts_lexicon_developer,True,Stable Diffusion / StableLM,Automatic1111,0.9986925721168518,0.9986925721168518,1,1,supported
+model:bloom,developed by,org:technology_innovation_institute,BLOOM,Technology Innovation Institute (TII),1.0,1.0,conflicts_lexicon_developer,True,BLOOM,Technology Innovation Institute (TII),0.0027258279733359814,0.0027258279733359814,1,0,not_supported
+model:qwen,developed by,org:tsinghua_university,Qwen,Tsinghua University,1.0,1.0,conflicts_lexicon_developer,True,Qwen,Tsinghua University,0.00531687680631876,0.00531687680631876,1,0,not_supported
+model:qwen,developed by,person:paul_couvert,Qwen,Paul Couvert,1.0,1.0,conflicts_lexicon_developer,True,Qwen,Paul Couvert,0.0026844730600714684,0.0026844730600714684,1,0,not_supported
+model:qwen,developed by,person:nicoboss,Qwen,nicoboss,1.0,1.0,generic_node;conflicts_lexicon_developer,False,Qwen,nicoboss,0.9932550191879272,0.9932550191879272,1,1,supported
+model:qwen,announced by,org:nvidia,Qwen,NVIDIA,1.0,1.0,conflicts_lexicon_developer,True,Qwen,NVIDIA,0.8922443389892578,0.8922443389892578,1,1,supported
+model:phi,developed by,technology:hugging_face,Phi,Hugging Face,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,Phi,Hugging Face,0.9791896343231201,0.9791896343231201,1,1,supported
+model:phi,developed by,person:nihar_ranjan_sahoo,Phi,Nihar Ranjan Sahoo,1.0,1.0,conflicts_lexicon_developer,True,Phi,Nihar Ranjan Sahoo,0.00031670619500800967,0.00031670619500800967,1,0,not_supported
+model:phi,developed by,person:monsterapi,Phi,monsterapi,1.0,1.0,generic_node;conflicts_lexicon_developer,False,Phi,monsterapi,0.002282273955643177,0.002282273955643177,1,0,not_supported
+model:phi,developed by,person:marc_hammons,Phi,Marc Hammons,1.0,1.0,conflicts_lexicon_developer,True,Phi,Marc Hammons,0.0002239388704765588,0.0002239388704765588,1,0,not_supported
+model:phi,developed by,person:marah_abdin,Phi,Marah Abdin,1.0,1.0,conflicts_lexicon_developer,True,Phi,Marah Abdin,0.9904012084007263,0.9904012084007263,1,1,supported
+model:phi,developed by,person:authors,Phi,authors,1.0,1.0,generic_node;conflicts_lexicon_developer,False,Phi,authors,0.9833115339279175,0.9833115339279175,1,1,supported
+model:phi,developed by,org:tsinghua_university,Phi,Tsinghua University,1.0,1.0,conflicts_lexicon_developer,True,Phi,Tsinghua University,0.00025043272762559354,0.00025043272762559354,1,0,not_supported
+model:phi,developed by,org:peking_university,Phi,Peking University,1.0,1.0,conflicts_lexicon_developer,True,Phi,Peking University,0.0002915043442044407,0.0002915043442044407,1,0,not_supported
+model:phi,developed by,org:openai,Phi,OpenAI,1.0,1.0,conflicts_lexicon_developer,True,Phi,OpenAI,0.060418661683797836,0.060418661683797836,1,0,not_supported
+model:phi,developed by,org:microsoft_research,Phi,Microsoft Research,1.0,1.0,conflicts_lexicon_developer,True,Phi,Microsoft Research,0.9944180250167847,0.9944180250167847,1,1,supported
+model:phi,developed by,org:meta,Phi,Meta,1.0,1.0,conflicts_lexicon_developer,True,Phi,Meta,0.000772690458688885,0.000772690458688885,1,0,not_supported
+model:phi,developed by,org:google,Phi,Google,1.0,1.0,conflicts_lexicon_developer,True,Phi,Google,0.002522712340578437,0.002522712340578437,1,0,not_supported
+model:phi,developed by,org:databricks,Phi,Databricks,1.0,1.0,conflicts_lexicon_developer,True,Phi,Databricks,0.0025326386094093323,0.0025326386094093323,1,0,not_supported
+model:phi,developed by,org:csg_cto,Phi,CSG CTO,1.0,1.0,conflicts_lexicon_developer,True,Phi,CSG CTO,0.0003039011498913169,0.0003039011498913169,1,0,not_supported
+model:phi,developed by,capability:capacity,Phi,capacity,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,Phi,capacity,0.007669149432331324,0.007669149432331324,1,0,not_supported
+model:olmo_2,developed by,person:ranjay_krishna,OLMo / Molmo / Tülu,Ranjay Krishna,1.0,1.0,conflicts_lexicon_developer,True,OLMo / Molmo / Tülu,Ranjay Krishna,0.11069918423891068,0.11069918423891068,1,0,not_supported
+model:olmo_2,developed by,person:pradeep_dasigi,OLMo / Molmo / Tülu,Pradeep Dasigi,1.0,1.0,conflicts_lexicon_developer,True,OLMo / Molmo / Tülu,Pradeep Dasigi,0.02947067655622959,0.02947067655622959,1,0,not_supported
+model:olmo_2,developed by,person:noah_a_smith,OLMo / Molmo / Tülu,Noah A. Smith,1.0,1.0,conflicts_lexicon_developer,True,OLMo / Molmo / Tülu,Noah A. Smith,0.4241645336151123,0.4241645336151123,1,0,not_supported
+model:olmo_2,developed by,person:jacob_morrison,OLMo / Molmo / Tülu,Jacob Morrison,1.0,1.0,conflicts_lexicon_developer,True,OLMo / Molmo / Tülu,Jacob Morrison,0.9111466407775879,0.9111466407775879,1,1,supported
+model:olmo_2,developed by,person:emma_strubell,OLMo / Molmo / Tülu,Emma Strubell,1.0,1.0,conflicts_lexicon_developer,True,OLMo / Molmo / Tülu,Emma Strubell,0.3045555055141449,0.3045555055141449,1,0,not_supported
+model:qwen,developed by,model:glm,Qwen,GLM,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,Qwen,GLM,0.004108413588255644,0.004108413588255644,1,0,not_supported
+model:qwen,developed by,model:kimi,Qwen,Kimi,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,Qwen,Kimi,0.005530115216970444,0.005530115216970444,1,0,not_supported
+model:qwen,developed by,model:vertex_model_garden,Qwen,vertex-model-garden,1.0,1.0,type_invalid;generic_node;conflicts_lexicon_developer,False,Qwen,vertex-model-garden,0.9731427431106567,0.9731427431106567,1,1,supported
+model:qwen,developed by,org:lightricks,Qwen,Lightricks,1.0,1.0,conflicts_lexicon_developer,True,Qwen,Lightricks,0.0007269410416483879,0.0007269410416483879,1,0,not_supported
+model:qwen,developed by,person:marc_hammons,Qwen,Marc Hammons,1.0,1.0,conflicts_lexicon_developer,True,Qwen,Marc Hammons,0.00023519016394857317,0.00023519016394857317,1,0,not_supported
+model:qwen,developed by,person:lin_junyang,Qwen,Lin Junyang,1.0,1.0,conflicts_lexicon_developer,True,Qwen,Lin Junyang,0.09002751111984253,0.09002751111984253,1,0,not_supported
+model:qwen,developed by,person:junyang_lin,Qwen,Junyang Lin,1.0,1.0,conflicts_lexicon_developer,True,Qwen,Junyang Lin,0.9919101595878601,0.9919101595878601,1,1,supported
+model:qwen,developed by,person:dauner,Qwen,Dauner,1.0,1.0,conflicts_lexicon_developer,True,Qwen,Dauner,0.020735202357172966,0.020735202357172966,1,0,not_supported
+model:qwen,developed by,person:challis88ocarina,Qwen,challis88ocarina,1.0,1.0,conflicts_lexicon_developer,True,Qwen,challis88ocarina,0.01878477819263935,0.01878477819263935,1,0,not_supported
+model:qwen,developed by,org:truefoundry,Qwen,TrueFoundry,1.0,1.0,conflicts_lexicon_developer,True,Qwen,TrueFoundry,0.03197091817855835,0.03197091817855835,1,0,not_supported
+model:qwen,developed by,org:peking_university,Qwen,Peking University,1.0,1.0,conflicts_lexicon_developer,True,Qwen,Peking University,0.0025446361396461725,0.0025446361396461725,1,0,not_supported
+model:qwen,developed by,org:op,Qwen,OP,1.0,1.0,conflicts_lexicon_developer,True,Qwen,OP,0.020040666684508324,0.020040666684508324,1,0,not_supported
+model:qwen,developed by,org:moonshot_ai,Qwen,MoonShot AI,1.0,1.0,conflicts_lexicon_developer,True,Qwen,MoonShot AI,0.676079511642456,0.676079511642456,1,1,supported
+model:qwen,developed by,org:groq,Qwen,Groq,1.0,1.0,conflicts_lexicon_developer,True,Qwen,Groq,0.9914135932922363,0.9914135932922363,1,1,supported
+model:qwen,developed by,org:ai2,Qwen,Ai2,1.0,1.0,conflicts_lexicon_developer,True,Qwen,Ai2,0.0015184124931693077,0.0015184124931693077,1,0,not_supported
+model:qwen,developed by,org:google,Qwen,Google,1.0,1.0,conflicts_lexicon_developer,True,Qwen,Google,0.0004506547120399773,0.0004506547120399773,1,0,not_supported
+model:qwen,developed by,org:geogpt,Qwen,GeoGPT,1.0,1.0,conflicts_lexicon_developer,True,Qwen,GeoGPT,0.4983766973018646,0.4983766973018646,1,0,not_supported
+model:qwen,developed by,org:eyelbee,Qwen,Eyelbee,1.0,1.0,conflicts_lexicon_developer,True,Qwen,Eyelbee,0.004805318079888821,0.004805318079888821,1,0,not_supported
+model:qwen,developed by,org:exo_labs,Qwen,Exo Labs,1.0,1.0,conflicts_lexicon_developer,True,Qwen,Exo Labs,0.007973006926476955,0.007973006926476955,1,0,not_supported
+model:qwen,developed by,org:company,Qwen,company,1.0,1.0,generic_node;conflicts_lexicon_developer,False,Qwen,company,0.9841935038566589,0.9841935038566589,1,1,supported
+model:qwen,developed by,org:bytedance,Qwen,ByteDance,1.0,1.0,conflicts_lexicon_developer,True,Qwen,ByteDance,0.03784487396478653,0.03784487396478653,1,0,not_supported
+model:qwen,developed by,org:baidu,Qwen,Baidu,1.0,1.0,conflicts_lexicon_developer,True,Qwen,Baidu,0.001243249629624188,0.001243249629624188,1,0,not_supported
+model:qwen,developed by,org:anthropic,Qwen,Anthropic,1.0,1.0,conflicts_lexicon_developer,True,Qwen,Anthropic,0.003442235989496112,0.003442235989496112,1,0,not_supported
+model:qwen,developed by,org:ant_group,Qwen,Ant Group,1.0,1.0,conflicts_lexicon_developer,True,Qwen,Ant Group,0.003189301351085305,0.003189301351085305,1,0,not_supported
+model:stable_diffusion,developed by,org:technology_innovation_institute,Stable Diffusion / StableLM,Technology Innovation Institute (TII),1.0,1.0,conflicts_lexicon_developer,True,Stable Diffusion / StableLM,Technology Innovation Institute (TII),0.004979288671165705,0.004979288671165705,1,0,not_supported
+org:deepseek,developed by,org:ai_office,DeepSeek,AI Office,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,AI Office,0.9766443371772766,0.9766443371772766,1,1,supported
+model:stable_diffusion,developed by,org:tines,Stable Diffusion / StableLM,Tines,1.0,1.0,conflicts_lexicon_developer,True,Stable Diffusion / StableLM,Tines,0.0013169647427275777,0.0013169647427275777,1,0,not_supported
+model:stable_diffusion,developed by,person:emad_mostaque,Stable Diffusion / StableLM,Emad Mostaque,1.0,1.0,conflicts_lexicon_developer,True,Stable Diffusion / StableLM,Emad Mostaque,0.8309399485588074,0.8309399485588074,1,1,supported
+org:deepseek,developed by,person:researchers,DeepSeek,researchers,1.0,1.0,type_invalid;generic_node;conflicts_lexicon_developer;reverse_duplicate,False,DeepSeek,researchers,0.9849762320518494,0.9849762320518494,1,1,supported
+org:deepseek,developed by,person:nicoboss,DeepSeek,nicoboss,1.0,1.0,type_invalid;generic_node;conflicts_lexicon_developer,False,DeepSeek,nicoboss,0.9968243837356567,0.9968243837356567,1,1,supported
+org:deepseek,developed by,person:mohamed_elgendy,DeepSeek,Mohamed Elgendy,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Mohamed Elgendy,0.00596903171390295,0.00596903171390295,1,0,not_supported
+org:deepseek,developed by,person:mike_milinkovich,DeepSeek,Mike Milinkovich,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Mike Milinkovich,0.0008070400217548013,0.0008070400217548013,1,0,not_supported
+org:deepseek,developed by,person:marc_hammons,DeepSeek,Marc Hammons,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Marc Hammons,0.00027911935467272997,0.00027911935467272997,1,0,not_supported
+org:deepseek,developed by,person:manos_koukoumidis,DeepSeek,Manos Koukoumidis,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Manos Koukoumidis,0.002096789889037609,0.002096789889037609,1,0,not_supported
+org:deepseek,developed by,person:liang_wenfeng,DeepSeek,Liang Wenfeng,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Liang Wenfeng,0.9980564713478088,0.9980564713478088,1,1,supported
+org:deepseek,developed by,person:kai_fu_lee,DeepSeek,Kai-Fu Lee,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Kai-Fu Lee,0.017585359513759613,0.017585359513759613,1,0,not_supported
+org:deepseek,developed by,person:jeff_boudier,DeepSeek,Jeff Boudier,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Jeff Boudier,0.0029915261548012495,0.0029915261548012495,1,0,not_supported
+org:deepseek,developed by,person:huiqian_lai,DeepSeek,Huiqian Lai,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Huiqian Lai,0.002214237116277218,0.002214237116277218,1,0,not_supported
+org:deepseek,developed by,person:fang_cunbao,DeepSeek,Fang Cunbao,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Fang Cunbao,0.11618000268936157,0.11618000268936157,1,0,not_supported
+org:deepseek,developed by,person:enkrypt,DeepSeek,Enkrypt,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Enkrypt,0.00739895086735487,0.00739895086735487,1,0,not_supported
+org:deepseek,developed by,person:elon_musk,DeepSeek,Elon Musk,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Elon Musk,0.0003972757258452475,0.0003972757258452475,1,0,not_supported
+org:deepseek,developed by,person:dhanji_prasanna,DeepSeek,Dhanji Prasanna,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Dhanji Prasanna,0.005052722990512848,0.005052722990512848,1,0,not_supported
+org:deepseek,developed by,person:devvret_rishi,DeepSeek,Devvret Rishi,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Devvret Rishi,0.002939567668363452,0.002939567668363452,1,0,not_supported
+org:deepseek,developed by,person:dario_amodei,DeepSeek,Dario Amodei,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Dario Amodei,0.0011216012062504888,0.0011216012062504888,1,0,not_supported
+org:deepseek,developed by,person:creators,DeepSeek,creators,1.0,1.0,type_invalid;generic_node;conflicts_lexicon_developer,False,DeepSeek,creators,0.9979859590530396,0.9979859590530396,1,1,supported
+org:deepseek,developed by,person:craig_mundie,DeepSeek,Craig Mundie,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Craig Mundie,0.0042375242337584496,0.0042375242337584496,1,0,not_supported
+org:deepseek,developed by,person:clementdelangue,DeepSeek,ClementDelangue,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,ClementDelangue,0.03603043034672737,0.03603043034672737,1,0,not_supported
+org:deepseek,developed by,person:claude_sonnet,DeepSeek,Claude Sonnet,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Claude Sonnet,0.02452213503420353,0.02452213503420353,1,0,not_supported
+org:deepseek,developed by,person:christian_h_cooper,DeepSeek,Christian H. Cooper,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Christian H. Cooper,0.009381921961903572,0.009381921961903572,1,0,not_supported
+org:deepseek,developed by,person:sammi_cen,DeepSeek,Sammi Cen,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Sammi Cen,0.0003275423950981349,0.0003275423950981349,1,0,not_supported
+org:deepseek,developed by,person:shayan,DeepSeek,Shayan,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Shayan,0.9679333567619324,0.9679333567619324,1,1,supported
+org:deepseek,developed by,person:sid_sheth,DeepSeek,Sid Sheth,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Sid Sheth,0.014003009535372257,0.014003009535372257,1,0,not_supported
+org:deepseek,released by,org:perplexity,DeepSeek,Perplexity,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Perplexity,0.9860389232635498,0.9860389232635498,1,1,supported
+product:minimax,developed by,org:stripe,MiniMax,Stripe,1.0,1.0,conflicts_lexicon_developer,True,MiniMax,Stripe,0.049129050225019455,0.049129050225019455,1,0,not_supported
+product:minimax,developed by,org:peking_university,MiniMax,Peking University,1.0,1.0,conflicts_lexicon_developer,True,MiniMax,Peking University,0.0009599518962204456,0.0009599518962204456,1,0,not_supported
+product:minimax,developed by,org:nvidia,MiniMax,NVIDIA,1.0,1.0,conflicts_lexicon_developer,True,MiniMax,NVIDIA,0.005758972372859716,0.005758972372859716,1,0,not_supported
+product:minimax,developed by,org:meta,MiniMax,Meta,1.0,1.0,conflicts_lexicon_developer,True,MiniMax,Meta,0.02979091927409172,0.02979091927409172,1,0,not_supported
+product:minimax,developed by,org:hailuo,MiniMax,Hailuo,1.0,1.0,conflicts_lexicon_developer,True,MiniMax,Hailuo,0.9901571273803711,0.9901571273803711,1,1,supported
+product:minimax,developed by,org:company,MiniMax,company,1.0,1.0,generic_node;conflicts_lexicon_developer,False,MiniMax,company,0.9870898127555847,0.9870898127555847,1,1,supported
+product:minimax,developed by,org:agora,MiniMax,Agora,1.0,1.0,conflicts_lexicon_developer,True,MiniMax,Agora,0.010649532079696655,0.010649532079696655,1,0,not_supported
+org:sarvam,developed by,org:company,Sarvam,company,1.0,1.0,type_invalid;generic_node;conflicts_lexicon_developer,False,Sarvam,company,0.9946574568748474,0.9946574568748474,1,1,supported
+org:deepseek,released by,place:uae,DeepSeek,UAE,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,UAE,0.9659891128540039,0.9659891128540039,1,1,supported
+org:deepseek,developed by,technology:grpo,DeepSeek,GRPO,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,GRPO,0.955248236656189,0.955248236656189,1,1,supported
+org:deepseek,developed by,person:stacy_rasgon,DeepSeek,Stacy Rasgon,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Stacy Rasgon,0.00018370358156971633,0.00018370358156971633,1,0,not_supported
+org:deepseek,developed by,technology:ai,DeepSeek,AI,1.0,1.0,type_invalid;generic_node;conflicts_lexicon_developer;reverse_duplicate,False,DeepSeek,AI,0.02852158062160015,0.02852158062160015,1,0,not_supported
+org:deepseek,developed by,product:llm_d,DeepSeek,llm-d,1.0,1.0,type_invalid;generic_node;conflicts_lexicon_developer,False,DeepSeek,llm-d,0.9895636439323425,0.9895636439323425,1,1,supported
+org:deepseek,developed by,platform:kolena,DeepSeek,Kolena,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Kolena,0.3045220673084259,0.3045220673084259,1,0,not_supported
+org:deepseek,developed by,platform:gpt_proto,DeepSeek,GPT Proto,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,GPT Proto,0.9907618165016174,0.9907618165016174,1,1,supported
+org:deepseek,developed by,person:yihua_zhang,DeepSeek,Yihua Zhang,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Yihua Zhang,0.19014447927474976,0.19014447927474976,1,0,not_supported
+org:deepseek,developed by,person:yann_lecun,DeepSeek,Yann LeCun,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Yann LeCun,0.0008069976465776563,0.0008069976465776563,1,0,not_supported
+org:deepseek,developed by,person:wiz_researchers,DeepSeek,Wiz researchers,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Wiz researchers,0.0008399909129366279,0.0008399909129366279,1,0,not_supported
+org:deepseek,developed by,person:vaibhav_vb_srivastav,DeepSeek,"Vaibhav "" VB "" Srivastav",1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,"Vaibhav "" VB "" Srivastav",0.04765256866812706,0.04765256866812706,1,0,not_supported
+org:deepseek,developed by,person:tuhin_srivastava,DeepSeek,Tuhin Srivastava,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Tuhin Srivastava,0.004513968713581562,0.004513968713581562,1,0,not_supported
+org:deepseek,developed by,person:authors,DeepSeek,authors,1.0,1.0,type_invalid;generic_node;conflicts_lexicon_developer,False,DeepSeek,authors,0.9950404763221741,0.9950404763221741,1,1,supported
+org:deepseek,developed by,person:arnaud_bertrand,DeepSeek,Arnaud Bertrand,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Arnaud Bertrand,0.00013896403834223747,0.00013896403834223747,1,0,not_supported
+org:deepseek,developed by,person:amr_awadallah,DeepSeek,Amr Awadallah,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Amr Awadallah,0.0014617169508710504,0.0014617169508710504,1,0,not_supported
+org:deepseek,developed by,dataset:ddata,DeepSeek,ddata,1.0,1.0,type_invalid;generic_node;conflicts_lexicon_developer,False,DeepSeek,ddata,0.9820820689201355,0.9820820689201355,1,1,supported
+org:deepseek,developed by,org:creu,DeepSeek,creu,1.0,1.0,type_invalid;generic_node;conflicts_lexicon_developer,False,DeepSeek,creu,0.9124081134796143,0.9124081134796143,1,1,supported
+org:deepseek,developed by,org:cohere,DeepSeek,Cohere,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Cohere,0.009005422703921795,0.009005422703921795,1,0,not_supported
+org:deepseek,developed by,org:cerebras_systems,DeepSeek,Cerebras Systems,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Cerebras Systems,0.9902167320251465,0.9902167320251465,1,1,supported
+org:deepseek,developed by,org:cerebras,DeepSeek,Cerebras,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Cerebras,0.8716473579406738,0.8716473579406738,1,1,supported
+org:deepseek,developed by,org:baidu_search,DeepSeek,Baidu Search,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Baidu Search,0.030043765902519226,0.030043765902519226,1,0,not_supported
+org:deepseek,developed by,org:ai_startups,DeepSeek,AI startups,1.0,1.0,type_invalid;generic_node;conflicts_lexicon_developer,False,DeepSeek,AI startups,0.2893921136856079,0.2893921136856079,1,0,not_supported
+model:olmo_2,developed by,org:university_of_washington,OLMo / Molmo / Tülu,University of Washington,1.0,1.0,conflicts_lexicon_developer,True,OLMo / Molmo / Tülu,University of Washington,0.977776288986206,0.977776288986206,1,1,supported
+org:deepseek,developed by,model:nim,DeepSeek,NIM,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,NIM,0.9120255708694458,0.9120255708694458,1,1,supported
+org:deepseek,developed by,model:dr_grpo,DeepSeek,Dr. GRPO,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Dr. GRPO,0.9808976054191589,0.9808976054191589,1,1,supported
+org:deepseek,announced by,org:wiz_research,DeepSeek,Wiz Research,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Wiz Research,0.0006842587608844042,0.0006842587608844042,1,0,not_supported
+org:deepseek,developed by,org:ctgt,DeepSeek,CTGT,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,CTGT,0.0027868663892149925,0.0027868663892149925,1,0,not_supported
+org:deepseek,announced by,org:microsoft,DeepSeek,Microsoft,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Microsoft,0.5371691584587097,0.5371691584587097,1,1,supported
+org:deepseek,announced by,org:bank_of_china,DeepSeek,Bank of China,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Bank of China,0.0024005239829421043,0.0024005239829421043,1,0,not_supported
+model:yi,developed by,product:minimax,Yi,MiniMax,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,Yi,MiniMax,0.0010336011182516813,0.0010336011182516813,1,0,not_supported
+model:yi,developed by,person:tas,Yi,Tas,1.0,1.0,conflicts_lexicon_developer,True,Yi,Tas,0.0026992831844836473,0.0026992831844836473,1,0,not_supported
+model:yi,developed by,org:tsinghua_university,Yi,Tsinghua University,1.0,1.0,conflicts_lexicon_developer,True,Yi,Tsinghua University,0.0027125913184136152,0.0027125913184136152,1,0,not_supported
+model:yi,developed by,org:peking_university,Yi,Peking University,1.0,1.0,conflicts_lexicon_developer,True,Yi,Peking University,0.001956621650606394,0.001956621650606394,1,0,not_supported
+model:yi,developed by,model:glm,Yi,GLM,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,Yi,GLM,0.002057664329186082,0.002057664329186082,1,0,not_supported
+model:wan,developed by,org:team,Wan,team,1.0,1.0,generic_node;conflicts_lexicon_developer,False,Wan,team,0.977521538734436,0.977521538734436,1,1,supported
+model:starcoder,developed by,technology:hugging_face,StarCoder,Hugging Face,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,StarCoder,Hugging Face,0.9514039158821106,0.9514039158821106,1,1,supported
+org:deepseek,developed by,org:csg_cto,DeepSeek,CSG CTO,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,CSG CTO,0.00044821095070801675,0.00044821095070801675,1,0,not_supported
+org:deepseek,developed by,org:cymraeg_ddigon_mawr,DeepSeek,Cymraeg ddigon mawr,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Cymraeg ddigon mawr,0.9638552069664001,0.9638552069664001,1,1,supported
+org:deepseek,developed by,org:xiaomi,DeepSeek,Xiaomi,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Xiaomi,0.6327061653137207,0.6327061653137207,1,1,supported
+org:deepseek,developed by,org:nbis,DeepSeek,NBIS,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,NBIS,0.0937824472784996,0.0937824472784996,1,0,not_supported
+org:deepseek,developed by,org:vercel,DeepSeek,Vercel,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Vercel,0.0002940740087069571,0.0002940740087069571,1,0,not_supported
+org:deepseek,developed by,org:uc_berkeley,DeepSeek,UC Berkeley,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,UC Berkeley,0.11967557668685913,0.11967557668685913,1,0,not_supported
+org:deepseek,developed by,org:ubc,DeepSeek,UBC,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,UBC,0.0005065142759121954,0.0005065142759121954,1,0,not_supported
+org:deepseek,developed by,org:tng_technology_consulting_gmbh,DeepSeek,TNG Technology Consulting GmbH,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,TNG Technology Consulting GmbH,0.9948486089706421,0.9948486089706421,1,1,supported
+org:deepseek,developed by,org:tng,DeepSeek,TNG,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,TNG,0.016630688682198524,0.016630688682198524,1,0,not_supported
+org:deepseek,developed by,org:technology_innovation_institute,DeepSeek,Technology Innovation Institute (TII),1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Technology Innovation Institute (TII),0.003420961322262883,0.003420961322262883,1,0,not_supported
+org:deepseek,developed by,org:stargate_project,DeepSeek,Stargate Project,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Stargate Project,0.0005541307618841529,0.0005541307618841529,1,0,not_supported
+org:deepseek,developed by,org:snowflake,DeepSeek,Snowflake,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Snowflake,0.9819853901863098,0.9819853901863098,1,1,supported
+org:deepseek,developed by,org:semianalysis,DeepSeek,SemiAnalysis,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,SemiAnalysis,0.023718807846307755,0.023718807846307755,1,0,not_supported
+org:deepseek,developed by,org:movitech,DeepSeek,Movitech,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Movitech,0.00623474083840847,0.00623474083840847,1,0,not_supported
+org:deepseek,developed by,org:defnyddiodd,DeepSeek,defnyddiodd,1.0,1.0,type_invalid;generic_node;conflicts_lexicon_developer,False,DeepSeek,defnyddiodd,0.9736729264259338,0.9736729264259338,1,1,supported
+org:deepseek,developed by,org:mit,DeepSeek,MIT,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,MIT,0.9134520888328552,0.9134520888328552,1,1,supported
+org:deepseek,developed by,org:ministry_of_electronics_and_information_technology,DeepSeek,Ministry of Electronics and Information Technology,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Ministry of Electronics and Information Technology,0.005406197626143694,0.005406197626143694,1,0,not_supported
+org:deepseek,developed by,org:meity,DeepSeek,MeitY,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,MeitY,0.00250253826379776,0.00250253826379776,1,0,not_supported
+org:deepseek,developed by,org:massachusetts_institute_of_technology,DeepSeek,Massachusetts Institute of Technology,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Massachusetts Institute of Technology,0.9871347546577454,0.9871347546577454,1,1,supported
+org:deepseek,developed by,org:local_startups,DeepSeek,local startups,1.0,1.0,type_invalid;generic_node;conflicts_lexicon_developer,False,DeepSeek,local startups,0.23918914794921875,0.23918914794921875,1,0,not_supported
+org:deepseek,developed by,org:lenovo,DeepSeek,Lenovo,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Lenovo,0.001565791666507721,0.001565791666507721,1,0,not_supported
+org:deepseek,developed by,org:huawei,DeepSeek,Huawei,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Huawei,0.004552234895527363,0.004552234895527363,1,0,not_supported
+org:deepseek,developed by,org:hiddenlayer,DeepSeek,HiddenLayer,1.0,2.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,HiddenLayer,0.9258360862731934,0.9258360862731934,2,2,supported
+org:deepseek,developed by,org:dell,DeepSeek,Dell,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,DeepSeek,Dell,0.0012195634189993143,0.0012195634189993143,1,0,not_supported
+model:olmo_2,developed by,person:ai2_researchers,OLMo / Molmo / Tülu,Ai2 researchers,1.0,1.0,conflicts_lexicon_developer,True,OLMo / Molmo / Tülu,Ai2 researchers,0.9971433281898499,0.9971433281898499,1,1,supported
+model:nemotron,developed by,org:ytl_ai_labs,Nemotron,YTL AI Labs,1.0,1.0,conflicts_lexicon_developer,True,Nemotron,YTL AI Labs,0.002626000437885523,0.002626000437885523,1,0,not_supported
+model:olmo_2,developed by,org:team,OLMo / Molmo / Tülu,team,1.0,1.0,generic_node;conflicts_lexicon_developer,False,OLMo / Molmo / Tülu,team,0.9499123692512512,0.9499123692512512,1,1,supported
+model:glm,developed by,person:tas,GLM,Tas,1.0,1.0,conflicts_lexicon_developer,True,GLM,Tas,0.0014875999186187983,0.0014875999186187983,1,0,not_supported
+model:gpt_oss,developed by,person:he_authors,gpt-oss,he authors,1.0,1.0,generic_node;conflicts_lexicon_developer,False,gpt-oss,he authors,0.7245033383369446,0.7245033383369446,1,1,supported
+model:gpt_oss,developed by,org:team,gpt-oss,team,1.0,1.0,generic_node;conflicts_lexicon_developer,False,gpt-oss,team,0.9744970202445984,0.9744970202445984,1,1,supported
+model:gpt_oss,developed by,org:prime_intellect,gpt-oss,Prime Intellect,1.0,1.0,conflicts_lexicon_developer,True,gpt-oss,Prime Intellect,0.35141777992248535,0.35141777992248535,1,0,not_supported
+model:gpt_oss,developed by,org:meta,gpt-oss,Meta,1.0,1.0,conflicts_lexicon_developer,True,gpt-oss,Meta,0.0005809435388073325,0.0005809435388073325,1,0,not_supported
+model:gpt_oss,developed by,org:defnyddiodd,gpt-oss,defnyddiodd,1.0,1.0,generic_node;conflicts_lexicon_developer,False,gpt-oss,defnyddiodd,0.9494869709014893,0.9494869709014893,1,1,supported
+model:gpt_oss,developed by,org:cymraeg_ddigon_mawr,gpt-oss,Cymraeg ddigon mawr,1.0,1.0,conflicts_lexicon_developer,True,gpt-oss,Cymraeg ddigon mawr,0.9240695238113403,0.9240695238113403,1,1,supported
+model:gpt_oss,developed by,org:baseten,gpt-oss,Baseten,1.0,1.0,conflicts_lexicon_developer,True,gpt-oss,Baseten,0.007062856107950211,0.007062856107950211,1,0,not_supported
+model:gpt_oss,developed by,model:nim,gpt-oss,NIM,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,gpt-oss,NIM,0.8955482244491577,0.8955482244491577,1,1,supported
+model:glm,developed by,product:minimax,GLM,MiniMax,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,GLM,MiniMax,0.0007910021813586354,0.0007910021813586354,1,0,not_supported
+model:glm,developed by,person:zai,GLM,Zai,1.0,1.0,conflicts_lexicon_developer,True,GLM,Zai,0.9846424460411072,0.9846424460411072,1,1,supported
+model:glm,developed by,person:isaac_gemal,GLM,Isaac Gemal,1.0,1.0,conflicts_lexicon_developer,True,GLM,Isaac Gemal,0.0062905047088861465,0.0062905047088861465,1,0,not_supported
+model:glm,developed by,org:alibaba,GLM,Alibaba,1.0,1.0,conflicts_lexicon_developer,True,GLM,Alibaba,0.002777698915451765,0.002777698915451765,1,0,not_supported
+model:glm,developed by,person:developers,GLM,developers,1.0,1.0,generic_node;conflicts_lexicon_developer,False,GLM,developers,0.9986591339111328,0.9986591339111328,1,1,supported
+model:glm,developed by,org:voratiq,GLM,Voratiq,1.0,1.0,conflicts_lexicon_developer,True,GLM,Voratiq,0.010004673153162003,0.010004673153162003,1,0,not_supported
+model:glm,developed by,org:tsinghua_university,GLM,Tsinghua University,1.0,1.0,conflicts_lexicon_developer,True,GLM,Tsinghua University,0.0015329478774219751,0.0015329478774219751,1,0,not_supported
+model:glm,developed by,org:tesla,GLM,Tesla,1.0,1.0,conflicts_lexicon_developer,True,GLM,Tesla,0.9927895665168762,0.9927895665168762,1,1,supported
+model:glm,developed by,org:team,GLM,team,1.0,1.0,generic_node;conflicts_lexicon_developer,False,GLM,team,0.9584737420082092,0.9584737420082092,1,1,supported
+model:glm,developed by,org:peking_university,GLM,Peking University,1.0,1.0,conflicts_lexicon_developer,True,GLM,Peking University,0.001209183712489903,0.001209183712489903,1,0,not_supported
+model:glm,developed by,org:nvidia,GLM,NVIDIA,1.0,1.0,conflicts_lexicon_developer,True,GLM,NVIDIA,0.005283304490149021,0.005283304490149021,1,0,not_supported
+model:glm,developed by,org:ibm,GLM,IBM,1.0,1.0,conflicts_lexicon_developer,True,GLM,IBM,0.0010246465681120753,0.0010246465681120753,1,0,not_supported
+model:glm,developed by,org:google,GLM,Google,1.0,1.0,conflicts_lexicon_developer,True,GLM,Google,0.9617183208465576,0.9617183208465576,1,1,supported
+model:glm,developed by,org:gemal,GLM,Gemal,1.0,1.0,conflicts_lexicon_developer,True,GLM,Gemal,0.0031776928808540106,0.0031776928808540106,1,0,not_supported
+model:granite,developed by,org:company,Granite,company,1.0,1.0,generic_node;conflicts_lexicon_developer,False,Granite,company,0.9694445729255676,0.9694445729255676,1,1,supported
+model:granite,developed by,org:ibm_consulting,Granite,IBM Consulting,1.0,1.0,conflicts_lexicon_developer,True,Granite,IBM Consulting,0.007674544118344784,0.007674544118344784,1,0,not_supported
+model:granite,developed by,org:nvidia,Granite,NVIDIA,1.0,1.0,conflicts_lexicon_developer,True,Granite,NVIDIA,0.9699580073356628,0.9699580073356628,1,1,supported
+model:granite,developed by,org:red_hat,Granite,Red Hat,1.0,1.0,conflicts_lexicon_developer,True,Granite,Red Hat,0.016551092267036438,0.016551092267036438,1,0,not_supported
+model:kimi,developed by,person:elon_musk,Kimi,Elon Musk,1.0,1.0,conflicts_lexicon_developer,True,Kimi,Elon Musk,0.00013364617188926786,0.00013364617188926786,1,0,not_supported
+model:kimi,developed by,person:developers,Kimi,developers,1.0,1.0,generic_node;conflicts_lexicon_developer;reverse_duplicate,False,Kimi,developers,0.9984423518180847,0.9984423518180847,1,1,supported
+model:kimi,developed by,person:dean_w_ball,Kimi,Dean W. Ball,1.0,1.0,conflicts_lexicon_developer,True,Kimi,Dean W. Ball,0.000556022219825536,0.000556022219825536,1,0,not_supported
+model:kimi,developed by,person:ball,Kimi,Ball,1.0,1.0,conflicts_lexicon_developer,True,Kimi,Ball,0.0004785292549058795,0.0004785292549058795,1,0,not_supported
+model:kimi,developed by,org:tsinghua_university,Kimi,Tsinghua University,1.0,1.0,conflicts_lexicon_developer,True,Kimi,Tsinghua University,0.001999595668166876,0.001999595668166876,1,0,not_supported
+model:kimi,developed by,org:peking_university,Kimi,Peking University,1.0,1.0,conflicts_lexicon_developer,True,Kimi,Peking University,0.0014510874170809984,0.0014510874170809984,1,0,not_supported
+model:kimi,developed by,org:openai,Kimi,OpenAI,1.0,1.0,conflicts_lexicon_developer,True,Kimi,OpenAI,0.006443928927183151,0.006443928927183151,1,0,not_supported
+model:kimi,developed by,org:nvidia,Kimi,NVIDIA,1.0,1.0,conflicts_lexicon_developer,True,Kimi,NVIDIA,0.0021234445739537477,0.0021234445739537477,1,0,not_supported
+model:kimi,developed by,org:minetest,Kimi,Minetest,1.0,1.0,conflicts_lexicon_developer,True,Kimi,Minetest,0.0007471198914572597,0.0007471198914572597,1,0,not_supported
+model:kimi,developed by,org:microsoft,Kimi,Microsoft,1.0,1.0,conflicts_lexicon_developer,True,Kimi,Microsoft,0.007772744633257389,0.007772744633257389,1,0,not_supported
+model:kimi,developed by,org:cursor,Kimi,Cursor,1.0,1.0,conflicts_lexicon_developer,True,Kimi,Cursor,0.0002021940308623016,0.0002021940308623016,1,0,not_supported
+model:kimi,developed by,org:coreweave,Kimi,CoreWeave,1.0,1.0,conflicts_lexicon_developer,True,Kimi,CoreWeave,0.9541722536087036,0.9541722536087036,1,1,supported
+model:kimi,developed by,org:company,Kimi,company,1.0,1.0,generic_node;conflicts_lexicon_developer,False,Kimi,company,0.9801055788993835,0.9801055788993835,1,1,supported
+model:kimi,developed by,model:yi,Kimi,Yi,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,Kimi,Yi,0.0017673824913799763,0.0017673824913799763,1,0,not_supported
+model:kimi,announced by,org:google,Kimi,Google,1.0,1.0,conflicts_lexicon_developer,True,Kimi,Google,0.9973546266555786,0.9973546266555786,1,1,supported
+model:internlm,developed by,person:duan_h,InternLM / InternVL,"Duan, H.",1.0,1.0,conflicts_lexicon_developer,True,InternLM / InternVL,"Duan, H.",0.02357047237455845,0.02357047237455845,1,0,not_supported
+model:hunyuan,developed by,org:nvidia,Hunyuan,NVIDIA,1.0,1.0,conflicts_lexicon_developer,True,Hunyuan,NVIDIA,0.9898741245269775,0.9898741245269775,1,1,supported
+model:hunyuan,developed by,model:qwen,Hunyuan,Qwen,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,Hunyuan,Qwen,0.8127188682556152,0.8127188682556152,1,1,supported
+model:hermes,developed by,org:teknium,Hermes,Teknium,1.0,1.0,conflicts_lexicon_developer,True,Hermes,Teknium,0.9895371198654175,0.9895371198654175,1,1,supported
+model:grok_open,developed by,org:meta,Grok (open releases),Meta,1.0,1.0,conflicts_lexicon_developer,True,Grok (open releases),Meta,0.0008526915335096419,0.0008526915335096419,1,0,not_supported
+model:grok_open,developed by,org:google,Grok (open releases),Google,1.0,1.0,conflicts_lexicon_developer,True,Grok (open releases),Google,0.000813855673186481,0.000813855673186481,1,0,not_supported
+model:glm,developed by,org:dell,GLM,Dell,1.0,1.0,conflicts_lexicon_developer,True,GLM,Dell,0.008239220827817917,0.008239220827817917,1,0,not_supported
+model:glm,developed by,model:llm,GLM,llm,1.0,1.0,type_invalid;generic_node;conflicts_lexicon_developer,False,GLM,llm,0.011360046453773975,0.011360046453773975,1,0,not_supported
+model:olmo_2,developed by,org:google_deepmind,OLMo / Molmo / Tülu,Google DeepMind,1.0,1.0,conflicts_lexicon_developer,True,OLMo / Molmo / Tülu,Google DeepMind,0.00040199613431468606,0.00040199613431468606,1,0,not_supported
+model:flux,developed by,platform:flux,FLUX,Flux,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,FLUX,Flux,0.9980554580688477,0.9980554580688477,1,1,supported
+model:gemma,developed by,org:meta,Gemma,Meta,1.0,1.0,conflicts_lexicon_developer,True,Gemma,Meta,0.0011529698967933655,0.0011529698967933655,1,0,not_supported
+model:gemma,developed by,org:medsiglip_development,Gemma,MedSigLIP development,1.0,1.0,conflicts_lexicon_developer,True,Gemma,MedSigLIP development,0.8017561435699463,0.8017561435699463,1,1,supported
+model:gemma,developed by,org:gemi,Gemma,Gemi,1.0,1.0,conflicts_lexicon_developer,True,Gemma,Gemi,0.07714847475290298,0.07714847475290298,1,0,not_supported
+model:gemma,developed by,org:deepseek,Gemma,DeepSeek,1.0,1.0,conflicts_lexicon_developer,True,Gemma,DeepSeek,0.047857124358415604,0.047857124358415604,1,0,not_supported
+model:gemma,developed by,org:coral_team,Gemma,Coral team,1.0,1.0,conflicts_lexicon_developer,True,Gemma,Coral team,0.9866794943809509,0.9866794943809509,1,1,supported
+model:gemma,developed by,org:alibaba,Gemma,Alibaba,1.0,1.0,conflicts_lexicon_developer,True,Gemma,Alibaba,0.0011614775285124779,0.0011614775285124779,1,0,not_supported
+model:gemma,developed by,model:mistral,Gemma,Mistral,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,Gemma,Mistral,0.16519558429718018,0.16519558429718018,1,0,not_supported
+model:gemma,announced by,platform:i_o,Gemma,I/O,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,Gemma,I/O,0.9977219700813293,0.9977219700813293,1,1,supported
+model:gemma,announced by,person:sundar_pichai,Gemma,Sundar Pichai,1.0,1.0,conflicts_lexicon_developer,True,Gemma,Sundar Pichai,0.9976748824119568,0.9976748824119568,1,1,supported
+model:flux,released by,org:nvidia,FLUX,NVIDIA,1.0,1.0,conflicts_lexicon_developer,True,FLUX,NVIDIA,0.9983108043670654,0.9983108043670654,1,1,supported
+model:flux,developed by,org:lightricks,FLUX,Lightricks,1.0,1.0,conflicts_lexicon_developer,True,FLUX,Lightricks,0.0011430960148572922,0.0011430960148572922,1,0,not_supported
+model:glm,developed by,model:kimi,GLM,Kimi,1.0,1.0,type_invalid;conflicts_lexicon_developer;reverse_duplicate,False,GLM,Kimi,0.018296733498573303,0.018296733498573303,1,0,not_supported
+model:flux,developed by,org:black_forest_lab,FLUX,Black Forest Lab,1.0,1.0,conflicts_lexicon_developer,True,FLUX,Black Forest Lab,0.9965937733650208,0.9965937733650208,1,1,supported
+model:flux,developed by,model:qwen,FLUX,Qwen,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,FLUX,Qwen,0.9831556081771851,0.9831556081771851,1,1,supported
+model:falcon,developed by,place:uae,Falcon,UAE,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,Falcon,UAE,0.9973345994949341,0.9973345994949341,1,1,supported
+model:falcon,developed by,org:truefoundry,Falcon,TrueFoundry,1.0,1.0,conflicts_lexicon_developer,True,Falcon,TrueFoundry,0.0015550116077065468,0.0015550116077065468,1,0,not_supported
+model:falcon,developed by,model:mistral,Falcon,Mistral,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,Falcon,Mistral,0.7087996006011963,0.7087996006011963,1,1,supported
+model:eurollm,announced by,org:europe,EuroLLM / Teuken,Europe,1.0,1.0,conflicts_lexicon_developer,True,EuroLLM / Teuken,Europe,0.9991470575332642,0.9991470575332642,1,1,supported
+model:eleuther,developed by,person:researchers,Pythia / GPT-NeoX,researchers,1.0,1.0,generic_node;conflicts_lexicon_developer,False,Pythia / GPT-NeoX,researchers,0.997817873954773,0.997817873954773,1,1,supported
+model:eleuther,developed by,person:charles_sandison,Pythia / GPT-NeoX,Charles Sandison,1.0,1.0,conflicts_lexicon_developer,True,Pythia / GPT-NeoX,Charles Sandison,0.7609633207321167,0.7609633207321167,1,1,supported
+model:eleuther,developed by,org:sandison,Pythia / GPT-NeoX,Sandison,1.0,1.0,conflicts_lexicon_developer,True,Pythia / GPT-NeoX,Sandison,0.9796739220619202,0.9796739220619202,1,1,supported
+model:cohere_open,developed by,technology:ai,Command R / Aya,AI,1.0,1.0,type_invalid;generic_node;conflicts_lexicon_developer,False,Command R / Aya,AI,0.3665393590927124,0.3665393590927124,1,0,not_supported
+model:gemma,developed by,org:openai,Gemma,OpenAI,1.0,1.0,conflicts_lexicon_developer,True,Gemma,OpenAI,0.9089453220367432,0.9089453220367432,1,1,supported
+model:gemma,developed by,org:qmed_asia,Gemma,Qmed Asia,1.0,1.0,conflicts_lexicon_developer,True,Gemma,Qmed Asia,0.003512616502121091,0.003512616502121091,1,0,not_supported
+model:gemma,developed by,org:red_hat,Gemma,Red Hat,1.0,1.0,conflicts_lexicon_developer,True,Gemma,Red Hat,0.0003001126751769334,0.0003001126751769334,1,0,not_supported
+model:gemma,developed by,org:starcloud_1,Gemma,Starcloud-1,1.0,1.0,conflicts_lexicon_developer,True,Gemma,Starcloud-1,0.9379739761352539,0.9379739761352539,1,1,supported
+model:gemma,released by,org:bloomberg,Gemma,Bloomberg,1.0,1.0,conflicts_lexicon_developer,True,Gemma,Bloomberg,0.0009465684415772557,0.0009465684415772557,1,0,not_supported
+model:gemma,developed by,platform:google_cloud,Gemma,Google Cloud,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,Gemma,Google Cloud,0.9009634852409363,0.9009634852409363,1,1,supported
+model:gemma,developed by,place:lysandre,Gemma,Lysandre,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,Gemma,Lysandre,0.006134399678558111,0.006134399678558111,1,0,not_supported
+model:gemma,developed by,person:thomas_mesnard,Gemma,Thomas Mesnard,1.0,1.0,conflicts_lexicon_developer,True,Gemma,Thomas Mesnard,0.9067397713661194,0.9067397713661194,1,1,supported
+model:gemma,developed by,person:software_developers,Gemma,Software Developers,1.0,2.0,conflicts_lexicon_developer,True,Gemma,Software Developers,0.014896915294229984,0.014896915294229984,2,0,not_supported
+model:gemma,developed by,person:sasha_rush,Gemma,Sasha Rush,1.0,1.0,conflicts_lexicon_developer,True,Gemma,Sasha Rush,0.0017759788315743208,0.0017759788315743208,1,0,not_supported
+model:gemma,developed by,person:raushan,Gemma,Raushan,1.0,1.0,conflicts_lexicon_developer,True,Gemma,Raushan,0.007917307317256927,0.007917307317256927,1,0,not_supported
+model:gemma,developed by,person:monsterapi,Gemma,monsterapi,1.0,1.0,generic_node;conflicts_lexicon_developer,False,Gemma,monsterapi,0.9914519786834717,0.9914519786834717,1,1,supported
+model:gemma,developed by,person:kashif,Gemma,Kashif,1.0,1.0,conflicts_lexicon_developer,True,Gemma,Kashif,0.008589252829551697,0.008589252829551697,1,0,not_supported
+model:gemma,developed by,person:javz,Gemma,@ javz,1.0,1.0,generic_node;conflicts_lexicon_developer,False,Gemma,@ javz,0.003968463279306889,0.003968463279306889,1,0,not_supported
+model:gemma,developed by,person:francistrdev,Gemma,francistrdev,1.0,1.0,generic_node;conflicts_lexicon_developer,False,Gemma,francistrdev,0.0023705351632088423,0.0023705351632088423,1,0,not_supported
+model:gemma,developed by,person:ernest_mwebaze,Gemma,Ernest Mwebaze,1.0,1.0,conflicts_lexicon_developer,True,Gemma,Ernest Mwebaze,0.011319761164486408,0.011319761164486408,1,0,not_supported
+model:gemma,developed by,person:dr_denise_herzing,Gemma,Dr. Denise Herzing,1.0,1.0,conflicts_lexicon_developer,True,Gemma,Dr. Denise Herzing,0.0014255751157179475,0.0014255751157179475,1,0,not_supported
+model:gemma,developed by,person:developers,Gemma,developers,1.0,1.0,generic_node;conflicts_lexicon_developer;reverse_duplicate,False,Gemma,developers,0.9286734461784363,0.9286734461784363,1,1,supported
+model:gemma,developed by,person:denise_herzing,Gemma,Denise Herzing,1.0,1.0,conflicts_lexicon_developer,True,Gemma,Denise Herzing,0.15653741359710693,0.15653741359710693,1,0,not_supported
+model:gemma,developed by,person:authors,Gemma,authors,1.0,1.0,generic_node;conflicts_lexicon_developer,False,Gemma,authors,0.0991390123963356,0.0991390123963356,1,0,not_supported
+model:gemma,developed by,person:amer_sinha,Gemma,Amer Sinha,1.0,1.0,conflicts_lexicon_developer,True,Gemma,Amer Sinha,0.9450331926345825,0.9450331926345825,1,1,supported
+model:gemma,developed by,org:wdp,Gemma,WDP,1.0,1.0,conflicts_lexicon_developer,True,Gemma,WDP,0.0007670219638384879,0.0007670219638384879,1,0,not_supported
+model:gemma,developed by,org:trillium,Gemma,Trillium,1.0,1.0,conflicts_lexicon_developer,True,Gemma,Trillium,0.16848696768283844,0.16848696768283844,1,0,not_supported
+model:gemma,developed by,org:telugu_llm_labs,Gemma,Telugu LLM Labs,1.0,1.0,conflicts_lexicon_developer,True,Gemma,Telugu LLM Labs,0.008041063323616982,0.008041063323616982,1,0,not_supported
+model:gemma,developed by,org:tap_health,Gemma,Tap Health,1.0,1.0,conflicts_lexicon_developer,True,Gemma,Tap Health,0.9883558750152588,0.9883558750152588,1,1,supported
+model:kimi,developed by,person:tas,Kimi,Tas,1.0,1.0,conflicts_lexicon_developer,True,Kimi,Tas,0.0013702085707336664,0.0013702085707336664,1,0,not_supported
+model:kimi,developed by,product:minimax,Kimi,MiniMax,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,Kimi,MiniMax,0.0008822893141768873,0.0008822893141768873,1,0,not_supported
+model:llama,announced by,org:reuters,Llama,Reuters,1.0,1.0,conflicts_lexicon_developer,True,Llama,Reuters,0.9728975892066956,0.9728975892066956,1,1,supported
+model:mistral,developed by,org:sarvam,Mistral,Sarvam,1.0,1.0,conflicts_lexicon_developer,True,Mistral,Sarvam,0.00027252183645032346,0.00027252183645032346,1,0,not_supported
+model:nemotron,developed by,org:ai_singapore,Nemotron,AI Singapore,1.0,1.0,conflicts_lexicon_developer,True,Nemotron,AI Singapore,0.000996148562990129,0.000996148562990129,1,0,not_supported
+model:nemotron,announced by,person:jensen_huang,Nemotron,Jensen Huang,1.0,1.0,conflicts_lexicon_developer,True,Nemotron,Jensen Huang,0.9978703260421753,0.9978703260421753,1,1,supported
+model:nemotron,announced by,org:servicenow,Nemotron,ServiceNow,1.0,1.0,conflicts_lexicon_developer,True,Nemotron,ServiceNow,0.9933235049247742,0.9933235049247742,1,1,supported
+model:mistral,released by,org:google,Mistral,Google,1.0,1.0,conflicts_lexicon_developer,True,Mistral,Google,0.9993532299995422,0.9993532299995422,1,1,supported
+model:mistral,developed by,person:marc_hammons,Mistral,Marc Hammons,1.0,1.0,conflicts_lexicon_developer,True,Mistral,Marc Hammons,0.00022656493820250034,0.00022656493820250034,1,0,not_supported
+model:mistral,developed by,person:developers,Mistral,developers,1.0,1.0,generic_node;conflicts_lexicon_developer;reverse_duplicate,False,Mistral,developers,0.998754620552063,0.998754620552063,1,1,supported
+model:mistral,developed by,person:creators,Mistral,creators,1.0,1.0,generic_node;conflicts_lexicon_developer,False,Mistral,creators,0.9896578192710876,0.9896578192710876,1,1,supported
+model:mistral,developed by,person:arthur_mensch,Mistral,Arthur Mensch,1.0,1.0,conflicts_lexicon_developer,True,Mistral,Arthur Mensch,0.012556509114801884,0.012556509114801884,1,0,not_supported
+model:mistral,developed by,org:truefoundry,Mistral,TrueFoundry,1.0,1.0,conflicts_lexicon_developer,True,Mistral,TrueFoundry,0.02112007886171341,0.02112007886171341,1,0,not_supported
+model:mistral,developed by,org:technology_innovation_institute,Mistral,Technology Innovation Institute (TII),1.0,1.0,conflicts_lexicon_developer,True,Mistral,Technology Innovation Institute (TII),0.9243736863136292,0.9243736863136292,1,1,supported
+model:mistral,developed by,org:microsoft,Mistral,Microsoft,1.0,1.0,conflicts_lexicon_developer,True,Mistral,Microsoft,0.017961353063583374,0.017961353063583374,1,0,not_supported
+model:llama,announced by,person:mattshumer,Llama,mattshumer,1.0,1.0,generic_node;conflicts_lexicon_developer,False,Llama,mattshumer,0.7029389142990112,0.7029389142990112,1,1,supported
+model:mistral,developed by,org:leanstral,Mistral,Leanstral,1.0,1.0,conflicts_lexicon_developer,True,Mistral,Leanstral,0.00027894164668396115,0.00027894164668396115,1,0,not_supported
+model:mistral,developed by,org:ibm,Mistral,IBM,1.0,1.0,conflicts_lexicon_developer,True,Mistral,IBM,0.4894353151321411,0.4894353151321411,1,0,not_supported
+model:mistral,developed by,org:google,Mistral,Google,1.0,1.0,conflicts_lexicon_developer,True,Mistral,Google,0.16179203987121582,0.16179203987121582,1,0,not_supported
+model:mistral,developed by,org:ddn,Mistral,DDN,1.0,1.0,conflicts_lexicon_developer,True,Mistral,DDN,0.009408910758793354,0.009408910758793354,1,0,not_supported
+model:mistral,developed by,org:cole_polytechnique,Mistral,École Polytechnique,1.0,1.0,conflicts_lexicon_developer,True,Mistral,École Polytechnique,0.9895719289779663,0.9895719289779663,1,1,supported
+model:mistral,developed by,org:cohere,Mistral,Cohere,1.0,1.0,conflicts_lexicon_developer,True,Mistral,Cohere,0.004728653468191624,0.004728653468191624,1,0,not_supported
+model:mistral,developed by,org:all_hands_ai,Mistral,All Hands AI,1.0,1.0,conflicts_lexicon_developer,True,Mistral,All Hands AI,0.002608487382531166,0.002608487382531166,1,0,not_supported
+model:mistral,developed by,model:qwen,Mistral,Qwen,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,Mistral,Qwen,0.9796745181083679,0.9796745181083679,1,1,supported
+model:mistral,announced by,org:dell,Mistral,Dell,1.0,1.0,conflicts_lexicon_developer,True,Mistral,Dell,0.998114824295044,0.998114824295044,1,1,supported
+model:llama,released by,org:nous_research,Llama,Nous Research,1.0,1.0,conflicts_lexicon_developer,True,Llama,Nous Research,0.28534889221191406,0.28534889221191406,1,0,not_supported
+model:nemotron,developed by,org:bielik_ai,Nemotron,Bielik.ai,1.0,1.0,conflicts_lexicon_developer,True,Nemotron,Bielik.ai,0.0004698050324805081,0.0004698050324805081,1,0,not_supported
+model:nemotron,developed by,org:carnegie_mellon,Nemotron,Carnegie Mellon,1.0,1.0,conflicts_lexicon_developer,True,Nemotron,Carnegie Mellon,0.008441600948572159,0.008441600948572159,1,0,not_supported
+model:nemotron,developed by,org:google,Nemotron,Google,1.0,1.0,conflicts_lexicon_developer,True,Nemotron,Google,0.00397563586011529,0.00397563586011529,1,0,not_supported
+model:nemotron,developed by,org:ibm,Nemotron,IBM,1.0,1.0,conflicts_lexicon_developer,True,Nemotron,IBM,0.002879189560189843,0.002879189560189843,1,0,not_supported
+model:olmo_2,developed by,org:deepseek,OLMo / Molmo / Tülu,DeepSeek,1.0,1.0,conflicts_lexicon_developer,True,OLMo / Molmo / Tülu,DeepSeek,0.42783689498901367,0.42783689498901367,1,0,not_supported
+model:olmo_2,developed by,org:company,OLMo / Molmo / Tülu,company,1.0,1.0,generic_node;conflicts_lexicon_developer,False,OLMo / Molmo / Tülu,company,0.9863704442977905,0.9863704442977905,1,1,supported
+model:olmo_2,developed by,org:cohere,OLMo / Molmo / Tülu,Cohere,1.0,1.0,conflicts_lexicon_developer,True,OLMo / Molmo / Tülu,Cohere,0.0003902617027051747,0.0003902617027051747,1,0,not_supported
+model:olmo_2,developed by,org:allen_institute_of_ai,OLMo / Molmo / Tülu,Allen Institute of AI,1.0,1.0,conflicts_lexicon_developer,True,OLMo / Molmo / Tülu,Allen Institute of AI,0.9918038845062256,0.9918038845062256,1,1,supported
+model:nemotron,released by,org:openai,Nemotron,OpenAI,1.0,1.0,conflicts_lexicon_developer,True,Nemotron,OpenAI,0.12578529119491577,0.12578529119491577,1,0,not_supported
+model:nemotron,developed by,platform:zoom,Nemotron,Zoom,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,Nemotron,Zoom,0.001217226847074926,0.001217226847074926,1,0,not_supported
+model:nemotron,developed by,platform:microsoft_foundry,Nemotron,Microsoft Foundry,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,Nemotron,Microsoft Foundry,0.008253881707787514,0.008253881707787514,1,0,not_supported
+model:nemotron,developed by,platform:langchain,Nemotron,LangChain,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,Nemotron,LangChain,0.46091341972351074,0.46091341972351074,1,0,not_supported
+model:nemotron,developed by,person:software_developers,Nemotron,Software Developers,1.0,1.0,conflicts_lexicon_developer;reverse_duplicate,False,Nemotron,Software Developers,0.010098956525325775,0.010098956525325775,1,0,not_supported
+model:nemotron,developed by,person:native_researchers,Nemotron,native researchers,1.0,1.0,generic_node;conflicts_lexicon_developer,False,Nemotron,native researchers,0.0003319617244414985,0.0003319617244414985,1,0,not_supported
+model:nemotron,developed by,person:kari_briski,Nemotron,Kari Briski,1.0,1.0,conflicts_lexicon_developer,True,Nemotron,Kari Briski,0.0016608251025900245,0.0016608251025900245,1,0,not_supported
+model:cohere_open,developed by,person:saurabh_dash,Command R / Aya,Saurabh Dash,1.0,1.0,conflicts_lexicon_developer,True,Command R / Aya,Saurabh Dash,0.976088285446167,0.976088285446167,1,1,supported
+model:nemotron,developed by,org:trillion_labs,Nemotron,Trillion Labs,1.0,1.0,conflicts_lexicon_developer,True,Nemotron,Trillion Labs,0.0018734055338427424,0.0018734055338427424,1,0,not_supported
+model:nemotron,developed by,org:softbank,Nemotron,SoftBank,1.0,1.0,conflicts_lexicon_developer,True,Nemotron,SoftBank,0.3235367238521576,0.3235367238521576,1,0,not_supported
+model:nemotron,developed by,org:princeton_university,Nemotron,Princeton University,1.0,1.0,conflicts_lexicon_developer,True,Nemotron,Princeton University,0.027486300095915794,0.027486300095915794,1,0,not_supported
+model:nemotron,developed by,org:nous_research,Nemotron,Nous Research,1.0,1.0,conflicts_lexicon_developer,True,Nemotron,Nous Research,0.6256268620491028,0.6256268620491028,1,1,supported
+model:nemotron,developed by,org:nano_omni,Nemotron,Nano Omni,1.0,1.0,conflicts_lexicon_developer,True,Nemotron,Nano Omni,0.9899229407310486,0.9899229407310486,1,1,supported
+model:nemotron,developed by,org:linagora,Nemotron,LINAGORA,1.0,1.0,conflicts_lexicon_developer,True,Nemotron,LINAGORA,0.0006530179525725543,0.0006530179525725543,1,0,not_supported
+model:nemotron,developed by,org:ippu_senkin,Nemotron,Ippu Senkin,1.0,1.0,conflicts_lexicon_developer,True,Nemotron,Ippu Senkin,0.9660929441452026,0.9660929441452026,1,1,supported
+model:nemotron,developed by,org:institute_of_science_tokyo,Nemotron,Institute of Science Tokyo,1.0,1.0,conflicts_lexicon_developer,True,Nemotron,Institute of Science Tokyo,0.0017120209522545338,0.0017120209522545338,1,0,not_supported
+model:nemotron,developed by,org:innoplexus,Nemotron,Innoplexus,1.0,1.0,conflicts_lexicon_developer,True,Nemotron,Innoplexus,0.04025958850979805,0.04025958850979805,1,0,not_supported
+model:llama,developed by,technology:pytorch,Llama,PyTorch,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,Llama,PyTorch,0.13191737234592438,0.13191737234592438,1,0,not_supported
+model:llama,developed by,product:cerebras_inference,Llama,Cerebras Inference,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,Llama,Cerebras Inference,0.024784516543149948,0.024784516543149948,1,0,not_supported
+model:llama,developed by,person:sir_nick,Llama,Sir Nick,1.0,1.0,conflicts_lexicon_developer,True,Llama,Sir Nick,0.0792512595653534,0.0792512595653534,1,0,not_supported
+model:llama,developed by,org:multiverse_computing,Llama,Multiverse Computing,1.0,1.0,conflicts_lexicon_developer,True,Llama,Multiverse Computing,0.5483081936836243,0.5483081936836243,1,1,supported
+model:llama,developed by,org:meta_s_team,Llama,Meta's team,1.0,1.0,conflicts_lexicon_developer,True,Llama,Meta's team,0.8402546048164368,0.8402546048164368,1,1,supported
+model:llama,developed by,org:licensee,Llama,Licensee,1.0,1.0,conflicts_lexicon_developer,True,Llama,Licensee,0.1520380675792694,0.1520380675792694,1,0,not_supported
+model:llama,developed by,org:intuit,Llama,Intuit,1.0,1.0,conflicts_lexicon_developer,True,Llama,Intuit,0.0030206788796931505,0.0030206788796931505,1,0,not_supported
+model:llama,developed by,org:infosys,Llama,Infosys,1.0,1.0,conflicts_lexicon_developer,True,Llama,Infosys,0.0005937059759162366,0.0005937059759162366,1,0,not_supported
+model:llama,developed by,org:hyperwrite_ai,Llama,Hyperwrite AI,1.0,1.0,conflicts_lexicon_developer,True,Llama,Hyperwrite AI,0.0010659443214535713,0.0010659443214535713,1,0,not_supported
+model:llama,developed by,org:groq,Llama,Groq,1.0,1.0,conflicts_lexicon_developer,True,Llama,Groq,0.9506592750549316,0.9506592750549316,1,1,supported
+model:llama,developed by,org:fpt_software,Llama,FPT Software,1.0,1.0,conflicts_lexicon_developer,True,Llama,FPT Software,0.0011249091476202011,0.0011249091476202011,1,0,not_supported
+model:llama,developed by,org:facebook,Llama,Facebook,1.0,1.0,conflicts_lexicon_developer,True,Llama,Facebook,0.9823195338249207,0.9823195338249207,1,1,supported
+model:llama,developed by,org:exo,Llama,Exo,1.0,1.0,conflicts_lexicon_developer,True,Llama,Exo,0.8710434436798096,0.8710434436798096,1,1,supported
+model:llama,developed by,org:dell_technologies,Llama,Dell Technologies,1.0,1.0,conflicts_lexicon_developer,True,Llama,Dell Technologies,0.0028295882511883974,0.0028295882511883974,1,0,not_supported
+model:llama,developed by,org:databricks,Llama,Databricks,1.0,1.0,conflicts_lexicon_developer,True,Llama,Databricks,0.002900932915508747,0.002900932915508747,1,0,not_supported
+model:llama,developed by,org:cohere,Llama,Cohere,1.0,1.0,conflicts_lexicon_developer,True,Llama,Cohere,0.0021656907629221678,0.0021656907629221678,1,0,not_supported
+model:llama,developed by,org:codelion,Llama,Codelion,1.0,1.0,conflicts_lexicon_developer,True,Llama,Codelion,0.9959565997123718,0.9959565997123718,1,1,supported
+model:llama,developed by,org:cerebras_systems,Llama,Cerebras Systems,1.0,1.0,conflicts_lexicon_developer,True,Llama,Cerebras Systems,0.7955841422080994,0.7955841422080994,1,1,supported
+model:llama,developed by,org:cerebras,Llama,Cerebras,1.0,1.0,conflicts_lexicon_developer,True,Llama,Cerebras,0.6396341919898987,0.6396341919898987,1,1,supported
+model:llama,developed by,org:anthropic,Llama,Anthropic,1.0,1.0,conflicts_lexicon_developer,True,Llama,Anthropic,0.0010721910512074828,0.0010721910512074828,1,0,not_supported
+model:llama,developed by,model:qwen,Llama,Qwen,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,Llama,Qwen,0.8692677617073059,0.8692677617073059,1,1,supported
+model:llama,developed by,model:nemotron,Llama,Nemotron,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,Llama,Nemotron,0.22572480142116547,0.22572480142116547,1,0,not_supported
+model:llama,developed by,model:gpt_4o_2,Llama,GPT-4o,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,Llama,GPT-4o,0.0011212280951440334,0.0011212280951440334,1,0,not_supported
+model:llama,developed by,model:ai21,Llama,AI21,1.0,1.0,type_invalid;conflicts_lexicon_developer,False,Llama,AI21,0.0037753272335976362,0.0037753272335976362,1,0,not_supported
+model:llama,announced by,person:nick_clegg,Llama,Nick Clegg,1.0,1.0,conflicts_lexicon_developer,True,Llama,Nick Clegg,0.9700949788093567,0.9700949788093567,1,1,supported
+model:llama,developed by,org:multiverse,Llama,Multiverse,1.0,1.0,conflicts_lexicon_developer,True,Llama,Multiverse,0.9546202421188354,0.9546202421188354,1,1,supported
+model:llama,developed by,org:nous_research,Llama,Nous Research,1.0,1.0,conflicts_lexicon_developer,True,Llama,Nous Research,0.000935347517952323,0.000935347517952323,1,0,not_supported
+model:llama,developed by,person:sid_sheth,Llama,Sid Sheth,1.0,1.0,conflicts_lexicon_developer,True,Llama,Sid Sheth,0.006458669900894165,0.006458669900894165,1,0,not_supported
+model:llama,developed by,org:othersideai,Llama,OthersideAI,1.0,1.0,conflicts_lexicon_developer,True,Llama,OthersideAI,0.0005868731532245874,0.0005868731532245874,1,0,not_supported
+model:llama,developed by,person:sheshadri_et_al_2,Llama,Sheshadri et al.,1.0,1.0,conflicts_lexicon_developer,True,Llama,Sheshadri et al.,0.85676109790802,0.85676109790802,1,1,supported
+model:llama,developed by,person:nihar_ranjan_sahoo,Llama,Nihar Ranjan Sahoo,1.0,1.0,conflicts_lexicon_developer,True,Llama,Nihar Ranjan Sahoo,0.0011301111662760377,0.0011301111662760377,1,0,not_supported
+model:llama,developed by,person:maziyarpanahi,Llama,MaziyarPanahi,1.0,1.0,conflicts_lexicon_developer,True,Llama,MaziyarPanahi,0.9934919476509094,0.9934919476509094,1,1,supported
+model:llama,developed by,person:matthew_berman,Llama,Matthew Berman,1.0,1.0,conflicts_lexicon_developer,True,Llama,Matthew Berman,0.9662594199180603,0.9662594199180603,1,1,supported
+model:llama,developed by,person:matt_shumer,Llama,Matt Shumer,1.0,1.0,conflicts_lexicon_developer,True,Llama,Matt Shumer,0.000433442706707865,0.000433442706707865,1,0,not_supported
+model:llama,developed by,person:manos_koukoumidis,Llama,Manos Koukoumidis,1.0,1.0,conflicts_lexicon_developer,True,Llama,Manos Koukoumidis,0.0015071640955284238,0.0015071640955284238,1,0,not_supported
+model:llama,developed by,person:dr_karminski,Llama,Dr Karminski,1.0,1.0,conflicts_lexicon_developer,True,Llama,Dr Karminski,0.0007416254375129938,0.0007416254375129938,1,0,not_supported
+model:llama,developed by,person:dhanji_prasanna,Llama,Dhanji Prasanna,1.0,1.0,conflicts_lexicon_developer,True,Llama,Dhanji Prasanna,0.002612665994092822,0.002612665994092822,1,0,not_supported
+model:llama,developed by,person:developers,Llama,developers,1.0,1.0,generic_node;conflicts_lexicon_developer,False,Llama,developers,0.998802900314331,0.998802900314331,1,1,supported
+model:llama,developed by,person:dalai,Llama,Dalai,1.0,1.0,conflicts_lexicon_developer,True,Llama,Dalai,0.012894674204289913,0.012894674204289913,1,0,not_supported
+model:llama,developed by,person:clementdelangue,Llama,ClementDelangue,1.0,1.0,conflicts_lexicon_developer,True,Llama,ClementDelangue,0.003344951895996928,0.003344951895996928,1,0,not_supported
+model:llama,developed by,person:baptiste_rozi_re,Llama,Baptiste Rozière,1.0,1.0,conflicts_lexicon_developer,True,Llama,Baptiste Rozière,0.9586287140846252,0.9586287140846252,1,1,supported
+model:llama,developed by,org:vl,Llama,VL,1.0,1.0,generic_node;conflicts_lexicon_developer,False,Llama,VL,0.7258797287940979,0.7258797287940979,1,1,supported
+model:llama,developed by,org:upstage,Llama,Upstage,1.0,1.0,conflicts_lexicon_developer,True,Llama,Upstage,0.00033316455665044487,0.00033316455665044487,1,0,not_supported
+model:llama,developed by,org:together_ai,Llama,Together AI,1.0,1.0,conflicts_lexicon_developer,True,Llama,Together AI,0.9883706569671631,0.9883706569671631,1,1,supported
+model:llama,developed by,org:technology_innovation_institute,Llama,Technology Innovation Institute (TII),1.0,1.0,conflicts_lexicon_developer,True,Llama,Technology Innovation Institute (TII),0.5146844983100891,0.5146844983100891,1,1,supported
+model:llama,developed by,org:snowflake,Llama,Snowflake,1.0,1.0,conflicts_lexicon_developer,True,Llama,Snowflake,0.0004606867441907525,0.0004606867441907525,1,0,not_supported
+model:llama,developed by,org:scale_ai,Llama,Scale AI,1.0,1.0,conflicts_lexicon_developer,True,Llama,Scale AI,0.4413662552833557,0.4413662552833557,1,0,not_supported
+model:llama,developed by,org:sambanova,Llama,SambaNova,1.0,1.0,conflicts_lexicon_developer,True,Llama,SambaNova,0.8745521306991577,0.8745521306991577,1,1,supported
+model:llama,developed by,org:pipeshift,Llama,Pipeshift,1.0,1.0,conflicts_lexicon_developer,True,Llama,Pipeshift,0.4955604374408722,0.4955604374408722,1,0,not_supported
+model:llama,developed by,org:pineau,Llama,Pineau,1.0,1.0,conflicts_lexicon_developer,True,Llama,Pineau,0.019656002521514893,0.019656002521514893,1,0,not_supported
+product:minimax,developed by,org:tsinghua_university,MiniMax,Tsinghua University,1.0,1.0,conflicts_lexicon_developer,True,MiniMax,Tsinghua University,0.0009370026527903974,0.0009370026527903974,1,0,not_supported

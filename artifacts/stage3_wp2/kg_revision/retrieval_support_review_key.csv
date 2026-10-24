@@ -1,0 +1,66 @@
+item_id,question,relation_id,system
+q001,Where is Nemotron available?,rel_d048a3ec1b9a564c,after
+q002,Who invested in OpenAI?,rel_b2be6a816ae2693b,after
+q003,Who developed Qwen?,rel_5e66b9d1f926233a,after+before
+q004,Who works for Meta?,rel_2a57e19e81bfc433,after
+q005,Which companies compete with DeepSeek?,rel_dd8b94f9254106c3,before
+q006,Under which license is Gemma released?,rel_449e9026d20de5e7,after+before
+q007,Who developed Gemma?,rel_90fa8f2e1bd548e0,before
+q008,What does NVIDIA manufacture?,rel_eb5510acb82e3029,after
+q009,Under which license is Gemma released?,rel_bb063b120adc5c30,after
+q010,Which models does Kimi outperform?,rel_d48466c4da36a3d6,before
+q011,Which models does Kimi outperform?,rel_732b7f892302892a,after
+q012,What does NVIDIA manufacture?,rel_ed6ffaa838916cc8,before
+q013,Who works for Meta?,rel_b89eedd2a2987100,before
+q014,What does NVIDIA manufacture?,rel_306c01bebc37231f,after
+q015,Where is DeepSeek headquartered?,rel_844c8c1b3cdce6ca,before
+q016,Who developed Llama?,rel_69b5833bfa4d48b4,after
+q017,Who developed Qwen?,rel_69468ad93107ce22,after
+q018,Who developed Gemma?,rel_8db0fe34a39bc6ef,after
+q019,Who works for Meta?,rel_d9147305e84ba3ea,before
+q020,What does NVIDIA manufacture?,rel_e6b1becb52fdf9e9,before
+q021,Which companies compete with DeepSeek?,rel_d37129ce497ee6c5,before
+q022,Under which license is Gemma released?,rel_4a108f0d3bb540c3,after+before
+q023,Who developed Qwen?,rel_7abb6883b8c26477,after
+q024,Who founded DeepSeek?,rel_3fcd705a65922ef3,before
+q025,Where is DeepSeek headquartered?,rel_09713410948cd7aa,before
+q026,Who developed Gemma?,rel_160bd234c57af096,after
+q027,Where is Nemotron available?,rel_d66beb3e4a08870b,after
+q028,Who invested in OpenAI?,rel_a30bfad3daf4928f,before
+q029,Who invested in OpenAI?,rel_8f26707d927f35bb,after+before
+q030,Where is Nemotron available?,rel_d09023a837431eff,before
+q031,Which models does Kimi outperform?,rel_7b93b48af5b00287,after+before
+q032,Who works for Meta?,rel_ead7b551f93e0a19,after
+q033,Under which license is Gemma released?,rel_be316cf8b25c227e,before
+q034,Who developed Gemma?,rel_c59c450781a02776,before
+q035,Which companies compete with OpenAI?,rel_9c2f559dbc9934d6,before
+q036,Which companies compete with OpenAI?,rel_dd8b94f9254106c3,before
+q037,Who developed Llama?,rel_bbf0ea3a476d7e17,after
+q038,Who founded DeepSeek?,rel_af76389024dafc45,after+before
+q039,What does NVIDIA manufacture?,rel_9d53e4b78613ba20,after
+q040,Which models does Kimi outperform?,rel_109eb8b430003b4c,after
+q041,Who invested in OpenAI?,rel_5a630b7dc232b2bc,after
+q042,Who founded DeepSeek?,rel_b48efb2fc8b65870,after+before
+q043,Where is DeepSeek headquartered?,rel_9b8740019ca74846,after
+q044,Which models does Kimi outperform?,rel_797be613e8eaeea4,before
+q045,Who works for Meta?,rel_54a6df62bf8d9aa9,after
+q046,Who founded DeepSeek?,rel_4120e2821eb6b40f,after
+q047,Who developed Qwen?,rel_c40b935e50f4f8f8,before
+q048,Who developed Llama?,rel_b739c014fbabf68f,before
+q049,Who developed Qwen?,rel_f3f4739f8c36f605,before
+q050,Where is Nemotron available?,rel_c427c97b91e2dafb,before
+q051,Where is DeepSeek headquartered?,rel_8878c24ec64cfcdc,after
+q052,Where is DeepSeek headquartered?,rel_f473708e0c20d297,before
+q053,Who developed Llama?,rel_bd208693cff26b46,after
+q054,Where is Nemotron available?,rel_c51bb2a7d895cece,after
+q055,What does NVIDIA manufacture?,rel_b8dc6d4df346a682,before
+q056,Who developed Llama?,rel_515c4fe0207a2bfc,before
+q057,Who developed Gemma?,rel_f52b8115f1997430,after
+q058,Who invested in OpenAI?,rel_bb1678c7b5e1d931,before
+q059,Where is DeepSeek headquartered?,rel_d817d3aedb76e4a0,after
+q060,Who developed Llama?,rel_bee64e9b5b943232,before
+q061,Which companies compete with DeepSeek?,rel_b436e9b384f8f135,before
+q062,Who works for Meta?,rel_93e6ad449020738b,before
+q063,Who developed Gemma?,rel_202c558fdb409c1c,before
+q064,Which companies compete with OpenAI?,rel_6771b430c562ce4f,before
+q065,Where is Nemotron available?,rel_63110d043a5f17a0,before

@@ -1,0 +1,7 @@
+﻿labels,relations,precision without check,AUC NLI support,AUC GLiREL score,kept,precision of kept,recall of TRUE,FALSE removed
+findings check · other relations,305,0.81 (0.77-0.85),0.897,0.647,276,0.89 (0.85-0.92),0.992,27 / 57
+findings check · competes with,21,0.86 (0.65-0.95),0.815,0.556,17,0.94 (0.73-0.99),0.889,2 / 3
+random sample · other relations,69,0.71 (0.59-0.80),0.916,0.69,62,0.79 (0.67-0.87),1.0,7 / 20
+random sample · competes with,22,0.27 (0.13-0.48),0.792,0.563,6,0.50 (0.19-0.81),0.5,13 / 16
+findings check · all,326,0.82 (0.77-0.85),0.89,0.642,293,0.89 (0.85-0.92),0.985,29 / 60
+random sample · all,91,0.60 (0.50-0.70),0.88,0.676,68,0.76 (0.65-0.85),0.945,20 / 36
