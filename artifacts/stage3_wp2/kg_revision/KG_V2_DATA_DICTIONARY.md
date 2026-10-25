@@ -1,6 +1,6 @@
 # Knowledge graph v2 (Stage 3 WP2): data dictionary
 
-Built from the submitted Stage 1 knowledge graph by `notebooks/stage3_wp2_kg_revision.ipynb`. Node IDs, relation IDs
+Built from the submitted Stage 1 knowledge graph by the notebook `stage3_wp2_kg_revision.ipynb`. Node IDs, relation IDs
 and text unit IDs are those of Stage 1. All dates are article publication dates.
 
 ## `edges` - one row per triple (all Stage 1 graph edges)
