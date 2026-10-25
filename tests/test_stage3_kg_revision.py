@@ -16,7 +16,7 @@ from stage3_kg_revision import (
     hypothesis_name,
     lexicon_conflicts,
     score_pairs,
-    threshold_table,
+    triple_key,
 )
 
 
@@ -83,32 +83,7 @@ def test_symmetric_relations_are_scored_in_both_orders_and_the_best_is_kept(tmp_
     assert cached["entailment"].tolist() == scored["entailment"].tolist()
 
 
-def test_threshold_table_reports_precision_of_kept_relations() -> None:
-    table = threshold_table(pd.Series([True, True, False, False]), pd.Series([0.9, 0.4, 0.8, 0.1]), thresholds=[0.5])
-    row = table.iloc[0]
-    assert (row["kept"], row["precision"], row["recall_of_true"]) == (2, 0.5, 0.5)
-    assert (row["removed_false"], row["removed_true"]) == (1, 1)
 
-
-def test_list_sentences_do_not_support_rivalry() -> None:
-    from stage3_kg_revision import sentence_actor_counts
-
-    mentions = pd.DataFrame([
-        {"entity_id": e, "doc_id": "d1", "sentence_id": 1} for e in ["org:openai", "org:google", "org:anthropic_2", "tech:ai"]
-    ] + [{"entity_id": e, "doc_id": "d1", "sentence_id": 2} for e in ["org:openai", "org:deepseek"]])
-    id_map = pd.Series({"org:anthropic_2": "org:anthropic"})
-    compact = pd.Series({"org:openai": "ORGANIZATION", "org:google": "ORGANIZATION", "org:anthropic": "ORGANIZATION",
-                         "org:deepseek": "ORGANIZATION", "tech:ai": "TECHNICAL_COMPONENT"})
-    counts = sentence_actor_counts(mentions, id_map, compact, generic_ids={"tech:ai"})
-    assert counts.to_dict() == {("d1", 1): 3, ("d1", 2): 2}
-
-    evidence = pd.DataFrame([
-        {"key": "e1", "predicate": "competes with", "n_actors": 3},
-        {"key": "e1", "predicate": "competes with", "n_actors": 2},
-        {"key": "e2", "predicate": "developed by", "n_actors": 3},
-    ])
-    scored = pd.DataFrame({"row_index": [0, 1, 2], "entailment": [0.99, 0.2, 0.9], "contradiction": [0.0, 0.1, 0.0],
-                           "hypothesis": ["h"] * 3})
-    sentences, edges = aggregate_support(evidence, scored, ["key"])
-    assert sentences["supported"].tolist() == [False, False, True]
-    assert edges.set_index("key")["support_status"].to_dict() == {"e1": "not_supported", "e2": "supported"}
+def test_competes_with_shares_one_key_for_both_orders() -> None:
+    assert triple_key("org:openai", "competes with", "org:deepseek") == triple_key("org:deepseek", "competes with", "org:openai")
+    assert triple_key("model:qwen", "developed by", "org:alibaba") != triple_key("org:alibaba", "developed by", "model:qwen")

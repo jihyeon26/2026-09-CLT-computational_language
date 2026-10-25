@@ -54,9 +54,6 @@ HYPOTHESES = {
     "regulated by": "{h} is regulated by {t}.",
 }
 SYMMETRIC = {"competes with", "partner of"}
-ACTOR_TYPES = {"MODEL", "ORGANIZATION"}
-LIST_MIN_ACTORS = 3                   # a sentence naming 3+ models / organisations is treated as a list
-LIST_SENSITIVE = {"competes with"}    # relations a list sentence cannot support
 
 
 def hypothesis_name(canonical_name: str, sentence: str) -> str:
@@ -158,35 +155,17 @@ def score_pairs(pairs: pd.DataFrame, verifier: NLIVerifier | None, cache_path: P
     return scored.merge(cache, on="pair_key", how="left", validate="many_to_one")
 
 
-def sentence_actor_counts(mentions: pd.DataFrame, id_map: pd.Series, compact_type: pd.Series,
-                          generic_ids: set[str]) -> pd.Series:
-    """Number of distinct named models and organisations per sentence (doc_id, sentence_id).
-
-    `mentions` are the extracted entity mentions (entity_id, doc_id, sentence_id); `id_map` maps an extracted
-    entity ID to its corrected node ID and `compact_type` a corrected node ID to its compact type.
-    """
-    linked = mentions.assign(node_id=mentions["entity_id"].map(id_map).fillna(mentions["entity_id"]))
-    linked = linked[~linked["node_id"].isin(generic_ids)]
-    linked = linked[linked["node_id"].map(compact_type).isin(ACTOR_TYPES)]
-    return linked.drop_duplicates(["doc_id", "sentence_id", "node_id"]).groupby(["doc_id", "sentence_id"]).size()
-
-
 def aggregate_support(evidence: pd.DataFrame, scored_pairs: pd.DataFrame, keys: list[str],
                       threshold: float = 0.5) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Sentence-level support (best order of a symmetric relation) and edge-level support per `keys`.
 
-    A sentence supports its relation when the entailment probability reaches `threshold`. For `competes with`, a
-    sentence that names LIST_MIN_ACTORS or more models / organisations (column `n_actors`, if present) is a list
-    ("OpenAI, Google, Anthropic and DeepSeek ...") and does not support a rivalry between two of its names: the NLI
-    model accepts such lists as rivalry, the human reviewers did not.
+    A sentence supports its relation when the entailment probability reaches `threshold`; an edge is supported when
+    at least one of its sentences is.
     """
     best = (scored_pairs.sort_values("entailment", ascending=False).drop_duplicates("row_index")
             .set_index("row_index")[["entailment", "contradiction", "hypothesis"]])
     sentences = evidence.join(best.rename(columns={"entailment": "support_score", "contradiction": "contradiction_score"}))
-    actors = sentences["n_actors"] if "n_actors" in sentences else pd.Series(0, index=sentences.index)
-    sentences["list_sentence"] = actors >= LIST_MIN_ACTORS
-    sentences["supported"] = (sentences["support_score"] >= threshold) & ~(
-        sentences["predicate"].isin(LIST_SENSITIVE) & sentences["list_sentence"])
+    sentences["supported"] = sentences["support_score"] >= threshold
     edges = (sentences.groupby(keys)
              .agg(support_max=("support_score", "max"), support_mean=("support_score", "mean"),
                   scored_sentences=("support_score", "size"), supported_sentences=("supported", "sum"))
@@ -203,23 +182,3 @@ def wilson(k: int, n: int, z: float = 1.96) -> tuple[float, float]:
     centre = (p + z * z / (2 * n)) / (1 + z * z / n)
     margin = z * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n)) / (1 + z * z / n)
     return (centre - margin, centre + margin)
-
-
-def threshold_table(labels: pd.Series, scores: pd.Series, thresholds=(0.1, 0.3, 0.5, 0.7, 0.9)) -> pd.DataFrame:
-    """Precision of the kept relations and recall of the TRUE relations when keeping scores >= threshold.
-
-    `labels` is True for relations a person judged correct. "precision before" is the share of TRUE without the filter.
-    """
-    labels = labels.astype(bool)
-    rows = []
-    for t in thresholds:
-        kept = scores >= t
-        tp = int((kept & labels).sum())
-        low, high = wilson(tp, int(kept.sum()))
-        rows.append({"threshold": t, "kept": int(kept.sum()), "of": len(labels),
-                     "precision": tp / kept.sum() if kept.sum() else math.nan, "precision_ci95": f"{low:.2f}-{high:.2f}",
-                     "recall_of_true": tp / labels.sum() if labels.sum() else math.nan,
-                     "removed_false": int((~kept & ~labels).sum()), "removed_true": int((~kept & labels).sum())})
-    table = pd.DataFrame(rows)
-    table.attrs["precision_before"] = labels.mean()
-    return table

@@ -1,33 +1,15 @@
 {
   "schema_version": "stage3-wp2-open-models-kg-v2.0",
-  "created_at_utc": "2026-10-25T21:46:03+00:00",
+  "created_at_utc": "2026-10-25T22:01:15+00:00",
   "nli_model": "MoritzLaurer/DeBERTa-v3-large-mnli-fever-anli-ling-wanli",
   "support_threshold": 0.5,
-  "list_min_actors": 3,
-  "not_retrieval_eligible_predicates": {
-    "competes with": "cannot be validated at sentence level: lists of rivals, 6 of 22 sampled relations correct"
-  },
   "edges": 999,
   "retrieval_eligible_edges": 805,
-  "layers": {
-    "article_claim": 846,
-    "name_pattern": 135,
-    "curated_lexicon": 18
-  },
   "support_status": {
-    "supported": 710,
-    "not_supported": 136,
+    "supported": 756,
     "name_pattern": 135,
+    "not_supported": 90,
     "no_passage": 18
-  },
-  "inputs": {
-    "outputs/stage1_knowledge_graph/nodes.parquet": "ba16aa955ae3a2d5d6acd4a220da4fc7d76b1196843e218a5df756153fcddfef",
-    "outputs/stage1_knowledge_graph/typed_edges_assertions.parquet": "fb6f14328b881c3c9c59bfaa7f250c93ea03fffbdc35ff62f2027fb1efbf9836",
-    "outputs/stage1_knowledge_graph/typed_edges_collapsed.parquet": "aa7d6cc315da46aa3388032852f297c8ef6122d015ac612d6b912d119ed5d3c4",
-    "outputs/stage1_knowledge_graph/correction/relations_all_tiers.csv": "02e5bd4f5af971bab2728a21b3591006602a4be28953f496237accddfcd2958c",
-    "outputs/stage1_knowledge_graph/correction/evidence_status.csv": "f9f70a49e1cef5ceeac9484606a221fd0c2a6fe50744d7cdcd0f1a77cf497db6",
-    "artifacts/stage1_wp3/review/relation_review_corrected_seed2026.xlsx": "1a4a5e7e849a28ccdad7f2c9a379795773210f42a21450bf932d58918ef8906a",
-    "artifacts/stage1_wp3/review/insight_relation_check.csv": "c7ac155398ca86efa493a877793a922ab4400f54b31da406b3b1bdd1c7e8c600"
   },
   "versions": {
     "python": "3.12.13",

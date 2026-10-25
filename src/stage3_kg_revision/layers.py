@@ -4,13 +4,14 @@ from __future__ import annotations
 
 import pandas as pd
 
+from .inputs import TRIPLE
+
 # extraction_method of an assertion -> where the knowledge comes from
 KNOWLEDGE_SOURCE = {
     "glirel": "article_claim",          # relation stated in an article sentence (GLiREL)
     "model_name": "name_pattern",       # model name with a size, e.g. "Qwen3-8B" -> member of family Qwen
     "wp1_lexicon": "curated_lexicon",   # model family -> developer from the WP1 lexicon, no article sentence
 }
-TRIPLE = ["subject_id", "predicate", "object_id"]
 
 
 def label_assertions(assertions: pd.DataFrame) -> pd.DataFrame:
