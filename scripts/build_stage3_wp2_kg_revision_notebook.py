@@ -108,7 +108,7 @@ print(f"Lexicon pairs also stated in articles: {int(edges['lexicon_agreement'].e
 md("""
 ## 2. Does the Sentence State the Relation?
 
-About 40 % of the relations in the Stage 1 review sample were wrong, mostly because a relation was attached to the
+The Stage 1 review found a substantial share of incorrect relations, mostly where a relation was attached to the
 wrong entity in a sentence naming several models or companies. Each evidence sentence is therefore checked with a
 natural language inference (NLI) model, `DeBERTa-v3-large` trained on MNLI, FEVER, ANLI, LingNLI and WANLI: does
 the sentence (premise) entail the relation written as a sentence (hypothesis), e.g. *"Qwen was developed by
