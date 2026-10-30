@@ -37,3 +37,6 @@ artifacts/stage1_wp3/final/*
 artifacts/stage1_wp3/final_ko/*
 !artifacts/stage1_wp3/final_ko/graph_schema.json
 !artifacts/stage1_wp3/final_ko/DATA_DICTIONARY_KO.md
+
+# Knowledge graph v2 tables used by the graph-enhanced RAG notebook
+!artifacts/stage3_wp2/kg_v2/*.parquet
