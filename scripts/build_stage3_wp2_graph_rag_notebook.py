@@ -124,10 +124,10 @@ ctx = ToolContext()
 ingest, chunk, retrieve, synthesize, retrieval_metrics = resolve_tools(
     ["ingest_corpus", "chunk_by_size", "retrieve_passages", "synthesize_answer", "calculate_retrieval_metrics"])
 
-# Corpus file of WP1 (written again from the Stage 1 corpus if it is missing)
+# Corpus file and chunk embeddings of WP1 (written again into the WP1 folder if they are missing)
+WP1_RAG_DIR.mkdir(parents=True, exist_ok=True)
 CORE_CSV = WP1_RAG_DIR / RAG_SETTINGS["corpus"]["file"]
 if not CORE_CSV.exists():
-    CORE_CSV = OUT_DIR / RAG_SETTINGS["corpus"]["file"]
     corpus = pd.read_parquet(DATA_DIR / "corpus_clean.parquet",
                              columns=["doc_id", "date", "domain", "url", "title", "text", "om_tier"])
     core = corpus[corpus["om_tier"] == "core"]
@@ -146,7 +146,7 @@ if EMB_PATH.exists():
     load_embeddings(chunk_corpus, EMB_PATH)
 else:
     ensure_embeddings(chunk_corpus)
-    save_embeddings(chunk_corpus, OUT_DIR / RAG_SETTINGS["embeddings_file"])
+    save_embeddings(chunk_corpus, EMB_PATH)
 
 RETRIEVAL_ARGS = RAG_SETTINGS["retrieval"]
 ANSWER_ARGS = RAG_SETTINGS["generation"]
