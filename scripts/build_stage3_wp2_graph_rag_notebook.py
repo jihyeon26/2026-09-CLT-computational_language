@@ -1,7 +1,7 @@
 """Generate the Stage 3 WP2 notebook that adds the knowledge graph to the WP1 RAG system and compares both systems.
 
-Default: the development notebook of this repository; in Colab it takes the code and graph tables from this private
-repository (Colab secret `GITHUB_TOKEN`). `--shared`: the final notebook for the team repository, which holds both.
+Default: the development notebook of this repository; in Colab it takes the code and graph tables from this
+repository. `--shared`: the final notebook for the team repository, which holds both.
 """
 import json
 import sys
@@ -13,9 +13,7 @@ TEAM_REPO = "jihyeon26/computational-language-technology-hs26"
 DEV_REPO = "jihyeon26/2026-09-CLT-computational_language"
 NOTEBOOK_PATH = "stage3/work_packages/stage3_wp2_graph_rag.ipynb" if SHARED else "notebooks/stage3_wp2_graph_rag.ipynb"
 CODE_CLONE = "CODE = REPO" if SHARED else (
-    "# Development run: code and graph tables from the private project repository (token in Colab Secrets)\n"
-    "    from google.colab import userdata\n"
-    f'    CODE = clone("{DEV_REPO}", userdata.get("GITHUB_TOKEN"))')
+    f'CODE = clone("{DEV_REPO}")   # development run: code and graph tables from the project repository')
 
 cells = []
 
@@ -81,12 +79,13 @@ IN_COLAB = "google.colab" in sys.modules
 if IN_COLAB:
     %pip install -q "anatoolbox[embeddings] @ git+https://github.com/umagira/anatoolbox"
 
-    def clone(slug, token=None):
-        # Clone or update a GitHub repository under /content (quietly, so a token never reaches the output)
+    def clone(slug):
+        # Clone a GitHub repository under /content, or update it
         path = Path("/content") / slug.split("/")[1]
-        url = f"https://{token}@github.com/{slug}.git" if token else f"https://github.com/{slug}.git"
-        command = ["git", "-C", str(path), "pull", "-q"] if path.exists() else ["git", "clone", "-q", url, str(path)]
-        subprocess.run(command, check=True, capture_output=True)
+        if path.exists():
+            !git -C {path} pull -q
+        else:
+            !git clone -q https://github.com/{slug}.git {path}
         return path
 
     REPO = clone("TEAM_REPO")   # test set, RAG settings, lexicon, Stage 1 entity mentions
