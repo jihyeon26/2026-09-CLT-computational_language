@@ -1,7 +1,21 @@
-"""Generate the Stage 3 WP2 notebook that adds the knowledge graph to the WP1 RAG system and compares both systems."""
+"""Generate the Stage 3 WP2 notebook that adds the knowledge graph to the WP1 RAG system and compares both systems.
+
+Default: the development notebook of this repository; in Colab it takes the code and graph tables from this private
+repository (Colab secret `GITHUB_TOKEN`). `--shared`: the final notebook for the team repository, which holds both.
+"""
 import json
 import sys
 from pathlib import Path
+
+SHARED = "--shared" in sys.argv
+ARGS = [a for a in sys.argv[1:] if a != "--shared"]
+TEAM_REPO = "jihyeon26/computational-language-technology-hs26"
+DEV_REPO = "jihyeon26/2026-09-CLT-computational_language"
+NOTEBOOK_PATH = "stage3/work_packages/stage3_wp2_graph_rag.ipynb" if SHARED else "notebooks/stage3_wp2_graph_rag.ipynb"
+CODE_CLONE = "CODE = REPO" if SHARED else (
+    "# Development run: code and graph tables from the private project repository (token in Colab Secrets)\n"
+    "    from google.colab import userdata\n"
+    f'    CODE = clone("{DEV_REPO}", userdata.get("GITHUB_TOKEN"))')
 
 cells = []
 
@@ -15,8 +29,8 @@ def code(src):
                   "source": src.strip("\n")})
 
 
-md("""
-<a href="https://colab.research.google.com/github/jihyeon26/computational-language-technology-hs26/blob/main/stage3/work_packages/stage3_wp2_graph_rag.ipynb" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
+md(f"""
+<a href="https://colab.research.google.com/github/{TEAM_REPO if SHARED else DEV_REPO}/blob/main/{NOTEBOOK_PATH}" target="_parent"><img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/></a>
 """)
 
 md("""
@@ -48,7 +62,7 @@ mentions from the repository. Generation (Section 5.2) needs a GPU in Colab; the
 loaded at later runs, so the other sections run without a GPU.
 """)
 
-code("""
+code('''
 import json
 import re
 import shutil
@@ -66,11 +80,17 @@ IN_COLAB = "google.colab" in sys.modules
 
 if IN_COLAB:
     %pip install -q "anatoolbox[embeddings] @ git+https://github.com/umagira/anatoolbox"
-    REPO = Path("/content/computational-language-technology-hs26")
-    if REPO.exists():
-        !git -C {REPO} pull -q
-    else:
-        !git clone -q https://github.com/jihyeon26/computational-language-technology-hs26.git {REPO}
+
+    def clone(slug, token=None):
+        # Clone or update a GitHub repository under /content (quietly, so a token never reaches the output)
+        path = Path("/content") / slug.split("/")[1]
+        url = f"https://{token}@github.com/{slug}.git" if token else f"https://github.com/{slug}.git"
+        command = ["git", "-C", str(path), "pull", "-q"] if path.exists() else ["git", "clone", "-q", url, str(path)]
+        subprocess.run(command, check=True, capture_output=True)
+        return path
+
+    REPO = clone("TEAM_REPO")   # test set, RAG settings, lexicon, Stage 1 entity mentions
+    CODE_CLONE
     from google.colab import drive
     drive.mount("/content/drive")
     DRIVE = Path("/content/drive/MyDrive/HSLU/CLT")
@@ -82,8 +102,9 @@ else:
     DATA_DIR = next(p for p in [REPO / "data" / "processed", REPO / "dataset" / "processed"] if p.exists())
     WP1_RAG_DIR = REPO / "outputs" / "stage3_wp1_rag"
     OUT_DIR = REPO / "artifacts" / "stage3_wp2" / "graph_rag"
+    CODE = REPO
 OUT_DIR.mkdir(parents=True, exist_ok=True)
-sys.path.insert(0, str(REPO / "src"))
+sys.path.insert(0, str(CODE / "src"))
 
 
 def first(*paths):
@@ -92,7 +113,7 @@ def first(*paths):
 
 # Repository inputs (a local copy keeps the WP1 and Stage 1 files under data/)
 WP1_DIR = first(REPO / "artifacts" / "stage3_wp1", REPO / "data" / "stage3_wp1")
-KG_DIR = REPO / "artifacts" / "stage3_wp2" / "kg_v2"
+KG_DIR = CODE / "artifacts" / "stage3_wp2" / "kg_v2"
 MENTIONS_CSV = first(REPO / "artifacts" / "stage1_wp2" / "entity_mentions.csv",
                      REPO / "data" / "stage1_submitted" / "artifacts" / "stage1_wp2" / "entity_mentions.csv")
 LEXICON = REPO / "artifacts" / "stage1_wp1" / "lexicon" / "open_models_lexicon.json"
@@ -101,7 +122,7 @@ RAG_SETTINGS = json.loads((WP1_DIR / "rag_settings.json").read_text(encoding="ut
 EVAL_SET = json.loads((WP1_DIR / "qa_reviewed.json").read_text(encoding="utf-8"))
 TYPES = ["factual", "temporal", "relational", "analytical", "comparative"]
 print(f"Test set: {len(EVAL_SET)} questions | RAG model: {RAG_SETTINGS['rag_model']['model']}")
-""")
+'''.replace("TEAM_REPO", TEAM_REPO).replace("CODE_CLONE", CODE_CLONE))
 
 # ---------------------------------------------------------------- 1 Baseline
 md("""
@@ -556,6 +577,6 @@ notebook = {
                  "language_info": {"name": "python"}},
     "nbformat": 4, "nbformat_minor": 5,
 }
-out = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(__file__).resolve().parents[1] / "notebooks" / "stage3_wp2_graph_rag.ipynb"
+out = Path(ARGS[0]) if ARGS else Path(__file__).resolve().parents[1] / "notebooks" / "stage3_wp2_graph_rag.ipynb"
 out.write_text(json.dumps(notebook, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
 print(f"Wrote {out} ({len(cells)} cells)")
