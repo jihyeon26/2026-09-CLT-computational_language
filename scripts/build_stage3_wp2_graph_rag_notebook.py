@@ -48,7 +48,7 @@ and language model; the graph only changes which passages reach the prompt and a
 
 | Team member | Sections | Contribution |
 |---|---|---|
-| Jihyeon Choung | 1 – 6 | entity linking, graph-aware retrieval, fusion with text retrieval, comparison with WP1 |
+| Jihyeon Choung | 1 – 7 | entity linking, graph-aware retrieval, fusion with text retrieval, comparison with WP1 |
 """)
 
 md("""
@@ -376,7 +376,7 @@ for name, key in [("text only (WP1)", "text"), ("text + graph", "fused")]:
         in_prompt.append(any(s["source_id"] in q["source_ids"] for s in prompt_sources(passages, run["corpus"])))
     summaries[name]["source in prompt"] = float(np.mean(in_prompt))
 table = pd.DataFrame(summaries).T[["hit@1", "hit@3", "hit@5", "hit@10", "mrr", "source in prompt"]]
-display(table.round(3).astype(object).fillna("-"))
+display(table.apply(lambda column: column.map(lambda v: "-" if pd.isna(v) else f"{v:.3f}")))
 
 types = pd.Series({q["id"]: q["type"] for q in EVAL_SET})
 routes = pd.Series({qid: run["route"] for qid, run in runs.items()})
@@ -419,6 +419,10 @@ judge model:
 - **citation coverage**: share of the answer's sentences with a citation (`synthesize_answer`);
 - **unknown citations**: labels that were not in the prompt;
 - **no answer**: the model says that the sources do not contain the answer.
+
+The graph leaves the prompt unchanged for about half of the questions (same passages, no graph fact). The
+checks are therefore shown for both groups: the questions whose prompt the graph changes show its effect, and the
+others show how much the answers vary when the prompt is the same.
 """)
 
 code("""
@@ -502,8 +506,21 @@ if len(answers) == 2 * len(EVAL_SET):
     names = {"text": "text only (WP1)", "graph": "text + graph"}
     columns = ["cites a source", "cites the source article", "citation coverage", "unknown citations", "no answer", "words"]
     display(answer_checks.groupby(answer_checks["system"].map(names))[columns].mean().round(3))
-    display(answer_checks.pivot_table(index="type", columns=answer_checks["system"].map(names),
-                                      values="cites the source article", aggfunc="mean").round(2))
+
+    # Questions whose prompt the graph changes: other passages, or graph facts
+    prompt_ids = lambda system, qid: [s["id"] for s in answers[(system, qid)]["result"]["sources"]]
+    changed = {qid for qid in source_ids if prompt_ids("text", qid) != prompt_ids("graph", qid)
+               or answers[("graph", qid)]["result"]["facts"]}
+    answer_checks["prompt"] = np.where(answer_checks["id"].isin(changed), "changed by the graph", "same")
+    by_prompt = answer_checks.groupby(["prompt", answer_checks["system"].map(names)]).agg(
+        questions=("id", "size"), **{c: (c, "mean") for c in ["cites the source article", "citation coverage", "no answer"]})
+    display(by_prompt.round(3))
+    same = sorted(set(source_ids) - changed)
+    identical = sum(answers[("text", qid)]["result"]["answer"] == answers[("graph", qid)]["result"]["answer"] for qid in same)
+    paired = answer_checks[answer_checks["id"].isin(changed)].pivot(index="id", columns="system", values="cites the source article")
+    print(f"Same prompt: {len(same)} questions, word-for-word identical answers: {identical}")
+    print(f"Changed prompt: source article cited only with the graph {int((paired['graph'] & ~paired['text']).sum())}, "
+          f"only without it {int((paired['text'] & ~paired['graph']).sum())}")
     with_facts = answer_checks[(answer_checks["system"] == "graph") & answer_checks["graph facts given"].gt(0)]
     print(f"Graph answers with graph facts in the prompt: {len(with_facts)}; citing at least one of them: "
           f"{with_facts['graph facts cited'].gt(0).sum()}")
@@ -521,17 +538,49 @@ def side_by_side(question_id):
 
 
 if len(answers) == 2 * len(EVAL_SET):
-    for question_id in with_facts.sort_values("id")["id"].head(4):
+    for question_id in ["q028", "q229", "q123", "q295"]:
         side_by_side(question_id)
 """)
 
-# ---------------------------------------------------------------- 6 Outputs
 md("""
-## 6. Saved Outputs
+The graph does not change how often the answers cite the source article: on the questions whose prompt it changes,
+the source article is cited in about as many answers with and without the graph (the table above). It changes
+how the answers use their evidence: with the graph, the model declines less often (21 instead of 29 answers say that
+the sources are not enough) and cites a larger share of its sentences (0.78 instead of 0.73). Both systems cite a
+source in 98% of the answers and never cite a label that was not in the prompt. On the questions with the same prompt,
+the two runs give word-for-word the same answer about half of the time, at similar rates; differences of a few
+answers between the systems are within this variation.
+
+Graph facts are cited in 19 of the 43 answers that receive them. They help most when the fact is the answer
+(*Who made the Molmo models?* -> Ai2, *When did Devendra Singh Chaplot join xAI?* -> `works for` xAI, 14 March 2026),
+and the model then cites the fact next to the passage that states it. Two uses are less precise: family facts of
+other models cited for a product of the family (*MedGemma 27B* `member of family` Gemma for *Which model is MedGemma
+based on?*), and the date of a fact, which is the publication date of its article, taken as the date of the event
+(*Muse Glimmer* released on 11 August, reported on 12 August).
+""")
+
+# ---------------------------------------------------------------- 6 Summary
+md("""
+## 6. Summary
+
+| Requirement | Result |
+|---|---|
+| Knowledge graph integration | knowledge graph v2 (verified article claims, entity mentions) is added to the WP1 system without changing its corpus, chunks, search, prompt or model |
+| Graph-aware or entity-based retrieval | questions are linked to graph nodes by name, alias, version and family; an entity ranking and a relation ranking are fused with the text ranking |
+| Combine text and graph evidence | graph facts enter the prompt only with the passage that states them; lexicon facts stay out |
+| Compare against the text-only baseline | retrieval: hit@10 0.88 -> 0.91, MRR 0.69 -> 0.70, largest gain on relational and temporal questions; answers: the source article is cited as often, fewer answers decline, more sentences are cited |
+
+The answers of both systems are saved with their evidence, so that the evaluation part can score faithfulness,
+relevance, context use and temporal grounding with a judge model on the same answers.
+""")
+
+# ---------------------------------------------------------------- 7 Outputs
+md("""
+## 7. Saved Outputs
 
 | File (`OUT_DIR`) | Content |
 |---|---|
-| `retrieval_results.csv` | per question: route, linked entities, rank of the source article with text only and with text + graph, graph facts in the prompt |
+| `retrieval_results.csv` | per question: route, linked entities, question intents, reciprocal rank of the source article with text only and with text + graph |
 | `answers.jsonl` | the answers of both systems, with the full `synthesize_answer` result (sources, graph facts, citation checks) |
 | `answer_checks.csv` | the citation checks of Section 5.2 per answer |
 | `graph_rag_settings.json` | the settings of the graph-enhanced system, next to `rag_settings.json` of WP1 |
