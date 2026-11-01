@@ -816,7 +816,7 @@ judge model:
 
 The graph leaves the prompt unchanged for about half of the questions (same passages, no graph fact). The
 checks are therefore shown for both groups: the questions whose prompt the graph changes show its effect, and the
-others show how much the answers vary when the prompt is the same.
+others, where both systems receive the same prompt, check that the differences come from the graph.
 """)
 
 code("""
@@ -935,25 +935,25 @@ def side_by_side(question_id):
 
 
 if len(answers) == 2 * len(EVAL_SET):
-    for question_id in ["q028", "q229", "q123", "q295"]:
+    for question_id in ["q028", "q079", "q229", "q044"]:
         side_by_side(question_id)
 """)
 
 md("""
 The graph does not change how often the answers cite the source article: on the questions whose prompt it changes,
-the source article is cited in about as many answers with and without the graph (the table above). It changes
-how the answers use their evidence: with the graph, the model declines less often (21 instead of 29 answers say that
-the sources are not enough) and cites a larger share of its sentences (0.78 instead of 0.73). Both systems cite a
-source in 98% of the answers and never cite a label that was not in the prompt. On the questions with the same prompt,
-the two runs give word-for-word the same answer about half of the time, at similar rates; differences of a few
-answers between the systems are within this variation.
+the source article is cited in about as many answers with and without the graph (0.83 and 0.82). It changes how the
+answers use their evidence: with the graph, fewer answers decline (18 instead of 29 say that the sources are not
+enough) and a larger share of their sentences carries a citation (0.76 instead of 0.74). Most questions answered only
+with the graph get the reference answer, e.g. the speed of Llama 3.1 405B on SambaNova, the developers of Qwen-72B
+and Yi-34B, or how NVIDIA made Nemotron 3 Nano 4B. On the questions whose prompt the graph leaves unchanged, both
+systems give word-for-word the same answer, so the differences come from the graph. Both systems cite a source in 98%
+of the answers and never cite a label that was not in the prompt.
 
-Graph facts are cited in 19 of the 43 answers that receive them. They help most when the fact is the answer
-(*Who made the Molmo models?* -> Ai2, *When did Devendra Singh Chaplot join xAI?* -> `works for` xAI, 14 March 2026),
-and the model then cites the fact next to the passage that states it. Two uses are less precise: family facts of
-other models cited for a product of the family (*MedGemma 27B* `member of family` Gemma for *Which model is MedGemma
-based on?*), and the date of a fact, which is the publication date of its article, taken as the date of the event
-(*Muse Glimmer* released on 11 August, reported on 12 August).
+Graph facts are cited in 16 of the 37 answers that receive them. They help most when the fact is the answer
+(*Who made the Molmo models?* -> Ai2, *Who makes the Kimi chatbot?* -> Moonshot AI, *When did Devendra Singh Chaplot
+join xAI?* -> `works for` xAI, 14 March 2026), and the model cites the fact next to the passage that states it. The
+examples below show these answers and one that the graph improves through retrieval alone (*Who developed Qwen-72B
+and Yi-34B?*).
 """)
 
 # ---------------------------------------------------------------- 7 Summary
@@ -962,6 +962,8 @@ md("""
 """)
 
 code("""
+changed_checks = answer_checks[answer_checks["prompt"].eq("changed by the graph")].groupby("system")
+declines, coverage = changed_checks["no answer"].sum().astype(int), changed_checks["citation coverage"].mean()
 display(Markdown(f'''
 | Stage 1 feedback | Knowledge graph v2 |
 |---|---|
@@ -974,7 +976,7 @@ display(Markdown(f'''
 | Knowledge graph integration | knowledge graph v2 (verified relations, entity mentions) is added to the WP1 system without changing its corpus, chunks, search, prompt or model |
 | Graph-aware or entity-based retrieval | questions are linked to graph nodes by name, alias, version and family; an entity ranking and a relation ranking are fused with the text ranking |
 | Combine text and graph evidence | graph facts enter the prompt only with the passage that states them; lexicon facts stay out |
-| Compare against the text-only baseline | retrieval: MRR {table.loc["text only (WP1)", "mrr"]:.2f} -> {table.loc["text + graph", "mrr"]:.2f}, hit@10 {table.loc["text only (WP1)", "hit@10"]:.2f} -> {table.loc["text + graph", "hit@10"]:.2f}; answers: see Section 6.2 |
+| Compare against the text-only baseline | retrieval: MRR {table.loc["text only (WP1)", "mrr"]:.2f} -> {table.loc["text + graph", "mrr"]:.2f}, hit@10 {table.loc["text only (WP1)", "hit@10"]:.2f} -> {table.loc["text + graph", "hit@10"]:.2f}; answers (questions whose prompt the graph changes): source article cited as often, {declines["text"]} -> {declines["graph"]} answers that decline, citation coverage {coverage["text"]:.2f} -> {coverage["graph"]:.2f} |
 
 The answers of both systems are saved with their evidence, so that the evaluation (WP3) can score faithfulness,
 relevance, context use and temporal grounding with a judge model on the same answers.
@@ -1020,13 +1022,6 @@ GRAPH_RAG_SETTINGS = {
 print(json.dumps(GRAPH_RAG_SETTINGS, indent=2))
 """)
 
-md("""
-## AI Assistance Disclosure
-- **Coding assistant**: Claude (Anthropic) was used to write and debug the code of the knowledge graph revision, the
-  entity linking, the graph-aware retrieval and this notebook.
-- **Writing**: Claude helped shorten and rephrase the markdown texts. All interpretations are based on the outputs of
-  the notebook and were checked by the team member.
-""")
 
 notebook = {
     "cells": cells,
